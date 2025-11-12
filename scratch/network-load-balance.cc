@@ -275,6 +275,12 @@ void ScheduleFlowInputs(FILE *infile) {
             global_t == 1 ? maxRtt : pairRtt[n.Get(src)][n.Get(dst)]);
         clientHelper.SetAttribute("StatFlowID", IntegerValue(flow_input.idx));
 
+        // 说明（启动时的调用链）：
+        // - Install() 会在源主机上创建 ns3::RdmaClient 应用
+        // - 应用启动时会调用 RdmaClient::StartApplication()
+        //   -> 源主机上的 RdmaDriver::AddQueuePair(...)
+        //      -> RdmaHw::AddQueuePair(...) 创建发送端 QP 并通知 NIC（NewQp）
+        // 随后开始发包；接收端会回 ACK/NACK，分别由 RdmaHw::ReceiveUdp() / RdmaHw::ReceiveAck() 处理。
         ApplicationContainer appCon = clientHelper.Install(n.Get(src));  // SRC
         appCon.Start(Seconds(Time(0)));
         appCon.Stop(Seconds(100.0));
@@ -1430,6 +1436,9 @@ int main(int argc, char *argv[]) {
 
             node->AggregateObject(rdma);
             rdma->Init();
+            // 说明（完成路径）：
+            // RdmaHw::QpComplete(qp) -> RdmaDriver::QpComplete（trace 名为 "QpComplete"）
+            // -> 此处的绑定将调用 qp_finish(...)，写入 FCT 并删除接收端 RxQP
             rdma->TraceConnectWithoutContext("QpComplete",
                                              MakeBoundCallback(qp_finish, fct_output));
         }

@@ -1,1 +1,5 @@
 date,id,ccmode,lbmode,cwh_tx_expiry_time,cwh_extra_reply_deadline,cwh_path_pause_time,cwh_extra_voq_flush_time,cwh_default_voq_waiting_time,pfc,irn,has_win,var_win,topo,bw,cdf,load,time
+11/11/25,868070654,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.02
+./waf --run 'scratch/network-load-balance /home/jt/workspace/ns-allinone-3.19/ns-3.19/mix/output/868070654/config.txt' > /home/jt/workspace/ns-allinone-3.19/ns-3.19/mix/output/868070654/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /home/jt/workspace/ns-allinone-3.19/ns-3.19/mix/output/868070654/config.txt'
+
