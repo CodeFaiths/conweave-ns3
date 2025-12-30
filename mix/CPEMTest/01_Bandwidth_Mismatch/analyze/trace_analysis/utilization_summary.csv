@@ -1,0 +1,3 @@
+node_type,node_id,port_id,port_name,avg_tx_util,max_tx_util,avg_rx_util,max_rx_util,link_bw_mbps
+Switch,2,1,S2-P1,3.0161424332344215,3.22,49.75495548961424,108.99,100000
+Switch,2,2,S2-P2,99.51531157270028,100.61,5.6973293768546,5.76,50000
