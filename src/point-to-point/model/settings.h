@@ -137,6 +137,29 @@ class Settings {
 
     static uint32_t dropped_pkt_sw_ingress;
     static uint32_t dropped_pkt_sw_egress;
+
+    /*========== Credit-based PFC Enhancement Module (CPEM) ==========*/
+    // Main switch to enable/disable the module
+    static bool cpem_enabled;
+    
+    // Feedback timing parameters
+    static uint32_t cpem_feedback_interval_ns;    // Interval between feedback packets (ns)
+    
+    // Credit calculation parameters
+    static double cpem_credit_decay_alpha;        // EWMA decay factor for credit update
+    static double cpem_inflight_discount;         // Discount factor for in-flight credit
+    static double cpem_credit_to_rate_gain;       // Gain for converting credit to rate
+    static double cpem_min_rate_ratio;            // Minimum rate ratio (to prevent starvation)
+    static uint32_t cpem_max_credit;              // Maximum credit value (normalization)
+    
+    // Queue threshold parameters
+    static uint32_t cpem_queue_threshold_low;     // Low threshold - start generating feedback (fixed mode)
+    static uint32_t cpem_queue_threshold_high;    // High threshold - maximum urgency (fixed mode)
+    
+    // Dynamic threshold mode - follow PFC dynamic threshold
+    static bool cpem_use_dynamic_threshold;       // Use dynamic threshold based on PFC threshold
+    static double cpem_threshold_low_ratio;       // Low threshold ratio relative to PFC threshold (e.g., 0.5 = 50%)
+    static double cpem_threshold_high_ratio;      // High threshold ratio relative to PFC threshold (e.g., 0.8 = 80%)
 };
 
 }  // namespace ns3

@@ -197,6 +197,16 @@ public:
 	Ptr<RdmaEgressQueue> m_rdmaEQ;
 	void RdmaEnqueueHighPrioQ(Ptr<Packet> p);
 
+	// CPEM: Credit-based PFC Enhancement Module
+	void CpemSetEffectiveRate(DataRate rate);
+	DataRate CpemGetEffectiveRate() const;
+	void CpemResetRate();  // Reset to line rate
+	
+protected:
+	DataRate m_cpemEffectiveRate;  // CPEM controlled effective rate
+	bool m_cpemRateLimited;        // Whether CPEM rate limiting is active
+
+public:
 	// callback for processing packet in RDMA
 	typedef Callback<int, Ptr<Packet>, CustomHeader&> RdmaReceiveCb;
 	RdmaReceiveCb m_rdmaReceiveCb;

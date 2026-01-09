@@ -44,6 +44,11 @@ namespace ns3 {
 		uint32_t GetNBytesTotal() const;
 		uint32_t GetLastQueue();
 
+		// Throughput monitoring
+		uint64_t GetTotalTxBytes() const { return m_totalTxBytes; }
+		uint64_t GetTotalRxBytes() const { return m_totalRxBytes; }
+		void AddRxBytes(uint64_t bytes) { m_totalRxBytes += bytes; }
+
 		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqEnqueue;
 		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqDequeue;
 		
@@ -62,6 +67,10 @@ namespace ns3 {
 		uint32_t m_rrlast;
 		uint32_t m_qlast;
 		std::vector<Ptr<Queue> > m_queues; // uc queues
+		
+		// Throughput monitoring counters
+		uint64_t m_totalTxBytes;  // Total bytes transmitted (dequeued)
+		uint64_t m_totalRxBytes;  // Total bytes received (enqueued)
 	};
 
 } // namespace ns3

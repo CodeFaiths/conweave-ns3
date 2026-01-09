@@ -47,6 +47,7 @@
 #include "ns3/qbb-net-device.h"
 #include "ns3/rdma-hw.h"
 #include "ns3/settings.h"
+#include "ns3/broadcom-egress-queue.h"
 
 using namespace ns3;
 using namespace std;
@@ -61,7 +62,7 @@ uint32_t lb_mode = 0;
 Time conga_flowletTimeout = MicroSeconds(100);  // 100us
 Time conga_dreTime = MicroSeconds(50);
 Time conga_agingTime = MicroSeconds(500);
-uint32_t conga_quantizeBit = 3;
+uint32_t conga_quantizeBit = 3; 
 double conga_alpha = 0.2;
 
 // Letflow params
@@ -102,6 +103,9 @@ FILE *voq_output = NULL;
 FILE *voq_detail_output = NULL;
 FILE *uplink_output = NULL;
 FILE *conn_output = NULL;
+FILE *qlen_output = NULL;
+FILE *throughput_output = NULL;      // Throughput monitoring output
+FILE *link_util_output = NULL;       // Link utilization monitoring output
 
 std::string data_rate, link_delay, topology_file, flow_file;
 std::string flow_input_file = "flow.txt";
@@ -114,6 +118,13 @@ std::string voq_mon_detail_file = "voq_detail.txt";
 std::string uplink_mon_file = "uplink.txt";
 std::string conn_mon_file = "conn.txt";
 std::string est_error_output_file = "est_error.txt";
+std::string throughput_mon_file = "throughput.txt";   // Throughput monitoring file
+std::string link_util_mon_file = "link_util.txt";     // Link utilization monitoring file
+
+// Throughput/Utilization monitoring parameters
+uint32_t throughput_mon_interval = 10000;  // ns (default 10us)
+bool enable_throughput_monitoring = false;
+bool enable_link_util_monitoring = false;
 
 // CC params
 double alpha_resume_interval = 55, rp_timer = 300, ewma_gain = 1 / 16;
@@ -504,56 +515,159 @@ void get_pfc(FILE *fout, Ptr<QbbNetDevice> dev, uint32_t type) {
             dev->GetNode()->GetNodeType(), dev->GetIfIndex(), type);
 }
 
-/*******************************************************************/
-#if (false)
+/**
+ * @brief Qlen monitoring at switches (output: qlen.txt)
+ * format: timestamp, switchId, portId, ingressBytes, egressBytes
+ */
+void qlen_monitoring(FILE *fout) {
+    if (!fout) return;
+    uint64_t now = Simulator::Now().GetNanoSeconds();
+    for (uint32_t i = 0; i < n.GetN(); i++) {
+        if (n.Get(i)->GetNodeType() == 1) {  // is switch
+            Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n.Get(i));
+            for (uint32_t j = 1; j < sw->GetNDevices(); j++) {
+                uint32_t ingress = sw->m_mmu->GetIngressPortBytes(j);
+                uint32_t egress = sw->m_mmu->GetEgressPortBytes(j);
+                if (ingress > 0 || egress > 0) {
+                    fprintf(fout, "%lu,%u,%u,%u,%u\n", now, i, j, ingress, egress);
+                }
+            }
+        }
+    }
+    fflush(fout);
+
+    if (Simulator::Now() < Seconds(flowgen_stop_time + 0.05)) {
+        Simulator::Schedule(NanoSeconds(switch_mon_interval), &qlen_monitoring, fout);
+    }
+}
 
 /**
- * @brief Qlen monitoring at switches (output: qlen.txt), I think "periodically"...
- *
+ * @brief Throughput and Link Utilization monitoring
+ * Format for throughput: timestamp, nodeType (0=host, 1=switch), nodeId, portId, txBytes, rxBytes, txThroughputMbps, rxThroughputMbps
+ * Format for link_util: timestamp, nodeType, nodeId, portId, txUtilization%, rxUtilization%, linkBandwidthMbps
  */
-struct QlenDistribution {
-    vector<uint32_t> cnt;  // cnt[i] is the number of times that the queue len is i KB
-    void add(uint32_t qlen) {
-        uint32_t kb = qlen / 1000;
-        if (cnt.size() < kb + 1) cnt.resize(kb + 1);
-        cnt[kb]++;
-    }
-};
+static uint64_t last_throughput_sample_time = 0;
+static std::map<uint32_t, std::map<uint32_t, uint64_t>> last_tx_bytes;  // nodeId -> portId -> bytes
+static std::map<uint32_t, std::map<uint32_t, uint64_t>> last_rx_bytes;  // nodeId -> portId -> bytes
 
-map<uint32_t, map<uint32_t, QlenDistribution>> queue_result;
-void monitor_buffer(FILE *qlen_output, NodeContainer *n) {
-    /*******************************************************************/
-    /************************** UNUSED NOW *****************************/
-    /*******************************************************************/
-    for (uint32_t i = 0; i < n->GetN(); i++) {
-        if (n->Get(i)->GetNodeType() == 1) {  // is switch
-            Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n->Get(i));
-            if (queue_result.find(i) == queue_result.end()) queue_result[i];
+void throughput_link_util_monitoring(FILE *fout_throughput, FILE *fout_link_util) {
+    uint64_t now = Simulator::Now().GetNanoSeconds();
+    double interval_sec = (now - last_throughput_sample_time) / 1e9;
+    
+    if (interval_sec <= 0) {
+        interval_sec = throughput_mon_interval / 1e9;  // Use configured interval
+    }
+    
+    // Monitor switches
+    for (uint32_t i = 0; i < n.GetN(); i++) {
+        if (n.Get(i)->GetNodeType() == 1) {  // is switch
+            Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n.Get(i));
             for (uint32_t j = 1; j < sw->GetNDevices(); j++) {
-                uint32_t size = 0;
-                for (uint32_t k = 0; k < SwitchMmu::qCnt; k++)
-                    size += sw->m_mmu->egress_bytes[j][k];
-                queue_result[i][j].add(size);
+                Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(sw->GetDevice(j));
+                if (!dev || !dev->IsLinkUp()) continue;
+                
+                uint64_t tx_bytes = sw->GetTxBytesOutDev(j);
+                uint64_t rx_bytes = sw->GetRxBytesInDev(j);
+                
+                uint64_t prev_tx = last_tx_bytes[i][j];
+                uint64_t prev_rx = last_rx_bytes[i][j];
+                
+                uint64_t delta_tx = tx_bytes - prev_tx;
+                uint64_t delta_rx = rx_bytes - prev_rx;
+                
+                // Calculate throughput in Mbps
+                double tx_throughput_mbps = (delta_tx * 8.0) / (interval_sec * 1e6);
+                double rx_throughput_mbps = (delta_rx * 8.0) / (interval_sec * 1e6);
+                
+                // Get link bandwidth in Mbps
+                double link_bw_mbps = dev->GetDataRate().GetBitRate() / 1e6;
+                
+                // Calculate utilization percentage
+                double tx_util = (link_bw_mbps > 0) ? (tx_throughput_mbps / link_bw_mbps) * 100.0 : 0.0;
+                double rx_util = (link_bw_mbps > 0) ? (rx_throughput_mbps / link_bw_mbps) * 100.0 : 0.0;
+                
+                // Write throughput data: timestamp, nodeType, nodeId, portId, txBytes, rxBytes, txMbps, rxMbps
+                if (fout_throughput && (delta_tx > 0 || delta_rx > 0)) {
+                    fprintf(fout_throughput, "%lu,1,%u,%u,%lu,%lu,%.2f,%.2f\n",
+                            now, i, j, delta_tx, delta_rx, tx_throughput_mbps, rx_throughput_mbps);
+                }
+                
+                // Write link utilization data: timestamp, nodeType, nodeId, portId, txUtil%, rxUtil%, linkBwMbps
+                if (fout_link_util && (delta_tx > 0 || delta_rx > 0)) {
+                    fprintf(fout_link_util, "%lu,1,%u,%u,%.2f,%.2f,%.0f\n",
+                            now, i, j, tx_util, rx_util, link_bw_mbps);
+                }
+                
+                // Update last bytes
+                last_tx_bytes[i][j] = tx_bytes;
+                last_rx_bytes[i][j] = rx_bytes;
             }
         }
     }
-    if (Simulator::Now().GetTimeStep() % qlen_dump_interval == 0) {
-        fprintf(qlen_output, "time: %lu\n", Simulator::Now().GetTimeStep());
-        for (auto &it0 : queue_result) {
-            for (auto &it1 : it0.second) {
-                fprintf(qlen_output, "%u %u", it0.first, it1.first);
-                auto &dist = it1.second.cnt;
-                for (uint32_t i = 0; i < dist.size(); i++) fprintf(qlen_output, " %u", dist[i]);
-                fprintf(qlen_output, "\n");
+    
+    // Monitor hosts (servers)
+    for (uint32_t i = 0; i < n.GetN(); i++) {
+        if (n.Get(i)->GetNodeType() == 0) {  // is host/server
+            Ptr<Node> host = n.Get(i);
+            for (uint32_t j = 0; j < host->GetNDevices(); j++) {
+                Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(host->GetDevice(j));
+                if (!dev || !dev->IsLinkUp()) continue;
+                
+                // For hosts, we can track bytes from the device's queue stats
+                Ptr<BEgressQueue> queue = dev->GetQueue();
+                if (!queue) continue;
+                
+                // Get total bytes transmitted from the queue
+                uint64_t tx_bytes = queue->GetTotalTxBytes();
+                uint64_t rx_bytes = queue->GetTotalRxBytes();
+                
+                uint64_t prev_tx = last_tx_bytes[i][j];
+                uint64_t prev_rx = last_rx_bytes[i][j];
+                
+                uint64_t delta_tx = tx_bytes - prev_tx;
+                uint64_t delta_rx = rx_bytes - prev_rx;
+                
+                // Calculate throughput in Mbps
+                double tx_throughput_mbps = (delta_tx * 8.0) / (interval_sec * 1e6);
+                double rx_throughput_mbps = (delta_rx * 8.0) / (interval_sec * 1e6);
+                
+                // Get link bandwidth in Mbps
+                double link_bw_mbps = dev->GetDataRate().GetBitRate() / 1e6;
+                
+                // Calculate utilization percentage
+                double tx_util = (link_bw_mbps > 0) ? (tx_throughput_mbps / link_bw_mbps) * 100.0 : 0.0;
+                double rx_util = (link_bw_mbps > 0) ? (rx_throughput_mbps / link_bw_mbps) * 100.0 : 0.0;
+                
+                // Write throughput data
+                if (fout_throughput && (delta_tx > 0 || delta_rx > 0)) {
+                    fprintf(fout_throughput, "%lu,0,%u,%u,%lu,%lu,%.2f,%.2f\n",
+                            now, i, j, delta_tx, delta_rx, tx_throughput_mbps, rx_throughput_mbps);
+                }
+                
+                // Write link utilization data
+                if (fout_link_util && (delta_tx > 0 || delta_rx > 0)) {
+                    fprintf(fout_link_util, "%lu,0,%u,%u,%.2f,%.2f,%.0f\n",
+                            now, i, j, tx_util, rx_util, link_bw_mbps);
+                }
+                
+                // Update last bytes
+                last_tx_bytes[i][j] = tx_bytes;
+                last_rx_bytes[i][j] = rx_bytes;
             }
         }
-        fflush(qlen_output);
     }
-    if (Simulator::Now().GetTimeStep() < qlen_mon_end)
-        Simulator::Schedule(NanoSeconds(qlen_mon_interval), &monitor_buffer, qlen_output, n);
+    
+    if (fout_throughput) fflush(fout_throughput);
+    if (fout_link_util) fflush(fout_link_util);
+    
+    last_throughput_sample_time = now;
+    
+    if (Simulator::Now() < Seconds(flowgen_stop_time + 0.05)) {
+        Simulator::Schedule(NanoSeconds(throughput_mon_interval), &throughput_link_util_monitoring,
+                            fout_throughput, fout_link_util);
+    }
 }
-#endif
-/*******************************************************************/
+
 
 /**
  * @brief Stop simulation in the middle (when almost all flows are done).
@@ -703,7 +817,7 @@ void TakeDownLink(NodeContainer n, Ptr<Node> a, Ptr<Node> b) {
 }
 
 uint64_t get_nic_rate(NodeContainer &n) {
-    uint64_t avg_nic_rate;
+    uint64_t avg_nic_rate = 0;
     uint64_t n_servers = 0;
     for (uint32_t i = 0; i < n.GetN(); i++) {
         if (n.Get(i)->GetNodeType() == 0) {
@@ -1082,6 +1196,87 @@ int main(int argc, char *argv[]) {
                 conf >> v;
                 random_seed = v;
                 std::cerr << "RANDOM_SEED\t\t\t" << random_seed << "\n";
+            } else if (key.compare("CPEM_ENABLED") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::cpem_enabled = (v != 0);
+                std::cerr << "CPEM_ENABLED\t\t\t" << (Settings::cpem_enabled ? "Yes" : "No") << "\n";
+            } else if (key.compare("CPEM_FEEDBACK_INTERVAL") == 0) {
+                uint64_t v;
+                conf >> v;
+                Settings::cpem_feedback_interval_ns = v;
+                std::cerr << "CPEM_FEEDBACK_INTERVAL\t\t" << v << " ns\n";
+            } else if (key.compare("CPEM_CREDIT_DECAY_ALPHA") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_credit_decay_alpha = v;
+                std::cerr << "CPEM_CREDIT_DECAY_ALPHA\t\t" << v << "\n";
+            } else if (key.compare("CPEM_INFLIGHT_DISCOUNT") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_inflight_discount = v;
+                std::cerr << "CPEM_INFLIGHT_DISCOUNT\t\t" << v << "\n";
+            } else if (key.compare("CPEM_CREDIT_TO_RATE_GAIN") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_credit_to_rate_gain = v;
+                std::cerr << "CPEM_CREDIT_TO_RATE_GAIN\t" << v << "\n";
+            } else if (key.compare("CPEM_MIN_RATE_RATIO") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_min_rate_ratio = v;
+                std::cerr << "CPEM_MIN_RATE_RATIO\t\t" << v << "\n";
+            } else if (key.compare("CPEM_MAX_CREDIT") == 0) {
+                uint16_t v;
+                conf >> v;
+                Settings::cpem_max_credit = v;
+                std::cerr << "CPEM_MAX_CREDIT\t\t\t" << v << "\n";
+            } else if (key.compare("CPEM_QUEUE_THRESHOLD_LOW") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::cpem_queue_threshold_low = v;
+                std::cerr << "CPEM_QUEUE_THRESHOLD_LOW\t" << v << " bytes\n";
+            } else if (key.compare("CPEM_QUEUE_THRESHOLD_HIGH") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::cpem_queue_threshold_high = v;
+                std::cerr << "CPEM_QUEUE_THRESHOLD_HIGH\t" << v << " bytes\n";
+            } else if (key.compare("CPEM_USE_DYNAMIC_THRESHOLD") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::cpem_use_dynamic_threshold = (v != 0);
+                std::cerr << "CPEM_USE_DYNAMIC_THRESHOLD\t" << (Settings::cpem_use_dynamic_threshold ? "Yes" : "No") << "\n";
+            } else if (key.compare("CPEM_THRESHOLD_LOW_RATIO") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_threshold_low_ratio = v;
+                std::cerr << "CPEM_THRESHOLD_LOW_RATIO\t" << v << " (" << (v*100) << "%)\n";
+            } else if (key.compare("CPEM_THRESHOLD_HIGH_RATIO") == 0) {
+                double v;
+                conf >> v;
+                Settings::cpem_threshold_high_ratio = v;
+                std::cerr << "CPEM_THRESHOLD_HIGH_RATIO\t" << v << " (" << (v*100) << "%)\n";
+            } else if (key.compare("ENABLE_THROUGHPUT_MONITORING") == 0) {
+                uint32_t v;
+                conf >> v;
+                enable_throughput_monitoring = (v != 0);
+                std::cerr << "ENABLE_THROUGHPUT_MONITORING\t" << (enable_throughput_monitoring ? "Yes" : "No") << "\n";
+            } else if (key.compare("ENABLE_LINK_UTIL_MONITORING") == 0) {
+                uint32_t v;
+                conf >> v;
+                enable_link_util_monitoring = (v != 0);
+                std::cerr << "ENABLE_LINK_UTIL_MONITORING\t" << (enable_link_util_monitoring ? "Yes" : "No") << "\n";
+            } else if (key.compare("THROUGHPUT_MON_INTERVAL") == 0) {
+                uint32_t v;
+                conf >> v;
+                throughput_mon_interval = v;
+                std::cerr << "THROUGHPUT_MON_INTERVAL\t\t" << v << " ns\n";
+            } else if (key.compare("THROUGHPUT_MON_FILE") == 0) {
+                conf >> throughput_mon_file;
+                std::cerr << "THROUGHPUT_MON_FILE\t\t" << throughput_mon_file << '\n';
+            } else if (key.compare("LINK_UTIL_MON_FILE") == 0) {
+                conf >> link_util_mon_file;
+                std::cerr << "LINK_UTIL_MON_FILE\t\t" << link_util_mon_file << '\n';
             }
 
             fflush(stdout);
@@ -1115,6 +1310,7 @@ int main(int argc, char *argv[]) {
     Config::SetDefault("ns3::QbbNetDevice::PauseTime", UintegerValue(pause_time));
     Config::SetDefault("ns3::QbbNetDevice::QcnEnabled", BooleanValue(enable_qcn));
     Config::SetDefault("ns3::QbbNetDevice::DynamicThreshold", BooleanValue(dynamicth));
+    Config::SetDefault("ns3::SwitchMmu::DynamicThreshold", BooleanValue(dynamicth));  //交换机的动态阈值配置
     Config::SetDefault("ns3::QbbNetDevice::QbbEnabled", BooleanValue(enable_pfc));
 
     if (cc_mode != 1 && lb_mode == 9) {
@@ -1366,6 +1562,9 @@ int main(int argc, char *argv[]) {
     std::map<std::string, uint32_t> topo2bdpMap;
     topo2bdpMap[std::string("leaf_spine_128_100G_OS2")] = 104000;  // RTT=8320
     topo2bdpMap[std::string("fat_k8_100G_OS2")] = 156000;      // RTT=12480 --> all 100G links
+    topo2bdpMap[std::string("fat_k4_100G_OS2")] = 156000;      // RTT=12480 --> all 100G links
+    topo2bdpMap[std::string("topology")] = 156000;           // 自定义拓扑 RTT=12480 --> all 100G links
+    topo2bdpMap[std::string("topo_incast")] = 104000;        // Incast拓扑 RTT=4000ns (2*1000ns*2hops) * 100Gbps
 
     // topology_file
     bool found_topo2bdpMap = false;
@@ -1447,6 +1646,20 @@ int main(int argc, char *argv[]) {
     }
 
     /**
+     * @brief CPEM: Initialize Credit-based PFC Enhancement Module
+     */
+    if (Settings::cpem_enabled) {
+        std::cerr << "Initializing CPEM (Credit-based PFC Enhancement Module)..." << std::endl;
+        for (uint32_t i = 0; i < node_num; i++) {
+            if (n.Get(i)->GetNodeType() == 1) {  // switch
+                Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n.Get(i));
+                sw->CpemInit();
+            }
+        }
+        std::cerr << "CPEM initialization complete." << std::endl;
+    }
+
+    /**
      * @brief setup routing
      */
     CalculateRoutes(n);
@@ -1476,7 +1689,10 @@ int main(int argc, char *argv[]) {
         }
     }
     fprintf(stderr, "maxRtt: %lu, maxBdp: %lu\n", maxRtt, maxBdp);
-    assert(maxBdp == irn_bdp_lookup);
+    if (maxBdp != irn_bdp_lookup) {
+        fprintf(stderr, "WARNING - maxBdp (%lu) != irn_bdp_lookup (%u). Using maxBdp.\n", maxBdp, irn_bdp_lookup);
+        irn_bdp_lookup = maxBdp;
+    }
 
     std::cout << "Configuring switches" << std::endl;
     /* config ToR Switch */
@@ -1751,6 +1967,27 @@ int main(int argc, char *argv[]) {
 
     uplink_output = fopen(uplink_mon_file.c_str(), "w");  // common
     conn_output = fopen(conn_mon_file.c_str(), "w");      // common
+    qlen_output = fopen(qlen_mon_file.c_str(), "w");      // common
+
+    // Open throughput and link utilization monitoring files if enabled
+    if (enable_throughput_monitoring) {
+        throughput_output = fopen(throughput_mon_file.c_str(), "w");
+        if (throughput_output) {
+            // Write header
+            fprintf(throughput_output, "# Throughput Monitoring Output\n");
+            fprintf(throughput_output, "# Format: timestamp(ns),nodeType(0=host/1=switch),nodeId,portId,deltaTxBytes,deltaRxBytes,txThroughputMbps,rxThroughputMbps\n");
+            fflush(throughput_output);
+        }
+    }
+    if (enable_link_util_monitoring) {
+        link_util_output = fopen(link_util_mon_file.c_str(), "w");
+        if (link_util_output) {
+            // Write header
+            fprintf(link_util_output, "# Link Utilization Monitoring Output\n");
+            fprintf(link_util_output, "# Format: timestamp(ns),nodeType(0=host/1=switch),nodeId,portId,txUtilization%%,rxUtilization%%,linkBandwidthMbps\n");
+            fflush(link_util_output);
+        }
+    }
 
     // update torId2UplinkIf, torId2DownlinkIf
     for (size_t ToRId = 0; ToRId < Settings::node_num; ToRId++) {
@@ -1779,6 +2016,14 @@ int main(int argc, char *argv[]) {
     }
     Simulator::Schedule(Seconds(flowgen_start_time), &periodic_monitoring, voq_output,
                         voq_detail_output, uplink_output, conn_output, &lb_mode);
+    Simulator::Schedule(Seconds(flowgen_start_time), &qlen_monitoring, qlen_output);
+
+    // Schedule throughput and link utilization monitoring if enabled
+    if (enable_throughput_monitoring || enable_link_util_monitoring) {
+        last_throughput_sample_time = (uint64_t)(flowgen_start_time * 1e9);
+        Simulator::Schedule(Seconds(flowgen_start_time), &throughput_link_util_monitoring,
+                            throughput_output, link_util_output);
+    }
 
     //
     // Now, do the actual simulation.

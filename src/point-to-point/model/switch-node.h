@@ -8,6 +8,7 @@
 
 #include "qbb-net-device.h"
 #include "switch-mmu.h"
+#include "ns3/credit-feedback-header.h"
 
 namespace ns3 {
 
@@ -22,6 +23,11 @@ class SwitchNode : public Node {
 
     // monitor uplinks
     uint64_t m_txBytes[pCnt];  // counter of tx bytes, for HPCC
+    uint64_t m_rxBytes[pCnt];  // counter of rx bytes, for throughput monitoring
+    
+    // For throughput/utilization calculation (cumulative counters at sample points)
+    uint64_t m_txBytesSample[pCnt];  // tx bytes at last sample point
+    uint64_t m_rxBytesSample[pCnt];  // rx bytes at last sample point
 
    protected:
     bool m_ecnEnabled;
@@ -38,6 +44,12 @@ class SwitchNode : public Node {
 
     /* Sending packet to Egress port */
     void DoSwitchSend(Ptr<Packet> p, CustomHeader &ch, uint32_t outDev, uint32_t qIndex);
+
+    /*----- CPEM: Credit-based PFC Enhancement Module -----*/
+    void CpemSendFeedback(uint32_t inPort, uint32_t outPort);
+    void CpemHandleFeedback(Ptr<Packet> p, CustomHeader &ch);
+    void CpemStartFeedbackGeneration();
+    void CpemPeriodicFeedbackCheck(uint32_t port);
 
     /*----- Load balancer -----*/
     // Flow ECMP (lb_mode = 0)
@@ -71,6 +83,16 @@ class SwitchNode : public Node {
     bool SwitchReceiveFromDevice(Ptr<NetDevice> device, Ptr<Packet> packet, CustomHeader &ch);
     void SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Packet> p);
     uint64_t GetTxBytesOutDev(uint32_t outdev);
+    uint64_t GetRxBytesInDev(uint32_t indev);
+    
+    // Throughput and utilization monitoring
+    void ResetThroughputCounters();  // Reset sample counters for new interval
+    uint64_t GetTxBytesDelta(uint32_t outdev);  // Get TX bytes since last sample
+    uint64_t GetRxBytesDelta(uint32_t indev);   // Get RX bytes since last sample
+    void UpdateSampleCounters();  // Update sample point counters
+    
+    // CPEM public interface
+    void CpemInit();
 };
 
 } /* namespace ns3 */

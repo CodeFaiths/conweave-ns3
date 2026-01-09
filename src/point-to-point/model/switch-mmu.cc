@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
@@ -17,6 +18,12 @@
 
 NS_LOG_COMPONENT_DEFINE("SwitchMmu");
 namespace ns3 {
+
+// CPEM Static counters
+uint64_t SwitchMmu::m_cpemFeedbackSent = 0;
+uint64_t SwitchMmu::m_cpemFeedbackRecv = 0;
+uint64_t SwitchMmu::m_cpemRateAdjustments = 0;
+
 TypeId SwitchMmu::GetTypeId(void) {
     static TypeId tid =
         TypeId("ns3::SwitchMmu")
@@ -479,5 +486,238 @@ void SwitchMmu::ConfigBufferSize(uint32_t size) {
     m_staticMaxBufferBytes = size;
     InitSwitch();
 }
+
+/*========== Credit-based PFC Enhancement Module (CPEM) Implementation ==========*/
+
+void SwitchMmu::CpemInitPort(uint32_t port, DataRate linkRate) {
+    if (!Settings::cpem_enabled || port >= pCnt) return;
+    
+    m_cpemState[port].feedbackCredit = 0;
+    m_cpemState[port].inflightCredit = 0;
+    m_cpemState[port].inflightBytes = 0;
+    m_cpemState[port].lastQueueLen = 0;
+    m_cpemState[port].lastFeedbackTime = Time(0);
+    m_cpemState[port].lastSendTime = Time(0);
+    m_cpemState[port].effectiveRate = linkRate;
+    m_cpemState[port].initialized = true;
+    
+    NS_LOG_DEBUG("CPEM: Initialized port " << port << " with link rate " << linkRate);
+}
+
+void SwitchMmu::CpemScheduleFeedback(uint32_t port) {
+    if (!Settings::cpem_enabled || port >= pCnt) return;
+    
+    // Cancel any existing scheduled feedback
+    if (m_cpemFeedbackEvent[port].IsRunning()) {
+        Simulator::Cancel(m_cpemFeedbackEvent[port]);
+    }
+    
+    // Schedule next feedback generation
+    m_cpemFeedbackEvent[port] = Simulator::Schedule(
+        NanoSeconds(Settings::cpem_feedback_interval_ns),
+        &SwitchMmu::CpemGenerateFeedback, this, port);
+}
+
+void SwitchMmu::CpemGetDynamicThresholds(uint32_t port, uint32_t& threshold_low, uint32_t& threshold_high) {
+    if (Settings::cpem_use_dynamic_threshold && m_dynamicth) {
+        // Dynamic mode: Calculate CPEM thresholds based on PFC dynamic threshold
+        // PFC threshold = m_pg_shared_alpha_cell * (m_buffer_cell_limit_sp - m_usedIngressSPBytes[SP]) + m_pg_min_cell + m_port_min_cell
+        double pfcThreshold = m_pg_shared_alpha_cell * 
+                             ((double)m_buffer_cell_limit_sp - m_usedIngressSPBytes[GetIngressSP(port, 0)]) + 
+                             m_pg_min_cell + m_port_min_cell;
+        
+        threshold_low = (uint32_t)(pfcThreshold * Settings::cpem_threshold_low_ratio);
+        threshold_high = (uint32_t)(pfcThreshold * Settings::cpem_threshold_high_ratio);
+        
+        // Ensure thresholds are reasonable
+        threshold_low = std::max(threshold_low, (uint32_t)(10 * MTU));  // At least 10 MTU
+        threshold_high = std::max(threshold_high, threshold_low + (uint32_t)(5 * MTU));  // High > Low + 5 MTU
+    } else {
+        // Fixed mode: Use configured fixed thresholds
+        threshold_low = Settings::cpem_queue_threshold_low;
+        threshold_high = Settings::cpem_queue_threshold_high;
+    }
+}
+
+void SwitchMmu::CpemGenerateFeedback(uint32_t inPort) {
+    if (!Settings::cpem_enabled || inPort >= pCnt) return;
+    
+    // Get current ingress queue length for this port
+    uint32_t currentQueueLen = m_usedIngressPortBytes[inPort];
+    
+    // Calculate dynamic or fixed thresholds
+    uint32_t threshold_low, threshold_high;
+    CpemGetDynamicThresholds(inPort, threshold_low, threshold_high);
+    
+    // Only generate feedback if queue exceeds low threshold
+    if (currentQueueLen < threshold_low) {
+        // Queue is low, schedule next check and return
+        CpemScheduleFeedback(inPort);
+        return;
+    }
+    
+    // Calculate queue gradient (change since last observation)
+    int16_t gradient = (int16_t)(currentQueueLen - m_cpemState[inPort].lastQueueLen);
+    m_cpemState[inPort].lastQueueLen = currentQueueLen;
+    
+    // Calculate credit value based on queue length and gradient (pass thresholds)
+    uint16_t creditValue = CpemCalculateCreditValue(currentQueueLen, gradient, threshold_low, threshold_high);
+    
+    // The actual packet sending will be done by SwitchNode
+    // Here we just update statistics and store the values
+    m_cpemFeedbackSent++;
+    
+    NS_LOG_DEBUG("CPEM: Port " << inPort << " generating feedback - qlen=" << currentQueueLen 
+                 << ", gradient=" << gradient << ", credit=" << creditValue);
+    
+    // Schedule next feedback
+    CpemScheduleFeedback(inPort);
+}
+
+uint16_t SwitchMmu::CpemCalculateCreditValue(uint32_t queueLen, int16_t gradient, 
+                                             uint32_t threshold_low, uint32_t threshold_high) {
+    // Normalize queue length to [0, 1] based on thresholds
+    double qRatio = 0.0;
+    if (queueLen >= threshold_high) {
+        qRatio = 1.0;
+    } else if (queueLen > threshold_low) {
+        qRatio = (double)(queueLen - threshold_low) / 
+                 (double)(threshold_high - threshold_low);
+    }
+    
+    // Gradient factor: positive gradient (queue growing) increases urgency
+    double gradientFactor = 1.0;
+    if (gradient > 0) {
+        // Queue is growing, increase the credit value
+        double gradientRatio = std::min((double)gradient / 
+                                         (double)threshold_low, 1.0);
+        gradientFactor = 1.0 + gradientRatio * 0.5;  // Max 50% increase from gradient
+    } else if (gradient < 0) {
+        // Queue is shrinking, slightly decrease the credit value
+        double gradientRatio = std::min((double)(-gradient) / 
+                                         (double)threshold_low, 1.0);
+        gradientFactor = 1.0 - gradientRatio * 0.3;  // Max 30% decrease from negative gradient
+    }
+    
+    // Calculate final credit value
+    uint16_t creditValue = (uint16_t)(qRatio * gradientFactor * Settings::cpem_max_credit);
+    return std::min(creditValue, (uint16_t)Settings::cpem_max_credit);
+}
+
+void SwitchMmu::CpemUpdateInflightOnSend(uint32_t port, uint64_t bytes) {
+    if (!Settings::cpem_enabled || port >= pCnt) return;
+    if (!m_cpemState[port].initialized) return;
+    
+    Time now = Simulator::Now();
+    auto& state = m_cpemState[port];
+    
+    // Time-based decay: simulate packets "arriving" at downstream
+    Time dt = now - state.lastSendTime;
+    if (dt.GetNanoSeconds() > 0 && state.lastSendTime.GetNanoSeconds() > 0) {
+        // Decay factor based on estimated RTT (use feedback interval as proxy)
+        double decayTime = Settings::cpem_feedback_interval_ns * 2.0;  // ~2x feedback interval
+        double decay = std::exp(-(double)dt.GetNanoSeconds() / decayTime);
+        state.inflightBytes = (uint64_t)(decay * state.inflightBytes);
+    }
+    
+    // Add newly sent bytes
+    state.inflightBytes += bytes;
+    state.lastSendTime = now;
+    
+    // Convert to credit value using dynamic thresholds
+    uint32_t threshold_low, threshold_high;
+    CpemGetDynamicThresholds(port, threshold_low, threshold_high);
+    double maxInflightBytes = threshold_high * 2.0;  // Max expected in-flight
+    state.inflightCredit = (double)state.inflightBytes / maxInflightBytes * Settings::cpem_max_credit;
+    state.inflightCredit = std::min(state.inflightCredit, (double)Settings::cpem_max_credit);
+}
+
+void SwitchMmu::CpemUpdateCreditOnFeedback(uint32_t port, uint16_t creditValue, 
+                                            uint32_t queueLen, int16_t gradient) {
+    if (!Settings::cpem_enabled || port >= pCnt) return;
+    if (!m_cpemState[port].initialized) return;
+    
+    Time now = Simulator::Now();
+    auto& state = m_cpemState[port];
+    
+    // EWMA update for feedback credit
+    double alpha = Settings::cpem_credit_decay_alpha;
+    double newCredit = (double)creditValue;
+    
+    // Add gradient bonus/penalty using dynamic thresholds
+    if (gradient > 0) {
+        // Queue is growing at downstream - increase urgency
+        uint32_t threshold_low, threshold_high;
+        CpemGetDynamicThresholds(port, threshold_low, threshold_high);
+        double gradientBonus = std::min((double)gradient / 
+                                        (double)threshold_low * 
+                                        Settings::cpem_max_credit * 0.2,
+                                        (double)Settings::cpem_max_credit * 0.3);
+        newCredit += gradientBonus;
+    }
+    
+    state.feedbackCredit = alpha * state.feedbackCredit + (1 - alpha) * newCredit;
+    state.feedbackCredit = std::min(state.feedbackCredit, (double)Settings::cpem_max_credit);
+    state.lastFeedbackTime = now;
+    
+    // When feedback arrives, reduce in-flight estimate (data has arrived)
+    state.inflightBytes = (uint64_t)(state.inflightBytes * 0.5);
+    
+    m_cpemFeedbackRecv++;
+    
+    NS_LOG_DEBUG("CPEM: Port " << port << " received feedback - credit=" << creditValue 
+                 << ", newFeedbackCredit=" << state.feedbackCredit);
+}
+
+double SwitchMmu::CpemGetEffectiveCredit(uint32_t port) {
+    if (!Settings::cpem_enabled || port >= pCnt) return 0.0;
+    if (!m_cpemState[port].initialized) return 0.0;
+    
+    Time now = Simulator::Now();
+    auto& state = m_cpemState[port];
+    
+    // Calculate feedback age - older feedback is less reliable
+    Time feedbackAge = now - state.lastFeedbackTime;
+    double feedbackAgeNs = feedbackAge.GetNanoSeconds();
+    double decayTime = Settings::cpem_feedback_interval_ns * 3.0;  // ~3x feedback interval
+    double feedbackWeight = std::exp(-feedbackAgeNs / decayTime);
+    
+    // If feedback is very old (no recent feedback), rely more on in-flight estimate
+    if (feedbackAgeNs > Settings::cpem_feedback_interval_ns * 10) {
+        feedbackWeight = 0.2;  // Minimal weight for very old feedback
+    }
+    
+    // Combine feedback credit and in-flight credit
+    double effectiveCredit = feedbackWeight * state.feedbackCredit + 
+                             Settings::cpem_inflight_discount * state.inflightCredit;
+    
+    return std::min(effectiveCredit, (double)Settings::cpem_max_credit);
+}
+
+DataRate SwitchMmu::CpemGetAdjustedRate(uint32_t port, DataRate linkRate) {
+    if (!Settings::cpem_enabled || port >= pCnt) return linkRate;
+    if (!m_cpemState[port].initialized) return linkRate;
+    
+    double credit = CpemGetEffectiveCredit(port);
+    double creditRatio = credit / Settings::cpem_max_credit;
+    
+    // Calculate rate ratio: higher credit = lower rate
+    double rateRatio = 1.0 - creditRatio * Settings::cpem_credit_to_rate_gain;
+    rateRatio = std::max(rateRatio, Settings::cpem_min_rate_ratio);
+    
+    DataRate adjustedRate = DataRate((uint64_t)(linkRate.GetBitRate() * rateRatio));
+    
+    // Update state
+    if (m_cpemState[port].effectiveRate != adjustedRate) {
+        m_cpemState[port].effectiveRate = adjustedRate;
+        m_cpemRateAdjustments++;
+        NS_LOG_DEBUG("CPEM: Port " << port << " rate adjusted to " << adjustedRate 
+                     << " (credit=" << credit << ", ratio=" << rateRatio << ")");
+    }
+    
+    return adjustedRate;
+}
+
+NS_OBJECT_ENSURE_REGISTERED(SwitchMmu);
 
 }  // namespace ns3

@@ -15,7 +15,7 @@ import argparse
 from datetime import date
 
 # randomID
-random.seed(datetime.now())
+random.seed(int(datetime.now().timestamp()))
 MAX_RAND_RANGE = 1000000000
 
 # config template
@@ -90,6 +90,17 @@ KMIN_MAP {kmin_map}
 PMAX_MAP {pmax_map}
 LOAD {load}
 RANDOM_SEED 1
+
+# CPEM (Credit-based PFC Enhancement Module) Configuration
+CPEM_ENABLED {cpem_enabled}
+CPEM_FEEDBACK_INTERVAL 2000
+CPEM_CREDIT_DECAY_ALPHA 0.8
+CPEM_INFLIGHT_DISCOUNT 0.4
+CPEM_CREDIT_TO_RATE_GAIN 1.0
+CPEM_MIN_RATE_RATIO 0.05
+CPEM_MAX_CREDIT 1000
+CPEM_QUEUE_THRESHOLD_LOW 10000
+CPEM_QUEUE_THRESHOLD_HIGH 100000
 """
 
 
@@ -149,6 +160,8 @@ def main():
                         type=int, default=0, help="enforce to use window scheme (default: 0)")
     parser.add_argument('--sw_monitoring_interval', dest='sw_monitoring_interval', action='store',
                         type=int, default=10000, help="interval of sampling statistics for queue status (default: 10000ns)")
+    parser.add_argument('--cpem', dest='cpem', action='store',
+                        type=int, default=0, help="enable CPEM module (default: 0)")
 
     # #### CONWEAVE PARAMETERS ####
     # parser.add_argument('--cwh_extra_reply_deadline', dest='cwh_extra_reply_deadline', action='store',
@@ -177,6 +190,7 @@ def main():
     lb_mode = lb_modes[args.lb]
     enabled_pfc = int(args.pfc)
     enabled_irn = int(args.irn)
+    cpem_enabled = int(args.cpem)
     bw = int(args.bw)
     buffer = args.buffer
     topo = args.topo
@@ -369,7 +383,8 @@ def main():
                                         ai=ai, hai=hai, dctcp_ai=dctcp_ai,
                                         has_win=has_win, var_win=var_win,
                                         fast_react=fast_react, mi=mi, int_multi=int_multi, ewma_gain=ewma_gain,
-                                        kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map)
+                                        kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map,
+                                        cpem_enabled=cpem_enabled)
     else:
         print("unknown cc:{}".format(args.cc))
 

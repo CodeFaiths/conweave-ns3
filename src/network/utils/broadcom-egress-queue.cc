@@ -61,6 +61,8 @@ BEgressQueue::BEgressQueue() : Queue() {
     NS_LOG_FUNCTION_NOARGS();
     m_bytesInQueueTotal = 0;
     m_rrlast = 0;
+    m_totalTxBytes = 0;
+    m_totalRxBytes = 0;
     for (uint32_t i = 0; i < fCnt; i++) {
         m_bytesInQueue[i] = 0;
         m_queues.push_back(CreateObject<DropTailQueue>());
@@ -146,6 +148,7 @@ BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
         m_traceBeqDequeue(p, qIndex);
         m_bytesInQueueTotal -= p->GetSize();
         m_bytesInQueue[qIndex] -= p->GetSize();
+        m_totalTxBytes += p->GetSize();  // Track total bytes transmitted
         if (qIndex != 0) {
             m_rrlast = qIndex;
         }
@@ -172,6 +175,7 @@ bool BEgressQueue::Enqueue(Ptr<Packet> p, uint32_t qIndex) {
         uint32_t size = p->GetSize();
         m_nBytes += size;
         m_nTotalReceivedBytes += size;
+        m_totalRxBytes += size;  // Track total bytes received
 
         m_nPackets++;
         m_nTotalReceivedPackets++;

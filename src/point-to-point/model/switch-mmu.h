@@ -6,11 +6,13 @@
 
 #include <list>
 #include <unordered_map>
+#include <deque>
 
 #include "ns3/conga-routing.h"
 #include "ns3/conweave-routing.h"
 #include "ns3/letflow-routing.h"
 #include "ns3/settings.h"
+#include "ns3/data-rate.h"
 
 
 namespace ns3 {
@@ -115,6 +117,81 @@ class SwitchMmu : public Object {
 
     /*------------ ConWeave Objects-------------*/
     ConWeaveRouting m_conweaveRouting;
+
+    /*========== Credit-based PFC Enhancement Module (CPEM) ==========*/
+    /**
+     * @brief Get ingress port buffer usage
+     */
+    uint32_t GetIngressPortBytes(uint32_t port) const {
+        if (port < pCnt) return m_usedIngressPortBytes[port];
+        return 0;
+    }
+
+    /**
+     * @brief Get egress port buffer usage
+     */
+    uint32_t GetEgressPortBytes(uint32_t port) const {
+        if (port < pCnt) return m_usedEgressPortBytes[port];
+        return 0;
+    }
+
+    /**
+     * @brief Get ingress queue (PG) buffer usage
+     */
+    uint32_t GetIngressQueueBytes(uint32_t port, uint32_t qIndex) const {
+        if (port < pCnt && qIndex < qCnt) return m_usedIngressPGBytes[port][qIndex];
+        return 0;
+    }
+
+    /**
+     * @brief Get egress queue buffer usage (min + shared)
+     */
+    uint32_t GetEgressQueueBytes(uint32_t port, uint32_t qIndex) const {
+        if (port < pCnt && qIndex < qCnt)
+            return m_usedEgressQMinBytes[port][qIndex] + m_usedEgressQSharedBytes[port][qIndex];
+        return 0;
+    }
+    
+    /**
+     * @brief Port credit state for rate control
+     */
+    struct PortCreditState {
+        double feedbackCredit;      // Credit from downstream feedback (0-MAX_CREDIT)
+        double inflightCredit;      // Credit based on in-flight bytes
+        uint64_t inflightBytes;     // Estimated in-flight bytes
+        uint32_t lastQueueLen;      // Last observed queue length (for gradient calc)
+        Time lastFeedbackTime;      // Time of last received feedback
+        Time lastSendTime;          // Time of last packet sent
+        DataRate effectiveRate;     // Current effective sending rate
+        bool initialized;           // Whether state has been initialized
+        
+        PortCreditState() : feedbackCredit(0), inflightCredit(0), inflightBytes(0),
+                           lastQueueLen(0), lastFeedbackTime(Time(0)), lastSendTime(Time(0)),
+                           effectiveRate(DataRate(0)), initialized(false) {}
+    };
+    
+    PortCreditState m_cpemState[pCnt];  // Credit state per port
+    EventId m_cpemFeedbackEvent[pCnt];  // Feedback generation events
+    
+    // CPEM Methods - Downstream (feedback generation)
+    void CpemInitPort(uint32_t port, DataRate linkRate);
+    void CpemScheduleFeedback(uint32_t port);
+    void CpemGenerateFeedback(uint32_t inPort);
+    void CpemGetDynamicThresholds(uint32_t port, uint32_t& threshold_low, uint32_t& threshold_high);
+    uint16_t CpemCalculateCreditValue(uint32_t queueLen, int16_t gradient, 
+                                      uint32_t threshold_low, uint32_t threshold_high);
+    
+    // CPEM Methods - Upstream (credit processing and rate adjustment)
+    void CpemUpdateInflightOnSend(uint32_t port, uint64_t bytes);
+    void CpemUpdateCreditOnFeedback(uint32_t port, uint16_t creditValue, 
+                                     uint32_t queueLen, int16_t gradient);
+    double CpemGetEffectiveCredit(uint32_t port);
+    DataRate CpemGetAdjustedRate(uint32_t port, DataRate linkRate);
+    
+    // CPEM Statistics
+    static uint64_t m_cpemFeedbackSent;
+    static uint64_t m_cpemFeedbackRecv;
+    static uint64_t m_cpemRateAdjustments;
 
    private:
     bool m_PFCenabled;

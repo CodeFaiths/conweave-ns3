@@ -232,6 +232,10 @@ QbbNetDevice::QbbNetDevice() {
     }
 
     m_rdmaEQ = CreateObject<RdmaEgressQueue>();
+    
+    // CPEM: Initialize rate limiting variables
+    m_cpemRateLimited = false;
+    m_cpemEffectiveRate = DataRate(0);
 }
 
 QbbNetDevice::~QbbNetDevice() { NS_LOG_FUNCTION(this); }
@@ -382,8 +386,8 @@ void QbbNetDevice::Receive(Ptr<Packet> packet) {
             Resume(qIndex);
         }
     } else {                              // non-PFC packets (data, ACK, NACK, CNP...)
+        packet->AddPacketTag(FlowIdTag(m_ifIndex));
         if (m_node->GetNodeType() > 0) {  // switch
-            packet->AddPacketTag(FlowIdTag(m_ifIndex));
             m_node->SwitchReceiveFromDevice(this, packet, ch);
         } else {  // NIC
             // send to RdmaHw
@@ -448,7 +452,14 @@ bool QbbNetDevice::TransmitStart(Ptr<Packet> p) {
     m_txMachineState = BUSY;
     m_currentPkt = p;
     m_phyTxBeginTrace(m_currentPkt);
-    Time txTime = Seconds(m_bps.CalculateTxTime(p->GetSize()));
+    
+    // CPEM: Use effective rate if CPEM rate limiting is active
+    DataRate effectiveRate = m_bps;
+    if (Settings::cpem_enabled && m_cpemRateLimited && m_cpemEffectiveRate.GetBitRate() > 0) {
+        effectiveRate = m_cpemEffectiveRate;
+    }
+    
+    Time txTime = Seconds(effectiveRate.CalculateTxTime(p->GetSize()));
     Time txCompleteTime = txTime + m_tInterframeGap;
     NS_LOG_LOGIC("Schedule TransmitCompleteEvent in " << txCompleteTime.GetSeconds() << "sec");
     Simulator::Schedule(txCompleteTime, &QbbNetDevice::TransmitComplete, this);
@@ -512,4 +523,36 @@ void QbbNetDevice::UpdateNextAvail(Time t) {
         m_nextSend = Simulator::Schedule(delta, &QbbNetDevice::DequeueAndTransmit, this);
     }
 }
+
+/*========== CPEM: Credit-based PFC Enhancement Module Methods ==========*/
+
+void QbbNetDevice::CpemSetEffectiveRate(DataRate rate) {
+    if (!Settings::cpem_enabled) return;
+    
+    // Calculate minimum allowed rate based on line rate
+    double minRate = m_bps.GetBitRate() * Settings::cpem_min_rate_ratio;
+    
+    if (rate.GetBitRate() < minRate) {
+        m_cpemEffectiveRate = DataRate(static_cast<uint64_t>(minRate));
+    } else if (rate.GetBitRate() > m_bps.GetBitRate()) {
+        m_cpemEffectiveRate = m_bps;  // Don't exceed line rate
+    } else {
+        m_cpemEffectiveRate = rate;
+    }
+    
+    m_cpemRateLimited = (m_cpemEffectiveRate.GetBitRate() < m_bps.GetBitRate());
+}
+
+DataRate QbbNetDevice::CpemGetEffectiveRate() const {
+    if (!Settings::cpem_enabled || !m_cpemRateLimited) {
+        return m_bps;  // Return line rate
+    }
+    return m_cpemEffectiveRate;
+}
+
+void QbbNetDevice::CpemResetRate() {
+    m_cpemEffectiveRate = m_bps;
+    m_cpemRateLimited = false;
+}
+
 }  // namespace ns3

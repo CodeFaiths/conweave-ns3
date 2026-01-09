@@ -1,4 +1,5 @@
 #include "rdma-hw.h"
+#include "credit-feedback-header.h"
 
 #include <ns3/ipv4-header.h>
 #include <ns3/seq-ts-header.h>
@@ -13,6 +14,7 @@
 #include "ns3/data-rate.h"
 #include "ns3/double.h"
 #include "ns3/flow-id-num-tag.h"
+#include "ns3/flow-id-tag.h"
 #include "ns3/pointer.h"
 #include "ns3/ppp-header.h"
 #include "ns3/settings.h"
@@ -583,7 +585,59 @@ int RdmaHw::Receive(Ptr<Packet> p, CustomHeader &ch) {
         return ReceiveAck(p, ch);
     } else if (ch.l3Prot == 0xFC) {  // ACK
         return ReceiveAck(p, ch);
+    } else if (ch.l3Prot == 0xFB) {  // CPEM Feedback
+        return ReceiveCpem(p, ch);
     }
+    return 0;
+}
+
+int RdmaHw::ReceiveCpem(Ptr<Packet> p, CustomHeader &ch) {
+    if (!Settings::cpem_enabled) return 0;
+
+    // Parse the credit feedback header
+    Ptr<Packet> pCopy = p->Copy();
+    PppHeader ppp;
+    Ipv4Header ipv4;
+    CreditFeedbackHeader cfh;
+
+    pCopy->RemoveHeader(ppp);
+    pCopy->RemoveHeader(ipv4);
+    pCopy->RemoveHeader(cfh);
+
+    uint16_t creditValue = cfh.GetCreditValue();
+    
+    // DEBUG: Print when CPEM feedback is received
+    // std::cerr << "[CPEM] Node " << m_node->GetId() << " received feedback at " 
+    //           << Simulator::Now().GetNanoSeconds() << "ns, creditValue=" << creditValue << std::endl;
+    
+    // For Host, we apply the rate limit to all NICs or the one that received it
+    // Since this is a simple topology, we can apply it to the device that received the feedback
+    // The feedback packet was received on some device, we need to find which one.
+    
+    // In RdmaHw, we have m_nic array. We can find the device by checking the packet tag
+    FlowIdTag t;
+    if (p->PeekPacketTag(t)) {
+        uint32_t ifIndex = t.GetFlowId();
+        for (uint32_t i = 0; i < m_nic.size(); i++) {
+            if (m_nic[i].dev != NULL && m_nic[i].dev->GetIfIndex() == ifIndex) {
+                // Calculate adjusted rate based on credit
+                double creditRatio = (double)creditValue / Settings::cpem_max_credit;
+                double rateRatio = 1.0 - creditRatio * Settings::cpem_credit_to_rate_gain;
+                rateRatio = std::max(rateRatio, Settings::cpem_min_rate_ratio);
+                
+                DataRate linkRate = m_nic[i].dev->GetDataRate();
+                DataRate adjustedRate = DataRate((uint64_t)(linkRate.GetBitRate() * rateRatio));
+                
+                std::cerr << "[CPEM] Node " << m_node->GetId() << " adjusting rate: " 
+                          << linkRate.GetBitRate()/1e9 << "Gbps -> " 
+                          << adjustedRate.GetBitRate()/1e9 << "Gbps (ratio=" << rateRatio << ")" << std::endl;
+                
+                m_nic[i].dev->CpemSetEffectiveRate(adjustedRate);
+                break;
+            }
+        }
+    }
+
     return 0;
 }
 
