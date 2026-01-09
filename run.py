@@ -394,6 +394,22 @@ def main():
     # run program
     print("Running simulation...")
     output_log = config_name.replace(".txt", ".log")
+    # 说明：下面的命令会用生成的 config 文件运行 ns-3 程序 `scratch/network-load-balance`。
+    # 调用链为：
+    #   run.py::main()
+    #   -> ./waf --run 'scratch/network-load-balance {config}'
+    #   -> C++ 入口：scratch/network-load-balance.cc::main(int argc, char**)
+    #      - 读取配置，搭建拓扑，安装 RDMA 驱动/硬件
+    #      - 通过 ScheduleFlowInputs() 调度与生成流
+    #      - 每条流在开始时间触发：
+    #          源主机调用 RdmaClientHelper.Install(...)
+    #          -> RdmaClient::StartApplication()
+    #             -> RdmaDriver::AddQueuePair(...)
+    #                -> RdmaHw::AddQueuePair(...)
+    #          数据/ACK/NACK 路径：RdmaHw::ReceiveUdp()/ReceiveAck()
+    #          流完成：RdmaHw::QpComplete()
+    #             -> RdmaDriver::QpComplete（trace）
+    #             -> network-load-balance.cc::qp_finish(...) 写入 FCT 并删除接收端 RxQP
     run_command = "./waf --run 'scratch/network-load-balance {config_name}' > {output_log} 2>&1".format(
         config_name=config_name, output_log=output_log)
     with open("./mix/.history", "a") as history:
