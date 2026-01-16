@@ -107,7 +107,7 @@ FILE *qlen_output = NULL;
 FILE *throughput_output = NULL;      // Throughput monitoring output
 FILE *link_util_output = NULL;       // Link utilization monitoring output
 
-std::string data_rate, link_delay, topology_file, flow_file;
+std::string data_rate, link_delay, topology_file, flow_file, background_flow_file;
 std::string flow_input_file = "flow.txt";
 std::string fct_output_file = "fct.txt";
 std::string pfc_output_file = "pfc.txt";
@@ -306,6 +306,63 @@ void ScheduleFlowInputs(FILE *infile) {
                             infile);
     } else {  // no more flows, close the file
         flowf.close();
+    }
+}
+
+/**
+ * @brief Background flow input structure and scheduling
+ */
+struct BackgroundFlowInput {
+    uint32_t src;
+    uint32_t dst;
+    uint32_t pg;
+    uint32_t size;
+    double start_time;
+    uint32_t idx;
+    uint16_t dst_port;  // Fixed destination port for this background flow
+};
+
+std::vector<BackgroundFlowInput> background_flows;
+
+void ScheduleBackgroundFlows() {
+    if (!Settings::enable_background_flow || background_flows.empty()) {
+        return;
+    }
+    
+    for (const auto& bg_flow : background_flows) {
+        uint32_t src = bg_flow.src;
+        uint32_t dst = bg_flow.dst;
+        uint32_t pg = bg_flow.pg;
+        uint32_t target_len = bg_flow.size;
+        uint16_t sport = portNumber[src]++;
+        uint16_t dport = bg_flow.dst_port;  // Use the fixed destination port
+        
+        if (target_len == 0) {
+            target_len = 1;
+        }
+        
+        assert(n.Get(src)->GetNodeType() == 0 && n.Get(dst)->GetNodeType() == 0);
+        
+        if (pairRtt.find(n.Get(src)) == pairRtt.end() ||
+            pairRtt[n.Get(src)].find(n.Get(dst)) == pairRtt[n.Get(src)].end()) {
+            std::cerr << "pairRtt src: " << src << " -> dst: " << dst
+                      << " ==> cannot be found from database" << std::endl;
+            assert(false);
+        }
+        
+        RdmaClientHelper clientHelper(
+            pg, serverAddress[src], serverAddress[dst], sport, dport, target_len,
+            has_win ? (global_t == 1 ? maxBdp : pairBdp[n.Get(src)][n.Get(dst)]) : 0,
+            global_t == 1 ? maxRtt : pairRtt[n.Get(src)][n.Get(dst)]);
+        clientHelper.SetAttribute("StatFlowID", IntegerValue(-1));  // Mark as background flow
+        
+        ApplicationContainer appCon = clientHelper.Install(n.Get(src));
+        appCon.Start(Seconds(bg_flow.start_time));
+        appCon.Stop(Seconds(100.0));
+        
+        std::cout << "Scheduled background flow " << bg_flow.idx << ": " 
+                  << src << ":" << sport << " -> " << dst << ":" << dport
+                  << " (size=" << target_len << "B, start=" << bg_flow.start_time << "s)" << std::endl;
     }
 }
 
@@ -977,6 +1034,11 @@ int main(int argc, char *argv[]) {
                 conf >> v;
                 link_delay = v;
                 std::cerr << "LINK_DELAY\t\t\t" << link_delay << "\n";
+            } else if (key.compare("ONE_HOP_DELAY") == 0) {
+                uint64_t v;
+                conf >> v;
+                one_hop_delay = v;
+                std::cerr << "ONE_HOP_DELAY\t\t\t" << one_hop_delay << " ns\n";
             } else if (key.compare("PACKET_PAYLOAD_SIZE") == 0) {
                 uint32_t v;
                 conf >> v;
@@ -1014,6 +1076,13 @@ int main(int argc, char *argv[]) {
                 conf >> v;
                 flow_file = v;
                 std::cerr << "FLOW_FILE\t\t\t" << flow_file << "\n";
+            } else if (key.compare("BACKGROUND_FLOW_FILE") == 0) {
+                std::string v;
+                conf >> v;
+                background_flow_file = v;
+                Settings::enable_background_flow = true;
+                Settings::background_flow_file = v;
+                std::cerr << "BACKGROUND_FLOW_FILE\t\t" << background_flow_file << "\n";
             } else if (key.compare("FLOWGEN_START_TIME") == 0) {
                 double v;
                 conf >> v;
@@ -1466,6 +1535,12 @@ int main(int argc, char *argv[]) {
                 .GetTimeStep();
         nbr2if[dnode][snode].bw = DynamicCast<QbbNetDevice>(d.Get(1))->GetDataRate().GetBitRate();
 
+        cout<<"Link:"<<src<<"("<<nbr2if[snode][dnode].idx<<") <--> "
+				<<dst<<"("<<nbr2if[dnode][snode].idx<<") "
+				<<" bw: "<<nbr2if[snode][dnode].bw
+				<<" delay: "<<nbr2if[snode][dnode].delay
+				<<endl;
+
         // This is just to set up the connectivity between nodes. The IP addresses are useless
         char ipstring[16];
         Ipv4Address x;
@@ -1527,6 +1602,128 @@ int main(int argc, char *argv[]) {
             sw->m_mmu->node_id = sw->GetId();
             NS_LOG_INFO("Node %u : Broadcom switch (%u ports / %gMB MMU)\n" %
                         (i, sw->GetNDevices() - 1, sw->m_mmu->GetMmuBufferBytes() / 1000000.));
+        }
+    }
+
+    /**
+     * @brief Read and initialize background flows with fixed paths
+     */
+    if (Settings::enable_background_flow && !background_flow_file.empty()) {
+        std::ifstream bgFlowFile(background_flow_file.c_str());
+        if (bgFlowFile.is_open()) {
+            uint32_t num_bg_flows;
+            bgFlowFile >> num_bg_flows;
+            std::cerr << "\n===== Background Flow Configuration =====\n";
+            std::cerr << "Number of background flows: " << num_bg_flows << "\n";
+            
+            // Fixed path for background flows: hosts -> L1(22) -> C1(25) -> L3(24) -> host6
+            // We need to configure the outport at each switch along the path
+            
+            for (uint32_t i = 0; i < num_bg_flows; i++) {
+                uint32_t src, dst, pg, size;
+                double start_time;
+                bgFlowFile >> src >> dst >> pg >> size >> start_time;
+                
+                uint32_t src_ip = Settings::node_id_to_ip(src).Get();
+                uint32_t dst_ip = Settings::node_id_to_ip(dst).Get();
+                uint16_t dst_port = 10000 + i;  // Assign unique destination ports for background flows
+                
+                // Mark this flow as a background flow
+                Settings::BackgroundFlowKey key;
+                key.src_ip = src_ip;
+                key.dst_ip = dst_ip;
+                key.dst_port = dst_port;
+                Settings::backgroundFlowSet.insert(key);
+                
+                // Store background flow information for scheduling later
+                BackgroundFlowInput bg_flow;
+                bg_flow.src = src;
+                bg_flow.dst = dst;
+                bg_flow.pg = pg;
+                bg_flow.size = size;
+                bg_flow.start_time = start_time;
+                bg_flow.idx = i;
+                bg_flow.dst_port = dst_port;
+                background_flows.push_back(bg_flow);
+                
+                std::cerr << "BG Flow " << i << ": " << src << " -> " << dst 
+                          << " (size=" << size << "B, start=" << start_time << "s, dport=" << dst_port << ")\n";
+                
+                // Configure fixed path: Path1 = L1(22) -> C1(25) -> L3(24)
+                // Find the outport at each switch for this path
+                
+                // At L1 (switch 22): find the port that connects to C1 (switch 25)
+                uint32_t sw_l1 = 22;
+                uint32_t sw_c1 = 25;
+                uint32_t sw_l3 = 24;
+                
+                // Find outport from L1 to C1
+                Ptr<SwitchNode> sw_l1_node = DynamicCast<SwitchNode>(n.Get(sw_l1));
+                for (uint32_t port = 1; port < sw_l1_node->GetNDevices(); port++) {
+                    Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(sw_l1_node->GetDevice(port));
+                    Ptr<QbbChannel> ch = DynamicCast<QbbChannel>(dev->GetChannel());
+                    if (ch) {
+                        Ptr<QbbNetDevice> peer_dev = DynamicCast<QbbNetDevice>(
+                            ch->GetDevice(0) == dev ? ch->GetDevice(1) : ch->GetDevice(0));
+                        if (peer_dev && peer_dev->GetNode()->GetId() == sw_c1) {
+                            Settings::PathKey path_key;
+                            path_key.switch_id = sw_l1;
+                            path_key.src_ip = src_ip;
+                            path_key.dst_ip = dst_ip;
+                            Settings::backgroundFlowPathMap[path_key] = port;
+                            std::cerr << "  L1(sw=" << sw_l1 << ") -> C1: outport " << port << "\n";
+                            break;
+                        }
+                    }
+                }
+                
+                // Find outport from C1 to L3
+                Ptr<SwitchNode> sw_c1_node = DynamicCast<SwitchNode>(n.Get(sw_c1));
+                for (uint32_t port = 1; port < sw_c1_node->GetNDevices(); port++) {
+                    Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(sw_c1_node->GetDevice(port));
+                    Ptr<QbbChannel> ch = DynamicCast<QbbChannel>(dev->GetChannel());
+                    if (ch) {
+                        Ptr<QbbNetDevice> peer_dev = DynamicCast<QbbNetDevice>(
+                            ch->GetDevice(0) == dev ? ch->GetDevice(1) : ch->GetDevice(0));
+                        if (peer_dev && peer_dev->GetNode()->GetId() == sw_l3) {
+                            Settings::PathKey path_key;
+                            path_key.switch_id = sw_c1;
+                            path_key.src_ip = src_ip;
+                            path_key.dst_ip = dst_ip;
+                            Settings::backgroundFlowPathMap[path_key] = port;
+                            std::cerr << "  C1(sw=" << sw_c1 << ") -> L3: outport " << port << "\n";
+                            break;
+                        }
+                    }
+                }
+                
+                // Find outport from L3 to destination host 6
+                Ptr<SwitchNode> sw_l3_node = DynamicCast<SwitchNode>(n.Get(sw_l3));
+                for (uint32_t port = 1; port < sw_l3_node->GetNDevices(); port++) {
+                    Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(sw_l3_node->GetDevice(port));
+                    Ptr<QbbChannel> ch = DynamicCast<QbbChannel>(dev->GetChannel());
+                    if (ch) {
+                        Ptr<QbbNetDevice> peer_dev = DynamicCast<QbbNetDevice>(
+                            ch->GetDevice(0) == dev ? ch->GetDevice(1) : ch->GetDevice(0));
+                        if (peer_dev && peer_dev->GetNode()->GetId() == dst) {
+                            Settings::PathKey path_key;
+                            path_key.switch_id = sw_l3;
+                            path_key.src_ip = src_ip;
+                            path_key.dst_ip = dst_ip;
+                            Settings::backgroundFlowPathMap[path_key] = port;
+                            std::cerr << "  L3(sw=" << sw_l3 << ") -> Host " << dst << ": outport " << port << "\n";
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            bgFlowFile.close();
+            std::cerr << "Background flows configured successfully.\n";
+            std::cerr << "=========================================\n\n";
+        } else {
+            std::cerr << "WARNING: Cannot open background flow file: " << background_flow_file << "\n";
+            Settings::enable_background_flow = false;
         }
     }
 
@@ -1959,6 +2156,14 @@ int main(int argc, char *argv[]) {
         // generate flows
         ReadFlowInput();
         Simulator::Schedule(Seconds(0), &ScheduleFlowInputs, flow_input_stream);
+    }
+
+    // Schedule background flows
+    if (Settings::enable_background_flow && !background_flows.empty()) {
+        std::cerr << "\n===== Scheduling Background Flows =====\n";
+        Simulator::Schedule(Seconds(0), &ScheduleBackgroundFlows);
+        std::cerr << "Background flows scheduled at simulation start.\n";
+        std::cerr << "========================================\n\n";
     }
 
     topof.close();

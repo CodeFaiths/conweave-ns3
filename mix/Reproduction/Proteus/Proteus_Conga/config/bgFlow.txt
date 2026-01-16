@@ -1,0 +1,10 @@
+4
+2 6 3 20971520 0
+3 6 3 20971520 0
+4 6 3 20971520 0
+5 6 3 20971520 0
+
+
+First line: # of flows
+src dst 3 dst_port size(B) start_time(s)
+

@@ -25,6 +25,12 @@ uint32_t Settings::packet_payload = 1000;
 uint32_t Settings::dropped_pkt_sw_ingress = 0;
 uint32_t Settings::dropped_pkt_sw_egress = 0;
 
+/* Background Flow with Fixed Path */
+bool Settings::enable_background_flow = false;
+std::string Settings::background_flow_file = "";
+std::unordered_set<Settings::BackgroundFlowKey, Settings::BackgroundFlowKeyHash> Settings::backgroundFlowSet;
+std::unordered_map<Settings::PathKey, uint32_t, Settings::PathKeyHash> Settings::backgroundFlowPathMap;
+
 /* for load balancer */
 std::map<uint32_t, uint32_t> Settings::hostIp2SwitchId;
 

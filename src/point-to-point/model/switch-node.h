@@ -51,6 +51,10 @@ class SwitchNode : public Node {
     void CpemStartFeedbackGeneration();
     void CpemPeriodicFeedbackCheck(uint32_t port);
 
+    /*----- Background Flow with Fixed Path -----*/
+    bool IsBackgroundFlow(const CustomHeader &ch);
+    uint32_t GetBackgroundFlowPath(const CustomHeader &ch);
+
     /*----- Load balancer -----*/
     // Flow ECMP (lb_mode = 0)
     uint32_t DoLbFlowECMP(Ptr<const Packet> p, const CustomHeader &ch,

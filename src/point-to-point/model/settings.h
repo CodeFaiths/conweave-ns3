@@ -138,6 +138,55 @@ class Settings {
     static uint32_t dropped_pkt_sw_ingress;
     static uint32_t dropped_pkt_sw_egress;
 
+    /*========== Background Flow with Fixed Path ==========*/
+    // Background flow configuration
+    static bool enable_background_flow;
+    static std::string background_flow_file;
+    
+    // Background flow identification: (src_ip, dst_ip, dst_port) -> is_background_flow
+    struct BackgroundFlowKey {
+        uint32_t src_ip;
+        uint32_t dst_ip;
+        uint16_t dst_port;
+        
+        bool operator==(const BackgroundFlowKey& other) const {
+            return src_ip == other.src_ip && dst_ip == other.dst_ip && dst_port == other.dst_port;
+        }
+    };
+    
+    struct BackgroundFlowKeyHash {
+        std::size_t operator()(const BackgroundFlowKey& key) const {
+            return std::hash<uint32_t>()(key.src_ip) ^ 
+                   (std::hash<uint32_t>()(key.dst_ip) << 1) ^
+                   (std::hash<uint16_t>()(key.dst_port) << 2);
+        }
+    };
+    
+    // Set of background flows
+    static std::unordered_set<BackgroundFlowKey, BackgroundFlowKeyHash> backgroundFlowSet;
+    
+    // Fixed path for background flows: (switch_id, src_ip, dst_ip) -> fixed_outport
+    struct PathKey {
+        uint32_t switch_id;
+        uint32_t src_ip;
+        uint32_t dst_ip;
+        
+        bool operator==(const PathKey& other) const {
+            return switch_id == other.switch_id && src_ip == other.src_ip && dst_ip == other.dst_ip;
+        }
+    };
+    
+    struct PathKeyHash {
+        std::size_t operator()(const PathKey& key) const {
+            return std::hash<uint32_t>()(key.switch_id) ^ 
+                   (std::hash<uint32_t>()(key.src_ip) << 1) ^
+                   (std::hash<uint32_t>()(key.dst_ip) << 2);
+        }
+    };
+    
+    // Path mapping: for each switch, specify which outport background flows should use
+    static std::unordered_map<PathKey, uint32_t, PathKeyHash> backgroundFlowPathMap;
+
     /*========== Credit-based PFC Enhancement Module (CPEM) ==========*/
     // Main switch to enable/disable the module
     static bool cpem_enabled;

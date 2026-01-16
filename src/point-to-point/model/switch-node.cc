@@ -220,6 +220,19 @@ void SwitchNode::SendToDev(Ptr<Packet> p, CustomHeader &ch) {
         return;
     }
 
+    // Background Flow: Check if this is a background flow with fixed path
+    if (Settings::enable_background_flow && ch.l3Prot == 0x11) {  // Only UDP data packets
+        if (IsBackgroundFlow(ch)) {
+            uint32_t fixedPort = GetBackgroundFlowPath(ch);
+            if (fixedPort != UINT32_MAX) {
+                // Background flow found with fixed path, use it directly
+                uint32_t qIndex = ch.udp.pg;
+                DoSwitchSend(p, ch, fixedPort, qIndex);
+                return;
+            }
+        }
+    }
+
     // Conga
     if (Settings::lb_mode == 3) {
         m_mmu->m_congaRouting.RouteInput(p, ch);
@@ -649,6 +662,33 @@ void SwitchNode::CpemHandleFeedback(Ptr<Packet> p, CustomHeader &ch) {
     }
     
     SwitchMmu::m_cpemFeedbackRecv++;
+}
+
+/*========== Background Flow with Fixed Path Implementation ==========*/
+
+bool SwitchNode::IsBackgroundFlow(const CustomHeader &ch) {
+    // Check if this flow is marked as a background flow
+    Settings::BackgroundFlowKey key;
+    key.src_ip = ch.sip;
+    key.dst_ip = ch.dip;
+    key.dst_port = ch.udp.dport;
+    
+    return Settings::backgroundFlowSet.find(key) != Settings::backgroundFlowSet.end();
+}
+
+uint32_t SwitchNode::GetBackgroundFlowPath(const CustomHeader &ch) {
+    // Look up the fixed outport for this background flow at this switch
+    Settings::PathKey key;
+    key.switch_id = m_id;
+    key.src_ip = ch.sip;
+    key.dst_ip = ch.dip;
+    
+    auto it = Settings::backgroundFlowPathMap.find(key);
+    if (it != Settings::backgroundFlowPathMap.end()) {
+        return it->second;  // Return the fixed outport
+    }
+    
+    return UINT32_MAX;  // No fixed path configured for this switch
 }
 
 } /* namespace ns3 */
