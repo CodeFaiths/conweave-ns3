@@ -561,10 +561,7 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
             standalone_fct);
 
     // for debugging
-    NS_LOG_DEBUG("%u %u %u %u %lu %lu %lu %lu\n" %
-                 (Settings::ip_to_node_id(q->sip), Settings::ip_to_node_id(q->dip), q->sport,
-                  q->dport, q->m_size, q->startTime.GetTimeStep(),
-                  (Simulator::Now() - q->startTime).GetTimeStep(), standalone_fct));
+    //NS_LOG_DEBUG(Settings::ip_to_node_id(q->sip) << " " << Settings::ip_to_node_id(q->dip) << " " << q->sport << " " << q->dport << " " << q->m_size << " " << q->startTime.GetTimeStep() << " " << (Simulator::Now() - q->startTime).GetTimeStep() << " " << standalone_fct);
     Settings::cnt_finished_flows++;
     fflush(fout);
 }
@@ -1352,6 +1349,14 @@ int main(int argc, char *argv[]) {
             } else if (key.compare("LINK_UTIL_MON_FILE") == 0) {
                 conf >> link_util_mon_file;
                 std::cerr << "LINK_UTIL_MON_FILE\t\t" << link_util_mon_file << '\n';
+            } else if (key.compare("ENABLE_PATH_RECORDING") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::enable_path_recording = (v != 0);
+                std::cerr << "ENABLE_PATH_RECORDING\t\t" << (Settings::enable_path_recording ? "Yes" : "No") << "\n";
+            } else if (key.compare("PATH_RECORD_FILE") == 0) {
+                conf >> Settings::path_record_file;
+                std::cerr << "PATH_RECORD_FILE\t\t" << Settings::path_record_file << "\n";
             }
 
             fflush(stdout);
@@ -1424,6 +1429,13 @@ int main(int argc, char *argv[]) {
     Settings::packet_payload = packet_payload_size;
     // Settings::MTU = packet_payload_size + 48;  // for simplicity
     /*------------------------------------*/
+
+    if (Settings::enable_path_recording && Settings::path_record_file != "") {
+        Settings::path_record_stream.open(Settings::path_record_file.c_str());
+        if (Settings::path_record_stream.is_open()) {
+            Settings::path_record_stream << "Time,SIP,Sport,DIP,Dport,Proto,Type,Path" << std::endl;
+        }
+    }
 
     std::vector<uint32_t> node_type(node_num, 0);
     for (uint32_t i = 0; i < switch_num; i++) {
@@ -1600,8 +1612,7 @@ int main(int argc, char *argv[]) {
             sw->m_mmu->ConfigBufferSize(buffer_size * 1024 *
                                         1024);  // default 0, specify in run.py!!
             sw->m_mmu->node_id = sw->GetId();
-            NS_LOG_INFO("Node %u : Broadcom switch (%u ports / %gMB MMU)\n" %
-                        (i, sw->GetNDevices() - 1, sw->m_mmu->GetMmuBufferBytes() / 1000000.));
+            NS_LOG_INFO("Node " << i << " : Broadcom switch (" << (sw->GetNDevices() - 1) << " ports / " << (sw->m_mmu->GetMmuBufferBytes() / 1000000.) << "MB MMU)");
         }
     }
 
@@ -2102,7 +2113,7 @@ int main(int argc, char *argv[]) {
             if (i->first->GetNodeType() == 1) {
                 Ptr<Node> node = i->first;
                 Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(node);  // switch
-                NS_LOG_INFO("Switch Info - ID:%u, ToR:%d\n" % (sw->GetId(), sw->m_isToR));
+                NS_LOG_INFO("Switch Info - ID:" << sw->GetId() << ", ToR:" << sw->m_isToR);
                 if (lb_mode == 3) {
                     sw->m_mmu->m_congaRouting.SetConstants(conga_dreTime, conga_agingTime,
                                                            conga_flowletTimeout, conga_quantizeBit,

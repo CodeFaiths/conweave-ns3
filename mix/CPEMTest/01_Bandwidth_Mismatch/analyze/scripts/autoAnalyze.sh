@@ -206,13 +206,13 @@ if [ $ENABLE_TRACE_ANALYSIS -eq 1 ] && [ -f "$TRACE_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing trace data (link utilization & queue length)..."
     echo "  Input:  $TRACE_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
+
     python3 "$SCRIPT_DIR/plot_trace.py" "$TRACE_FILE" \
         --output-dir "$FIGURES_DIR" \
         --csv-dir "$TRACE_ANALYSIS_DIR" \
         $TOPOLOGY_ARGS \
         $INCLUDE_ARGS
-    
+
     if [ $? -eq 0 ]; then
         print_success "Trace analysis completed"
         ((COMPLETED_ANALYSES++))
@@ -233,11 +233,11 @@ if [ $ENABLE_PFC_ANALYSIS -eq 1 ] && [ -f "$PFC_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing PFC events..."
     echo "  Input:  $PFC_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
+
     # plot_pfc.py uses hardcoded paths, only pass optional arguments it supports
     python3 "$SCRIPT_DIR/plot_pfc.py" \
         $INCLUDE_ARGS
-    
+
     if [ $? -eq 0 ]; then
         print_success "PFC analysis completed"
         ((COMPLETED_ANALYSES++))
@@ -258,11 +258,11 @@ if [ $ENABLE_INGRESS_ANALYSIS -eq 1 ] && [ -f "$INGRESS_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing ingress queue (PFC trigger analysis)..."
     echo "  Input:  $INGRESS_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
+
     python3 "$SCRIPT_DIR/plot_ingress_qlen.py" "$INGRESS_FILE" "$FIGURES_DIR" \
         $TOPOLOGY_ARGS \
         $INCLUDE_ARGS
-    
+
     if [ $? -eq 0 ]; then
         print_success "Ingress queue analysis completed"
         ((COMPLETED_ANALYSES++))
@@ -283,11 +283,12 @@ if [ $ENABLE_QLEN_ANALYSIS -eq 1 ] && [ -f "$QLEN_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing egress queue length (from monitor)..."
     echo "  Input:  $QLEN_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
-    # plot_qlen.py uses hardcoded paths, only pass optional arguments it supports
+
     python3 "$SCRIPT_DIR/plot_qlen.py" \
+        -i "$QLEN_FILE" \
+        -o "$FIGURES_DIR" \
         $INCLUDE_ARGS
-    
+
     if [ $? -eq 0 ]; then
         print_success "Egress queue length analysis completed"
         ((COMPLETED_ANALYSES++))
@@ -306,29 +307,29 @@ fi
 if [ $ENABLE_THROUGHPUT_ANALYSIS -eq 1 ] && ([ -f "$THROUGHPUT_FILE" ] || [ -f "$UTIL_MON_FILE" ]); then
     ((TOTAL_ANALYSES++))
     print_step "Step $STEP_NUM: Analyzing throughput and link utilization..."
-    
+
     THROUGHPUT_ARGS=""
     UTIL_ARGS=""
-    
+
     if [ -f "$THROUGHPUT_FILE" ]; then
         THROUGHPUT_ARGS="--throughput $THROUGHPUT_FILE"
         echo "  Input:  $THROUGHPUT_FILE"
     fi
-    
+
     if [ -f "$UTIL_MON_FILE" ]; then
         UTIL_ARGS="--util $UTIL_MON_FILE"
         echo "  Input:  $UTIL_MON_FILE"
     fi
-    
+
     echo "  Output: $FIGURES_DIR/"
-    
+
     python3 "$SCRIPT_DIR/plot_throughput.py" \
         $THROUGHPUT_ARGS \
         $UTIL_ARGS \
         --output-dir "$FIGURES_DIR" \
         --csv-dir "$TRACE_ANALYSIS_DIR" \
         $INCLUDE_ARGS
-    
+
     if [ $? -eq 0 ]; then
         print_success "Throughput and utilization analysis completed"
         ((COMPLETED_ANALYSES++))
@@ -349,14 +350,14 @@ if [ $ENABLE_UPLINK_ANALYSIS -eq 1 ] && [ -f "$UPLINK_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing uplink monitoring data..."
     echo "  Input:  $UPLINK_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
+
     # 检查是否有 plot_uplink.py 脚本
     if [ -f "$SCRIPT_DIR/plot_uplink.py" ]; then
         python3 "$SCRIPT_DIR/plot_uplink.py" "$UPLINK_FILE" \
             --output-dir "$FIGURES_DIR" \
             $TOPOLOGY_ARGS \
             $INCLUDE_ARGS
-        
+
         if [ $? -eq 0 ]; then
             print_success "Uplink analysis completed"
             ((COMPLETED_ANALYSES++))
@@ -380,12 +381,12 @@ if [ $ENABLE_FCT_ANALYSIS -eq 1 ] && [ -f "$FCT_FILE" ]; then
     print_step "Step $STEP_NUM: Analyzing Flow Completion Time (FCT)..."
     echo "  Input:  $FCT_FILE"
     echo "  Output: $FIGURES_DIR/"
-    
+
     # 检查是否有 plot_fct.py 脚本
     if [ -f "$SCRIPT_DIR/plot_fct.py" ]; then
         python3 "$SCRIPT_DIR/plot_fct.py" "$FCT_FILE" \
             --output-dir "$FIGURES_DIR"
-        
+
         if [ $? -eq 0 ]; then
             print_success "FCT analysis completed"
             ((COMPLETED_ANALYSES++))

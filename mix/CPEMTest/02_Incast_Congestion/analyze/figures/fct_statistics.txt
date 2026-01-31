@@ -9,26 +9,26 @@ ALL FLOWS (n=49)
 
 FCT Statistics (microseconds):
   Count:      49
-  Mean:       56.42 μs
-  Median:     46.67 μs
-  Std Dev:    107.79 μs
-  Min:        16.13 μs
-  Max:        790.11 μs
-  50th %ile:  46.67 μs
-  95th %ile:  78.72 μs
-  99th %ile:  448.82 μs
-  99.9th %ile:755.98 μs
+  Mean:       84.06 μs
+  Median:     78.50 μs
+  Std Dev:    58.57 μs
+  Min:        19.16 μs
+  Max:        432.37 μs
+  50th %ile:  78.50 μs
+  95th %ile:  122.70 μs
+  99th %ile:  283.78 μs
+  99.9th %ile:417.51 μs
 
 Slowdown Statistics (FCT / Base RTT):
-  Mean:       4.915x
-  Median:     5.070x
-  Std Dev:    1.099x
-  Min:        3.090x
-  Max:        6.895x
-  50th %ile:  5.070x
-  95th %ile:  6.871x
-  99th %ile:  6.890x
-  99.9th %ile:6.894x
+  Mean:       9.801x
+  Median:     9.790x
+  Std Dev:    3.611x
+  Min:        1.691x
+  Max:        14.641x
+  50th %ile:  9.790x
+  95th %ile:  14.602x
+  99th %ile:  14.633x
+  99.9th %ile:14.641x
 
 
 ================================================================================
@@ -37,26 +37,26 @@ SMALL FLOWS (n=36)
 
 FCT Statistics (microseconds):
   Count:      36
-  Mean:       32.01 μs
-  Median:     26.63 μs
-  Std Dev:    14.16 μs
-  Min:        16.13 μs
-  Max:        57.59 μs
-  50th %ile:  26.63 μs
-  95th %ile:  57.44 μs
-  99th %ile:  57.56 μs
-  99.9th %ile:57.58 μs
+  Mean:       67.04 μs
+  Median:     73.05 μs
+  Std Dev:    26.81 μs
+  Min:        19.16 μs
+  Max:        105.88 μs
+  50th %ile:  73.05 μs
+  95th %ile:  105.73 μs
+  99th %ile:  105.85 μs
+  99.9th %ile:105.88 μs
 
 Slowdown Statistics (FCT / Base RTT):
-  Mean:       4.783x
-  Median:     4.562x
-  Std Dev:    1.151x
-  Min:        3.226x
-  Max:        6.895x
-  50th %ile:  4.562x
-  95th %ile:  6.877x
-  99th %ile:  6.891x
-  99.9th %ile:6.895x
+  Mean:       10.473x
+  Median:     12.089x
+  Std Dev:    3.749x
+  Min:        3.833x
+  Max:        14.641x
+  50th %ile:  12.089x
+  95th %ile:  14.612x
+  99th %ile:  14.636x
+  99.9th %ile:14.641x
 
 
 ================================================================================
@@ -65,26 +65,26 @@ MEDIUM FLOWS (n=12)
 
 FCT Statistics (microseconds):
   Count:      12
-  Mean:       68.53 μs
-  Median:     63.81 μs
-  Std Dev:    7.20 μs
-  Min:        62.85 μs
-  Max:        79.08 μs
-  50th %ile:  63.81 μs
-  95th %ile:  78.99 μs
-  99th %ile:  79.06 μs
-  99.9th %ile:79.08 μs
+  Mean:       106.11 μs
+  Median:     117.03 μs
+  Std Dev:    19.57 μs
+  Min:        78.50 μs
+  Max:        122.81 μs
+  50th %ile:  117.03 μs
+  95th %ile:  122.77 μs
+  99th %ile:  122.80 μs
+  99.9th %ile:122.81 μs
 
 Slowdown Statistics (FCT / Base RTT):
-  Mean:       5.463x
-  Median:     5.087x
-  Std Dev:    0.574x
-  Min:        5.011x
-  Max:        6.304x
-  50th %ile:  5.087x
-  95th %ile:  6.297x
-  99th %ile:  6.303x
-  99.9th %ile:6.304x
+  Mean:       8.459x
+  Median:     9.329x
+  Std Dev:    1.560x
+  Min:        6.258x
+  Max:        9.790x
+  50th %ile:  9.329x
+  95th %ile:  9.787x
+  99th %ile:  9.790x
+  99.9th %ile:9.790x
 
 
 ================================================================================
@@ -93,26 +93,26 @@ LARGE FLOWS (n=1)
 
 FCT Statistics (microseconds):
   Count:      1
-  Mean:       790.11 μs
-  Median:     790.11 μs
+  Mean:       432.37 μs
+  Median:     432.37 μs
   Std Dev:    0.00 μs
-  Min:        790.11 μs
-  Max:        790.11 μs
-  50th %ile:  790.11 μs
-  95th %ile:  790.11 μs
-  99th %ile:  790.11 μs
-  99.9th %ile:790.11 μs
+  Min:        432.37 μs
+  Max:        432.37 μs
+  50th %ile:  432.37 μs
+  95th %ile:  432.37 μs
+  99th %ile:  432.37 μs
+  99.9th %ile:432.37 μs
 
 Slowdown Statistics (FCT / Base RTT):
-  Mean:       3.090x
-  Median:     3.090x
+  Mean:       1.691x
+  Median:     1.691x
   Std Dev:    0.000x
-  Min:        3.090x
-  Max:        3.090x
-  50th %ile:  3.090x
-  95th %ile:  3.090x
-  99th %ile:  3.090x
-  99.9th %ile:3.090x
+  Min:        1.691x
+  Max:        1.691x
+  50th %ile:  1.691x
+  95th %ile:  1.691x
+  99th %ile:  1.691x
+  99.9th %ile:1.691x
 
 ================================================================================
 End of Report

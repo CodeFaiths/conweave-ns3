@@ -43,6 +43,8 @@
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE ("ConWeaveRouting");
+
 /**
  * @brief tag for DATA header
  */

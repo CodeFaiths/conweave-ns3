@@ -209,6 +209,12 @@ class Settings {
     static bool cpem_use_dynamic_threshold;       // Use dynamic threshold based on PFC threshold
     static double cpem_threshold_low_ratio;       // Low threshold ratio relative to PFC threshold (e.g., 0.5 = 50%)
     static double cpem_threshold_high_ratio;      // High threshold ratio relative to PFC threshold (e.g., 0.8 = 80%)
+
+    /*========== Path Recording ==========*/
+    static bool enable_path_recording;
+    static std::string path_record_file;
+    static std::ofstream path_record_stream;
+    static std::map<uint64_t, std::vector<uint32_t>> flowLastPathMap;
 };
 
 }  // namespace ns3

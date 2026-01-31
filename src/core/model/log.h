@@ -319,7 +319,7 @@ void LogComponentDisableAll (enum LogLevel level);
           NS_LOG_APPEND_CONTEXT;                                \
           std::clog << g_log.Name () << ":"                     \
                     << __FUNCTION__ << "(";                     \
-          ns3::ParameterLogger (std::clog) << parameters;      \
+          ns3::ParameterLogger (std::clog).self () << parameters; \
           std::clog << ")" << std::endl;                        \
         }                                                       \
     }                                                           \
@@ -404,6 +404,8 @@ class ParameterLogger : public std::ostream
   std::ostream &m_os;
 public:
   ParameterLogger (std::ostream &os);
+
+  ParameterLogger& self () { return *this; }
 
   template<typename T>
   ParameterLogger& operator<< (T param)

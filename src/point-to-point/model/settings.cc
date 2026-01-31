@@ -49,5 +49,9 @@ uint32_t Settings::cpem_queue_threshold_high = 200000;  // High queue threshold 
 bool Settings::cpem_use_dynamic_threshold = true;       // Enable dynamic threshold by default
 double Settings::cpem_threshold_low_ratio = 0.5;        // Low threshold = 50% of PFC threshold
 double Settings::cpem_threshold_high_ratio = 0.8;       // High threshold = 80% of PFC threshold
-
+/* Path Recording */
+bool Settings::enable_path_recording = false;
+std::string Settings::path_record_file = "";
+std::ofstream Settings::path_record_stream;
+std::map<uint64_t, std::vector<uint32_t>> Settings::flowLastPathMap;
 }  // namespace ns3

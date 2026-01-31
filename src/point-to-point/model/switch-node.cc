@@ -320,6 +320,53 @@ int SwitchNode::GetOutDev(Ptr<Packet> p, CustomHeader &ch) {
  * The (possible) callback point when conweave dequeues packets from buffer
  */
 void SwitchNode::DoSwitchSend(Ptr<Packet> p, CustomHeader &ch, uint32_t outDev, uint32_t qIndex) {
+
+    // Path Recording
+    if (Settings::enable_path_recording && (ch.l3Prot == 0x06 || ch.l3Prot == 0x11)) {  // TCP or UDP data
+        PathTag tag;
+        if (p->RemovePacketTag(tag)) {
+            tag.AddNode(m_id);
+            p->AddPacketTag(tag);
+        } else {
+            // First switch
+            tag.AddNode(m_id);
+            p->AddPacketTag(tag);
+        }
+
+        // Check if this is the last switch before host
+        if (m_isToR && m_isToR_hostIP.count(ch.dip)) {
+            // Using a more robust key including SIP to avoid multi-flow collisions
+            uint64_t key = ((uint64_t)ch.sip << 32) ^ (uint64_t)ch.dip ^
+                           ((uint64_t)ch.udp.sport << 48) ^ ((uint64_t)ch.udp.dport << 16) ^
+                           (uint64_t)ch.l3Prot;
+
+            std::vector<uint32_t> currentPath = tag.GetPath();
+            uint32_t recordType = 0; // 0: Initial, 1: Change
+            bool shouldRecord = false;
+
+            if (Settings::flowLastPathMap.find(key) != Settings::flowLastPathMap.end()) {
+                if (Settings::flowLastPathMap[key] != currentPath) {
+                    shouldRecord = true;
+                    recordType = 1; // It's a path change
+                }
+            } else {
+                shouldRecord = true;
+                recordType = 0; // It's the initial path
+            }
+
+            if (shouldRecord) {
+                Settings::flowLastPathMap[key] = currentPath;
+                if (Settings::path_record_stream.is_open()) {
+                    Settings::path_record_stream
+                        << Simulator::Now().GetSeconds() << "," << Settings::hostIp2IdMap[ch.sip]
+                        << "," << ch.udp.sport << "," << Settings::hostIp2IdMap[ch.dip] << ","
+                        << ch.udp.dport << "," << (uint32_t)ch.l3Prot << "," << recordType << ","
+                        << tag.GetPathString() << std::endl;
+                }
+            }
+        }
+    }
+
     // admission control
     FlowIdTag t;
     p->PeekPacketTag(t);

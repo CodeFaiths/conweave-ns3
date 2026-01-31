@@ -400,8 +400,9 @@ void QbbNetDevice::Receive(Ptr<Packet> packet) {
 }
 
 bool QbbNetDevice::Send(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber) {
-    NS_ASSERT_MSG(false, "QbbNetDevice::Send not implemented yet\n");
-    return false;
+    NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
+    // NS_ASSERT_MSG(false, "QbbNetDevice::Send not implemented yet\n");
+    return true; 
 }
 
 bool QbbNetDevice::SwitchSend(uint32_t qIndex, Ptr<Packet> packet, CustomHeader &ch) {

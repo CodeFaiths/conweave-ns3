@@ -5,14 +5,66 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
+#include <sstream>
 
 #include "qbb-net-device.h"
 #include "switch-mmu.h"
 #include "ns3/credit-feedback-header.h"
+#include "ns3/tag.h"
 
 namespace ns3 {
 
 class Packet;
+
+class PathTag : public Tag {
+   public:
+    static TypeId GetTypeId(void) {
+        static TypeId tid = TypeId("ns3::PathTag").SetParent<Tag>().AddConstructor<PathTag>();
+        return tid;
+    }
+    virtual TypeId GetInstanceTypeId(void) const { return GetTypeId(); }
+    virtual uint32_t GetSerializedSize(void) const { return sizeof(m_size) + m_size * sizeof(uint32_t); }
+    virtual void Serialize(TagBuffer buf) const {
+        buf.WriteU32(m_size);
+        for (uint32_t i = 0; i < m_size; i++) {
+            buf.WriteU32(m_nodes[i]);
+        }
+    }
+    virtual void Deserialize(TagBuffer buf) {
+        m_size = buf.ReadU32();
+        for (uint32_t i = 0; i < m_size; i++) {
+            m_nodes[i] = buf.ReadU32();
+        }
+    }
+    virtual void Print(std::ostream &os) const {
+        os << "PathSize=" << m_size << " Path=";
+        for (uint32_t i = 0; i < m_size; i++) {
+            os << m_nodes[i] << (i == m_size - 1 ? "" : "->");
+        }
+    }
+
+    PathTag() : m_size(0) {}
+    void AddNode(uint32_t nodeId) {
+        if (m_size < 16) {
+            m_nodes[m_size++] = nodeId;
+        }
+    }
+    std::vector<uint32_t> GetPath() const {
+        return std::vector<uint32_t>(m_nodes, m_nodes + m_size);
+    }
+    std::string GetPathString() const {
+        std::stringstream ss;
+        for (uint32_t i = 0; i < m_size; i++) {
+            ss << m_nodes[i] << (i == m_size - 1 ? "" : "-");
+        }
+        return ss.str();
+    }
+
+   private:
+    uint32_t m_nodes[16];
+    uint32_t m_size;
+};
 
 class SwitchNode : public Node {
     static const unsigned qCnt = 8;    // Number of queues/priorities used
