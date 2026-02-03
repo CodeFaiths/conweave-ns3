@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <unordered_map>
 
@@ -37,6 +39,15 @@ NS_LOG_COMPONENT_DEFINE("BEgressQueue");
 namespace ns3 {
 
 std::unordered_map<unsigned, Time> acc_pause_time;  // global
+
+// Static members for Flow Classification
+bool BEgressQueue::s_enableFlowClassification = false;
+uint16_t BEgressQueue::s_shortFlowPg = 2;
+uint16_t BEgressQueue::s_longFlowPg = 3;
+
+// Static members for Priority Queue Logging
+bool BEgressQueue::s_enablePqLogging = false;
+std::ofstream* BEgressQueue::s_pqLogStream = nullptr;
 
 NS_OBJECT_ENSURE_REGISTERED(BEgressQueue);
 
@@ -100,11 +111,35 @@ BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
     bool found = false;
     uint32_t qIndex;
 
-    if (m_queues[0]->GetNPackets() > 0)  // 0 is the highest priority
+    if (m_queues[0]->GetNPackets() > 0)  // 0 is the highest priority (control packets)
     {
         found = true;
         qIndex = 0;
     } else {
+        /**
+         * Flow Classification Priority Scheduling:
+         * If flow classification is enabled, check short flow queue first (higher priority),
+         * then long flow queue, before falling back to round-robin for other queues.
+         * This ensures short flows get preferential treatment for lower FCT.
+         */
+        if (s_enableFlowClassification) {
+            // Check short flow queue first (higher priority)
+            uint16_t shortFlowQ = s_shortFlowPg;
+            if (!paused[shortFlowQ] && m_queues[shortFlowQ]->GetNPackets() > 0) {
+                found = true;
+                qIndex = shortFlowQ;
+            }
+            // Then check long flow queue
+            if (!found) {
+                uint16_t longFlowQ = s_longFlowPg;
+                if (!paused[longFlowQ] && m_queues[longFlowQ]->GetNPackets() > 0) {
+                    found = true;
+                    qIndex = longFlowQ;
+                }
+            }
+        }
+        
+        // Fall back to round-robin for other queues if not found
         if (!found) {
             for (qIndex = 1; qIndex <= qCnt; qIndex++) {
                 bool cond1 = !paused[(qIndex + m_rrlast) % qCnt];
@@ -142,6 +177,25 @@ BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
                     acc_pause_time[flowid] = acc_pause_time[flowid] + tdiff;
                     current_pause_time.erase(flowid);
                 }
+            }
+            
+            // Priority Queue Logging: Log packet dequeue information
+            if (s_enablePqLogging && s_pqLogStream != nullptr && s_pqLogStream->is_open()) {
+                FlowIDNUMTag fitLog;
+                int32_t flowId = -1;
+                uint64_t flowSize = 0;
+                if (p->PeekPacketTag(fitLog)) {
+                    flowId = fitLog.GetId();
+                    flowSize = fitLog.GetFlowSize();
+                }
+                *s_pqLogStream << std::fixed << std::setprecision(9)
+                    << Simulator::Now().GetSeconds() << ","
+                    << "DEQ,"
+                    << qIndex << ","                       // queue_index (priority group)
+                    << flowId << ","                       // flow_id
+                    << flowSize << ","                     // flow_size
+                    << p->GetSize()                        // packet_size
+                    << std::endl;
             }
         }
 

@@ -6,6 +6,7 @@
 #include "ns3/custom-header.h"
 #include "ns3/double.h"
 #include "ns3/flow-id-tag.h"
+#include "ns3/flow-id-num-tag.h"
 #include "ns3/int-header.h"
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4.h"
@@ -18,6 +19,8 @@
 #include "ns3/credit-feedback-header.h"
 #include "ppp-header.h"
 #include "qbb-net-device.h"
+
+#include <iomanip>
 
 namespace ns3 {
 
@@ -414,6 +417,35 @@ void SwitchNode::DoSwitchSend(Ptr<Packet> p, CustomHeader &ch, uint32_t outDev, 
         // CPEM: Update in-flight bytes for the egress port
         if (Settings::cpem_enabled) {
             m_mmu->CpemUpdateInflightOnSend(outDev, p->GetSize());
+        }
+    }
+
+    // Priority Queue Logging: Log packet enqueue information
+    if (Settings::enable_pq_logging && Settings::pq_log_stream.is_open()) {
+        // Only log data packets (UDP or TCP)
+        if (ch.l3Prot == 0x11 || ch.l3Prot == 0x06) {
+            FlowIDNUMTag fit;
+            int32_t flowId = -1;
+            uint64_t flowSize = 0;
+            if (p->PeekPacketTag(fit)) {
+                flowId = fit.GetId();
+                flowSize = fit.GetFlowSize();
+            }
+            Settings::pq_log_stream << std::fixed << std::setprecision(9)
+                << Simulator::Now().GetSeconds() << ","
+                << "ENQ,"
+                << m_id << ","                                        // switch_id
+                << outDev << ","                                      // out_port
+                << qIndex << ","                                      // queue_index (priority group)
+                << Settings::hostIp2IdMap[ch.sip] << ","              // src_host_id
+                << ch.udp.sport << ","                                // src_port
+                << Settings::hostIp2IdMap[ch.dip] << ","              // dst_host_id
+                << ch.udp.dport << ","                                // dst_port
+                << (uint32_t)ch.l3Prot << ","                         // protocol
+                << flowId << ","                                      // flow_id
+                << flowSize << ","                                    // flow_size
+                << p->GetSize()                                       // packet_size
+                << std::endl;
         }
     }
 

@@ -19,6 +19,7 @@
 #ifndef BROADCOM_EGRESS_H
 #define BROADCOM_EGRESS_H
 
+#include <fstream>
 #include <queue>
 #include <unordered_map>
 #include "ns3/packet.h"
@@ -48,6 +49,17 @@ namespace ns3 {
 		uint64_t GetTotalTxBytes() const { return m_totalTxBytes; }
 		uint64_t GetTotalRxBytes() const { return m_totalRxBytes; }
 		void AddRxBytes(uint64_t bytes) { m_totalRxBytes += bytes; }
+
+		// Flow Classification (Long/Short Flow Separation) - static config
+		// These are set by the simulation main() and used during dequeue
+		static bool s_enableFlowClassification;
+		static uint16_t s_shortFlowPg;
+		static uint16_t s_longFlowPg;
+
+		// Priority Queue Logging - static config
+		// These are set by the simulation main() and used during enqueue/dequeue
+		static bool s_enablePqLogging;
+		static std::ofstream* s_pqLogStream;
 
 		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqEnqueue;
 		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqDequeue;

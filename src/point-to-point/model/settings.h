@@ -215,6 +215,24 @@ class Settings {
     static std::string path_record_file;
     static std::ofstream path_record_stream;
     static std::map<uint64_t, std::vector<uint32_t>> flowLastPathMap;
+
+    /*========== Flow Classification (Long/Short Flow Separation) ==========*/
+    // Enable flow classification to separate long and short flows into different queues
+    static bool enable_flow_classification;
+    // Threshold in bytes to classify flows: flows < threshold are short flows
+    static uint64_t flow_size_threshold;
+    // Priority group for short flows (higher priority, lower queue number)
+    static uint16_t short_flow_pg;
+    // Priority group for long flows (lower priority, higher queue number)
+    static uint16_t long_flow_pg;
+
+    /*========== Priority Queue Logging ==========*/
+    // Enable logging of which priority queue each flow's packets use
+    static bool enable_pq_logging;
+    // Output file for priority queue logging
+    static std::string pq_log_file;
+    // Output stream for priority queue logging
+    static std::ofstream pq_log_stream;
 };
 
 }  // namespace ns3

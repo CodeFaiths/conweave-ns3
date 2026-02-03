@@ -54,4 +54,15 @@ bool Settings::enable_path_recording = false;
 std::string Settings::path_record_file = "";
 std::ofstream Settings::path_record_stream;
 std::map<uint64_t, std::vector<uint32_t>> Settings::flowLastPathMap;
+
+/* Flow Classification (Long/Short Flow Separation) */
+bool Settings::enable_flow_classification = false;      // Disabled by default
+uint64_t Settings::flow_size_threshold = 100000;        // Default: 100KB threshold
+uint16_t Settings::short_flow_pg = 2;                   // Short flows use queue 2 (higher priority)
+uint16_t Settings::long_flow_pg = 3;                    // Long flows use queue 3 (lower priority)
+
+/* Priority Queue Logging */
+bool Settings::enable_pq_logging = false;               // Disabled by default
+std::string Settings::pq_log_file = "";
+std::ofstream Settings::pq_log_stream;
 }  // namespace ns3

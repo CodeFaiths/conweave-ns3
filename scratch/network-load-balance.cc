@@ -246,6 +246,18 @@ void ScheduleFlowInputs(FILE *infile) {
         assert(n.Get(src)->GetNodeType() == 0 && n.Get(dst)->GetNodeType() == 0);
 
         /**
+         * Flow Classification: Separate long and short flows into different priority groups
+         * Short flows get higher priority (lower pg number) for faster completion
+         */
+        if (Settings::enable_flow_classification) {
+            if (target_len < Settings::flow_size_threshold) {
+                pg = Settings::short_flow_pg;  // Short flow - higher priority
+            } else {
+                pg = Settings::long_flow_pg;   // Long flow - lower priority
+            }
+        }
+
+        /**
          * Turn on if you want to record all input streams into output file for logging.
          * But, the input stream can be found in config. We do not recommend to do this
          * as it consumes storage resource, redundantly.
@@ -1357,6 +1369,36 @@ int main(int argc, char *argv[]) {
             } else if (key.compare("PATH_RECORD_FILE") == 0) {
                 conf >> Settings::path_record_file;
                 std::cerr << "PATH_RECORD_FILE\t\t" << Settings::path_record_file << "\n";
+            } else if (key.compare("ENABLE_FLOW_CLASSIFICATION") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::enable_flow_classification = (v != 0);
+                std::cerr << "ENABLE_FLOW_CLASSIFICATION\t" << (Settings::enable_flow_classification ? "Yes" : "No") << "\n";
+            } else if (key.compare("FLOW_SIZE_THRESHOLD") == 0) {
+                uint64_t v;
+                conf >> v;
+                Settings::flow_size_threshold = v;
+                std::cerr << "FLOW_SIZE_THRESHOLD\t\t" << v << " bytes\n";
+            } else if (key.compare("SHORT_FLOW_PG") == 0) {
+                uint16_t v;
+                conf >> v;
+                Settings::short_flow_pg = v;
+                std::cerr << "SHORT_FLOW_PG\t\t\t" << v << "\n";
+            } else if (key.compare("LONG_FLOW_PG") == 0) {
+                uint16_t v;
+                conf >> v;
+                Settings::long_flow_pg = v;
+                std::cerr << "LONG_FLOW_PG\t\t\t" << v << "\n";
+            } else if (key.compare("ENABLE_PQ_LOGGING") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::enable_pq_logging = (v != 0);
+                std::cerr << "ENABLE_PQ_LOGGING\t\t" << (Settings::enable_pq_logging ? "Yes" : "No") << "\n";
+            } else if (key.compare("PQ_LOG_FILE") == 0) {
+                std::string v;
+                conf >> v;
+                Settings::pq_log_file = v;
+                std::cerr << "PQ_LOG_FILE\t\t\t" << v << "\n";
             }
 
             fflush(stdout);
@@ -1370,6 +1412,37 @@ int main(int argc, char *argv[]) {
     }
 
     /******************* READING CONFIG FILE IS DONE ***********************/
+
+    /**
+     * Sync Flow Classification settings to BEgressQueue static variables
+     * This is needed because BEgressQueue is in network module which compiles
+     * before point-to-point module where Settings class is defined.
+     */
+    BEgressQueue::s_enableFlowClassification = Settings::enable_flow_classification;
+    BEgressQueue::s_shortFlowPg = Settings::short_flow_pg;
+    BEgressQueue::s_longFlowPg = Settings::long_flow_pg;
+
+    /**
+     * Initialize Priority Queue Logging
+     * This logs which priority queue each flow's packets use
+     */
+    if (Settings::enable_pq_logging && !Settings::pq_log_file.empty()) {
+        Settings::pq_log_stream.open(Settings::pq_log_file.c_str());
+        if (!Settings::pq_log_stream.is_open()) {
+            std::cerr << "ERROR: Failed to open priority queue log file: " << Settings::pq_log_file << std::endl;
+            Settings::enable_pq_logging = false;
+        } else {
+            // Write header
+            Settings::pq_log_stream << "# Priority Queue Log" << std::endl;
+            Settings::pq_log_stream << "# Format for ENQ: time,ENQ,switch_id,out_port,queue_idx,src_host,src_port,dst_host,dst_port,protocol,flow_id,flow_size,pkt_size" << std::endl;
+            Settings::pq_log_stream << "# Format for DEQ: time,DEQ,queue_idx,flow_id,flow_size,pkt_size" << std::endl;
+            std::cerr << "Priority Queue Logging initialized: " << Settings::pq_log_file << std::endl;
+            
+            // Sync to BEgressQueue static variables for dequeue logging
+            BEgressQueue::s_enablePqLogging = true;
+            BEgressQueue::s_pqLogStream = &Settings::pq_log_stream;
+        }
+    }
 
     /**
      * Activate ns3 logging
@@ -2265,6 +2338,13 @@ int main(int argc, char *argv[]) {
     /*-----------------------------------------------------------------------------*/
     /*----- we don't need below. Just we can enforce to close this simulation. -----*/
     /*-----------------------------------------------------------------------------*/
+    
+    // Close priority queue log file
+    if (Settings::enable_pq_logging && Settings::pq_log_stream.is_open()) {
+        Settings::pq_log_stream.close();
+        std::cerr << "Priority Queue Logging closed." << std::endl;
+    }
+    
     Simulator::Destroy();
     NS_LOG_INFO("Total number of packets: " << RdmaHw::nAllPkts);
     NS_LOG_INFO("Done.");

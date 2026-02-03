@@ -101,6 +101,9 @@ CPEM_MIN_RATE_RATIO 0.05
 CPEM_MAX_CREDIT 1000
 CPEM_QUEUE_THRESHOLD_LOW 10000
 CPEM_QUEUE_THRESHOLD_HIGH 100000
+
+# MEDU Flow Classification
+ENABLE_FLOW_CLASSIFICATION {enable_flow_classification}
 """
 
 
@@ -162,6 +165,8 @@ def main():
                         type=int, default=10000, help="interval of sampling statistics for queue status (default: 10000ns)")
     parser.add_argument('--cpem', dest='cpem', action='store',
                         type=int, default=0, help="enable CPEM module (default: 0)")
+    parser.add_argument('--medu', dest='medu', action='store',
+                        type=int, default=0, help="enable MEDU flow classification (default: 0)")
 
     # #### CONWEAVE PARAMETERS ####
     # parser.add_argument('--cwh_extra_reply_deadline', dest='cwh_extra_reply_deadline', action='store',
@@ -191,6 +196,7 @@ def main():
     enabled_pfc = int(args.pfc)
     enabled_irn = int(args.irn)
     cpem_enabled = int(args.cpem)
+    enable_flow_classification = int(args.medu)
     bw = int(args.bw)
     buffer = args.buffer
     topo = args.topo
@@ -384,7 +390,8 @@ def main():
                                         has_win=has_win, var_win=var_win,
                                         fast_react=fast_react, mi=mi, int_multi=int_multi, ewma_gain=ewma_gain,
                                         kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map,
-                                        cpem_enabled=cpem_enabled)
+                                        cpem_enabled=cpem_enabled,
+                                        enable_flow_classification=enable_flow_classification)
     else:
         print("unknown cc:{}".format(args.cc))
 
