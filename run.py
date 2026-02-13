@@ -22,16 +22,16 @@ MAX_RAND_RANGE = 1000000000
 config_template = """TOPOLOGY_FILE config/{topo}.txt
 FLOW_FILE config/{flow}.txt
 
-FLOW_INPUT_FILE mix/output/{id}/{id}_in.txt
-CNP_OUTPUT_FILE mix/output/{id}/{id}_out_cnp.txt
-FCT_OUTPUT_FILE mix/output/{id}/{id}_out_fct.txt
-PFC_OUTPUT_FILE mix/output/{id}/{id}_out_pfc.txt
-QLEN_MON_FILE mix/output/{id}/{id}_out_qlen.txt
-VOQ_MON_FILE mix/output/{id}/{id}_out_voq.txt
-VOQ_MON_DETAIL_FILE mix/output/{id}/{id}_out_voq_per_dst.txt
-UPLINK_MON_FILE mix/output/{id}/{id}_out_uplink.txt
-CONN_MON_FILE mix/output/{id}/{id}_out_conn.txt
-EST_ERROR_MON_FILE mix/output/{id}/{id}_out_est_error.txt
+FLOW_INPUT_FILE mix/output/{id}/{name}_in.txt
+CNP_OUTPUT_FILE mix/output/{id}/{name}_out_cnp.txt
+FCT_OUTPUT_FILE mix/output/{id}/{name}_out_fct.txt
+PFC_OUTPUT_FILE mix/output/{id}/{name}_out_pfc.txt
+QLEN_MON_FILE mix/output/{id}/{name}_out_qlen.txt
+VOQ_MON_FILE mix/output/{id}/{name}_out_voq.txt
+VOQ_MON_DETAIL_FILE mix/output/{id}/{name}_out_voq_per_dst.txt
+UPLINK_MON_FILE mix/output/{id}/{name}_out_uplink.txt
+CONN_MON_FILE mix/output/{id}/{name}_out_conn.txt
+EST_ERROR_MON_FILE mix/output/{id}/{name}_out_est_error.txt
 
 QLEN_MON_START {qlen_mon_start}
 QLEN_MON_END {qlen_mon_end}
@@ -167,6 +167,8 @@ def main():
                         type=int, default=0, help="enable CPEM module (default: 0)")
     parser.add_argument('--medu', dest='medu', action='store',
                         type=int, default=0, help="enable MEDU flow classification (default: 0)")
+    parser.add_argument('--id', dest='id', action='store',
+                        default=None, help="custom output ID (default: random)")
 
     # #### CONWEAVE PARAMETERS ####
     # parser.add_argument('--cwh_extra_reply_deadline', dest='cwh_extra_reply_deadline', action='store',
@@ -183,12 +185,17 @@ def main():
     args = parser.parse_args()
 
     # make running ID of this config
-    # need to check directory exists or not
-    isExist = True
-    config_ID = 0
-    while (isExist):
-        config_ID = str(random.randrange(MAX_RAND_RANGE))
-        isExist = os.path.exists(os.getcwd() + "/mix/output/" + config_ID)
+    if args.id:
+        config_ID = args.id
+        config_name_prefix = os.path.basename(args.id)
+    else:
+        # need to check directory exists or not
+        isExist = True
+        config_ID = 0
+        while (isExist):
+            config_ID = str(random.randrange(MAX_RAND_RANGE))
+            isExist = os.path.exists(os.getcwd() + "/mix/output/" + config_ID)
+        config_name_prefix = config_ID
 
     # input parameters
     cc_mode = cc_modes[args.cc]
@@ -244,7 +251,7 @@ def main():
     else:  # make the input traffic file
         print("Generate a input traffic file...")
         print("python ./traffic_gen/traffic_gen.py -c {cdf} -n {n_host} -l {load} -b {bw} -t {time} -o {output}".format(
-            cdf=os.getcwd() + "/../traffic_gen/" + args.cdf + ".txt",
+            cdf=os.getcwd() + "/traffic_gen/" + args.cdf + ".txt",
             n_host=n_host,
             load=hostload / 100.0,
             bw=args.bw + "G",
@@ -307,14 +314,13 @@ def main():
     ##################################################################
 
     # make directory if not exists
-    isExist = os.path.exists(os.getcwd() + "/mix/output/" + config_ID + "/")
-    assert (not isExist)
-    # if not isExist:
-    os.makedirs(os.getcwd() + "/mix/output/" + config_ID + "/")
-    print("The new directory is created  - {}".format(os.getcwd() +
-          "/mix/output/" + config_ID + "/"))
+    output_dir = os.path.join(os.getcwd(), "mix/output", config_ID)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    print("The new directory is created  - {}".format(output_dir))
 
-    config_name = os.getcwd() + "/mix/output/" + config_ID + "/config.txt"
+    config_name = os.path.join(output_dir, "config.txt")
     print("Config filename:{}".format(config_name))
 
     # By default, DCQCN uses no window (rate-based).
@@ -378,7 +384,7 @@ def main():
         int_multi = 1
         ewma_gain = 0.00390625
 
-        config = config_template.format(id=config_ID, topo=topo, flow=flow,
+        config = config_template.format(id=config_ID, name=config_name_prefix, topo=topo, flow=flow,
                                         qlen_mon_start=qlen_mon_start, qlen_mon_end=qlen_mon_end, flowgen_start_time=flowgen_start_time,
                                         flowgen_stop_time=flowgen_stop_time, sw_monitoring_interval=sw_monitoring_interval,
                                         load=netload, buffer_size=buffer, lb_mode=lb_mode, cwh_tx_expiry_time=cwh_tx_expiry_time,

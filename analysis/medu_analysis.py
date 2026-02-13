@@ -75,27 +75,66 @@ def parse_summary(summary_path: Path) -> Dict[str, Dict[str, float]]:
 
 
 def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
-    """Collect all runs that match the pattern under base_dir."""
+    """Collect all runs under base_dir, supporting medu_loop and legacy layouts."""
     runs: List[Dict[str, object]] = []
-    for comp_dir in sorted(base_dir.glob(pattern)):
-        if not comp_dir.is_dir():
-            continue
+
+    def iter_comparison_dirs() -> List[Tuple[Path, Path]]:
+        load_dirs = sorted(base_dir.glob("load*"))
+        if load_dirs:
+            return [(base_dir, load_dir) for load_dir in load_dirs if load_dir.is_dir()]
+
+        comp_dirs: List[Tuple[Path, Path]] = []
+        for exp_dir in sorted(base_dir.glob(pattern)):
+            if not exp_dir.is_dir():
+                continue
+            exp_load_dirs = sorted(exp_dir.glob("load*"))
+            if exp_load_dirs:
+                comp_dirs.extend((exp_dir, load_dir) for load_dir in exp_load_dirs if load_dir.is_dir())
+            else:
+                comp_dirs.append((base_dir, exp_dir))
+        return comp_dirs
+
+    for exp_root, comp_dir in iter_comparison_dirs():
+        load_hint = None
+        match = re.match(r"load(\d+(?:\.\d+)?)", comp_dir.name)
+        if match:
+            load_hint = match.group(1)
+
         for log_file in sorted(comp_dir.glob("*.log")):
-            run_id = parse_log_for_id(log_file)
-            run_root = base_dir / run_id
-            summary_path = run_root / f"{run_id}_out_fct_summary.txt"
+            run_name = log_file.stem  # e.g., 'no_medu_conga'
+            run_root = comp_dir / run_name
+            summary_path = run_root / f"{run_name}_out_fct_summary.txt"
             config_path = run_root / "config.txt"
+
+            # Fallback for old flat structure if needed
             if not summary_path.exists():
-                raise FileNotFoundError(summary_path)
-            if not config_path.exists():
-                raise FileNotFoundError(config_path)
+                try:
+                    run_id = parse_log_for_id(log_file)
+                    alt_root = base_dir / run_id
+                    if alt_root.exists():
+                        run_root = alt_root
+                        summary_path = run_root / f"{run_id}_out_fct_summary.txt"
+                        config_path = run_root / "config.txt"
+                except Exception:
+                    pass
+
+            if not summary_path.exists() or not config_path.exists():
+                print(f"Skipping {run_name} (missing files in {run_root})")
+                continue
 
             summary = parse_summary(summary_path)
             cfg = parse_config(config_path)
+            if cfg["load"] is None and load_hint is not None:
+                cfg["load"] = load_hint
 
-            algo_key = log_file.stem.split("_")[-1].lower()
+            algo_key = run_name.split("_")[-1].lower()
             algo = ALG_NAME_MAP.get(algo_key, algo_key.upper())
-            with_medu = "with_medu" in log_file.name
+            with_medu = "with_medu" in run_name
+
+            try:
+                run_id = str(run_root.relative_to(base_dir))
+            except ValueError:
+                run_id = str(run_root)
 
             runs.append(
                 {
@@ -105,7 +144,7 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
                     "with_medu": with_medu,
                     "summary": summary,
                     "run_id": run_id,
-                    "source_dir": str(comp_dir.name),
+                    "source_dir": str(exp_root.name),
                 }
             )
     return runs
@@ -294,37 +333,60 @@ def main():
 
     parser = argparse.ArgumentParser(description="MEDU experiment analyzer")
     parser.add_argument("--base-dir", type=Path, default=default_base, help="Directory containing experiment outputs")
-    parser.add_argument("--pattern", type=str, default="medu_comparison_*", help="Glob pattern for comparison folders")
+    parser.add_argument("--pattern", type=str, default="medu_loop_*", help="Glob pattern for comparison folders")
     parser.add_argument("--output-dir", type=Path, default=default_out, help="Directory to place charts and stats")
     parser.add_argument("--prefix", type=str, default="medu_comparison", help="Filename prefix for outputs")
     args = parser.parse_args()
 
-    runs = collect_runs(args.base_dir, args.pattern)
-    if not runs:
+    exp_dirs = sorted([d for d in args.base_dir.glob(args.pattern) if d.is_dir()])
+    if not exp_dirs:
+        exp_dirs = [args.base_dir]
+
+    any_runs = False
+    for exp_dir in exp_dirs:
+        runs = collect_runs(exp_dir, args.pattern)
+        if not runs:
+            continue
+        any_runs = True
+
+        match = re.match(r"medu_loop_(\d{8}_\d{6})_(.+)", exp_dir.name)
+        if match:
+            subdir_name = f"{match.group(1)}_{match.group(2)}"
+        else:
+            subdir_name = exp_dir.name
+        output_dir = args.output_dir / subdir_name
+
+        load_labels, series = pivot_data(runs)
+        algos = sorted({r["algo"] for r in runs})
+
+        (
+            loads_float,
+            small_avg_no,
+            small_avg_yes,
+            small_p99_no,
+            small_p99_yes,
+            large_avg_no,
+            large_avg_yes,
+        ) = build_metric_arrays(load_labels, series, algos)
+
+        plot_comparison(
+            loads_float,
+            load_labels,
+            algos,
+            small_avg_no,
+            small_avg_yes,
+            small_p99_no,
+            small_p99_yes,
+            large_avg_no,
+            large_avg_yes,
+            output_dir,
+            args.prefix,
+        )
+
+        write_stats(load_labels, algos, small_p99_no, small_p99_yes, output_dir, args.prefix)
+
+    if not any_runs:
         raise SystemExit("No runs found. Check --base-dir and --pattern.")
-
-    load_labels, series = pivot_data(runs)
-    algos = sorted({r["algo"] for r in runs})
-
-    loads_float, small_avg_no, small_avg_yes, small_p99_no, small_p99_yes, large_avg_no, large_avg_yes = build_metric_arrays(
-        load_labels, series, algos
-    )
-
-    plot_comparison(
-        loads_float,
-        load_labels,
-        algos,
-        small_avg_no,
-        small_avg_yes,
-        small_p99_no,
-        small_p99_yes,
-        large_avg_no,
-        large_avg_yes,
-        args.output_dir,
-        args.prefix,
-    )
-
-    write_stats(load_labels, algos, small_p99_no, small_p99_yes, args.output_dir, args.prefix)
 
 
 if __name__ == "__main__":

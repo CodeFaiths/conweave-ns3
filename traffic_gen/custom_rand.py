@@ -5,15 +5,18 @@ class CustomRand:
 	def testCdf(self, cdf):
 		if cdf[0][1] != 0:
 			return False
-		if cdf[-1][1] != 100:
+		if cdf[-1][1] != 100 and cdf[-1][1] != 1:
 			return False
 		for i in range(1, len(cdf)):
-			if cdf[i][1] <= cdf[i-1][1] or cdf[i][0] <= cdf[i-1][0]:
+			if cdf[i][1] <= cdf[i-1][1] or cdf[i][0] < cdf[i-1][0]:
 				return False
 		return True
 	def setCdf(self, cdf):
 		if not self.testCdf(cdf):
 			return False
+		if cdf[-1][1] == 1:
+			for i in range(len(cdf)):
+				cdf[i][1] *= 100
 		self.cdf = cdf
 		return True
 	def getAvg(self):

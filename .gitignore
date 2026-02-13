@@ -6,6 +6,7 @@ build/*
 .vscode/*
 
 **/output/
+**/results/
 **/experiments/
 **/analyze/figures/
 **/analyze/trace_analysis/

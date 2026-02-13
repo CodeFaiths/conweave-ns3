@@ -229,7 +229,8 @@ if __name__=="__main__":
     parser.add_argument('-fT', dest='time_limit_end', action='store', type=int, default=100000000000, help="only consider flows that finish before T, default=100 * 10^9 ns")
     parser.add_argument('-mT', dest='monitoring_interval', action='store', type=int, default=10000, help="monitoring interval, default 10us (10000)")
     args = parser.parse_args()
-    config_ID = int(args.id)
+    config_ID_full = args.id
+    config_ID = os.path.basename(args.id)
     dirname = args.dir
     fdirname = args.fdir
     monitoringInterval = int(args.monitoring_interval)
@@ -239,12 +240,12 @@ if __name__=="__main__":
     time_limit_end = args.time_limit_end
 
     ### per-switch queue usage
-    output_queue_total = dirname + "/" + fdirname + "/output/{id}/{id}_out_voq.txt".format(id=config_ID)
+    output_queue_total = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_voq.txt".format(id_full=config_ID_full, id=config_ID)
     get_queue_per_switch_info_from_raw(output_queue_total, time_limit_start, time_limit_end, monitoringInterval, cdf_flag=True)
     print("Finished queue usage per switch analysis!")
 
     ### per-destination queue usage
-    output_queue_per_dst = dirname + "/" + fdirname + "/output/{id}/{id}_out_voq_per_dst.txt".format(id=config_ID)
+    output_queue_per_dst = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_voq_per_dst.txt".format(id_full=config_ID_full, id=config_ID)
     get_queue_per_dst_info_from_raw(output_queue_per_dst, time_limit_start, time_limit_end, monitoringInterval, cdf_flag=True)
     print("Finished queue usage per dst analysis!")
 

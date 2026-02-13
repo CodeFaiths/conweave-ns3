@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# CPEM Comparison Experiment Script (Multi-Load)
+# MEDU Comparison Experiment Script (Multi-Load)
 # ==============================================================================
 
 cecho(){
@@ -18,15 +18,16 @@ cecho(){
 
 # Experiment Parameters
 TOPOLOGY="leaf_spine_128_100G_OS2"
-NETLOAD="40"           # Network load (e.g., 40, 50, 70, 80)
-CDF="search"           # CDF file name in traffic_gen/ without .txt
+NETLOAD="70"           # Network load (e.g., 40, 50, 70, 80)
+CDF="webserver"           # CDF file name in traffic_gen/ without .txt
 RUNTIME="0.1"          # 0.1 second (traffic generation)
 
 # Load Balancing algorithms to test
 LB_ALGORITHMS=("fecmp" "letflow" "conga" "conweave")
 
 cecho "GREEN" "============================================================"
-cecho "GREEN" "       CPEM Comparison Experiment"
+cecho "GREEN" "       MEDU Comparison Experiment"
+cecho "GREEN" "       (Long/Short Flow Separation)"
 cecho "GREEN" "============================================================"
 cecho "YELLOW" "TOPOLOGY: ${TOPOLOGY}" 
 cecho "YELLOW" "NETWORK LOAD: ${NETLOAD}%" 
@@ -37,7 +38,8 @@ cecho "GREEN" "============================================================"
 echo ""
 
 # Create output directory for experiment results
-EXPERIMENT_DIR="mix/output/cpem_comparison_$(date +%Y%m%d_%H%M%S)_load${NETLOAD}_${CDF}"
+EXP_NAME="medu_comparison_$(date +%Y%m%d_%H%M%S)_load${NETLOAD}_${CDF}"
+EXPERIMENT_DIR="mix/output/${EXP_NAME}"
 mkdir -p ${EXPERIMENT_DIR}
 
 cecho "CYAN" "Output directory: ${EXPERIMENT_DIR}"
@@ -58,40 +60,42 @@ cecho "GREEN" "Build completed successfully!"
 echo ""
 
 # ==============================================================================
-# Group 1: WITHOUT CPEM (CPEM_ENABLED=0) - Run in parallel
+# Group 1: WITHOUT MEDU (MEDU=0) - Run in parallel
 # ==============================================================================
 cecho "GREEN" "============================================================"
-cecho "GREEN" "  Group 1: Running experiments WITHOUT CPEM"
+cecho "GREEN" "  Group 1: Running experiments WITHOUT MEDU"
 cecho "GREEN" "============================================================"
 
 for lb in "${LB_ALGORITHMS[@]}"; do
-    cecho "YELLOW" "  Starting: LB=${lb}, CPEM=OFF"
+    cecho "YELLOW" "  Starting: LB=${lb}, MEDU=OFF"
     python3 run.py --lb ${lb} --pfc 1 --irn 0 \
         --simul_time ${RUNTIME} \
         --netload ${NETLOAD} \
         --topo ${TOPOLOGY} \
         --cdf ${CDF} \
-        --cpem 0 \
-        2>&1 | tee -a ${EXPERIMENT_DIR}/no_cpem_${lb}.log &
+        --medu 0 \
+        --id ${EXP_NAME}/no_medu_${lb} \
+        2>&1 | tee -a ${EXPERIMENT_DIR}/no_medu_${lb}.log &
     sleep 3
 done
 
 # ==============================================================================
-# Group 2: WITH CPEM (CPEM_ENABLED=1) - Run in parallel
+# Group 2: WITH MEDU (MEDU=1) - Run in parallel
 # ==============================================================================
 cecho "GREEN" "============================================================"
-cecho "GREEN" "  Group 2: Running experiments WITH CPEM"
+cecho "GREEN" "  Group 2: Running experiments WITH MEDU"
 cecho "GREEN" "============================================================"
 
 for lb in "${LB_ALGORITHMS[@]}"; do
-    cecho "YELLOW" "  Starting: LB=${lb}, CPEM=ON"
+    cecho "YELLOW" "  Starting: LB=${lb}, MEDU=ON"
     python3 run.py --lb ${lb} --pfc 1 --irn 0 \
         --simul_time ${RUNTIME} \
         --netload ${NETLOAD} \
         --topo ${TOPOLOGY} \
         --cdf ${CDF} \
-        --cpem 1 \
-        2>&1 | tee -a ${EXPERIMENT_DIR}/with_cpem_${lb}.log &
+        --medu 1 \
+        --id ${EXP_NAME}/with_medu_${lb} \
+        2>&1 | tee -a ${EXPERIMENT_DIR}/with_medu_${lb}.log &
     sleep 3
 done
 
@@ -99,7 +103,6 @@ cecho "YELLOW" "All 8 experiments started in background. Waiting for completion.
 wait
 
 cecho "GREEN" "============================================================"
-
-cecho "GREEN" "============================================================"
 cecho "GREEN" "  All experiments completed!"
+cecho "GREEN" "  Results saved in: ${EXPERIMENT_DIR}"
 cecho "GREEN" "============================================================"

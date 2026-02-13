@@ -1,6 +1,7 @@
 import subprocess
 import argparse
 import numpy as np
+import os
 
 def get_pctl(a, p):
 	i = int(len(a) * p)
@@ -43,21 +44,22 @@ if __name__=="__main__":
 	
 	args = parser.parse_args()
 
-	config_ID = int(args.id)
+	config_ID_full = args.id
+	config_ID = os.path.basename(args.id)
 	dirname = args.dir
 	fdirname = args.fdir
 	OneBDP = int(args.bdp)
 	step = 5
 	res = [[i/100.] for i in range(0, 100, step)]
 
-	output_fct = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct.txt".format(id=config_ID)
-	output_fct_summary = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_summary.txt".format(id=config_ID)
-	output_fct_small_absolute_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_small_absolute_cdf.txt".format(id=config_ID)
-	output_fct_small_slowdown_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_small_slowdown_cdf.txt".format(id=config_ID)
-	output_fct_large_absolute_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_large_absolute_cdf.txt".format(id=config_ID)
-	output_fct_large_slowdown_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_large_slowdown_cdf.txt".format(id=config_ID)
-	output_fct_all_slowdown_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_all_slowdown_cdf.txt".format(id=config_ID)
-	output_fct_all_absolute_cdf = dirname + "/" + fdirname + "/output/{id}/{id}_out_fct_all_absolute_cdf.txt".format(id=config_ID)
+	output_fct = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_summary = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_summary.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_small_absolute_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_small_absolute_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_small_slowdown_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_small_slowdown_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_large_absolute_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_large_absolute_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_large_slowdown_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_large_slowdown_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_all_slowdown_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_all_slowdown_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_all_absolute_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_all_absolute_cdf.txt".format(id_full=config_ID_full, id=config_ID)
 
 	# time interval to consider
 	time_limit_start = args.time_limit_begin
