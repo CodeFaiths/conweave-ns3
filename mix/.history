@@ -1503,3 +1503,1063 @@ date,id,ccmode,lbmode,cwh_tx_expiry_time,cwh_extra_reply_deadline,cwh_path_pause
 ./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260212_093305_AliStorage2019/load90/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260212_093305_AliStorage2019/load90/with_medu_conweave/config.log 2>&1
 ./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260212_093305_AliStorage2019/load90/with_medu_conweave/config.txt'
 
+02/14/26,medu_loop_20260214_083810_webserver/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load30/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load40/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load40/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load50/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load70/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load80/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_083810_webserver/load90/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,webserver,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_083810_webserver/load90/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load30/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load40/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load40/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load50/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load70/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load80/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_084306_search/load90/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_084306_search/load90/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_125812_search/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_125812_search/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_125812_search/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_125812_search/load30/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load30/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load40/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load40/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load50/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load70/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load80/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_170953_Solar2022/load90/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,Solar2022,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_170953_Solar2022/load90/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load30/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,40,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load40/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load50/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load70/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load80/with_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/no_medu_conweave/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_fecmp/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_letflow/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conga/config.txt'
+
+02/14/26,medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,FbHdp2015,90,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015/load90/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161458_search_4MB/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161458_search_4MB/load30/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load30/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load50/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load70/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161552_search_2MB/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,search,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161552_search_2MB/load80/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,30,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load30/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,50,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load50/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,70,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load70/with_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/no_medu_conweave/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_fecmp/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_fecmp/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_fecmp/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_letflow,1,6,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_letflow/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_letflow/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_letflow/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conga,1,3,1000,4,16,64,400,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conga/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conga/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conga/config.txt'
+
+02/15/26,medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conweave,1,9,300,4,16,16,200,1,0,0,0,leaf_spine_128_100G_OS2,100,AliStorage2019,80,0.1
+./waf --run 'scratch/network-load-balance /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conweave/config.txt' > /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conweave/config.log 2>&1
+./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Tmedu/ns-allinone-3.19/ns-3.19/mix/output/medu_loop_20260215_161838_AliStorage2019_2MB/load80/with_medu_conweave/config.txt'
+

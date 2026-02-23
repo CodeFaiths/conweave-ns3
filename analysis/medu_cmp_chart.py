@@ -1,0 +1,638 @@
+#!/usr/bin/env python3
+"""
+Re-plot two MEDU experiments on the same axes (not image stitching).
+
+Key behavior:
+1) Output folder name: <timestamp>_<CDF>_cmp
+2) Re-draw curves from raw summary data under mix/output
+3) Generate 6 separate figures:
+   - small_avg_slowdown_cmp
+   - small_p99_slowdown_cmp
+   - large_avg_slowdown_cmp
+    - large_p99_slowdown_cmp
+    - all_avg_slowdown_cmp
+    - all_p99_slowdown_cmp
+
+Input directories are experiment output roots under mix/output, for example:
+- mix/output/medu_loop_20260203_221642_AliStorage2019
+- mix/output/medu_loop_20260212_093305_AliStorage2019
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import Patch
+
+
+ALG_ORDER = ["conga", "conweave", "fecmp", "letflow"]
+ALG_LABEL = {
+    "conga": "CONGA",
+    "conweave": "ConWeave",
+    "fecmp": "FECMP",
+    "letflow": "LetFlow",
+}
+
+# per algorithm color (stable across both experiments)
+ALG_COLOR = {
+    "conga": "#e41a1c",
+    "conweave": "#377eb8",
+    "fecmp": "#4daf4a",
+    "letflow": "#ff7f00",
+}
+
+
+def parse_summary(summary_path: Path) -> Optional[Dict[str, Dict[str, float]]]:
+    if not summary_path.exists():
+        return None
+    metrics: Dict[str, Dict[str, float]] = {}
+    in_slowdown = False
+    for raw_line in summary_path.read_text().splitlines():
+        line = raw_line.strip()
+        if line.startswith("SLOWDOWN"):
+            in_slowdown = True
+            continue
+        if line.startswith("ABSOLUTE"):
+            break
+        if not in_slowdown:
+            continue
+        if not line.startswith("<1BDP,") and not line.startswith(">1BDP,") and not line.lower().startswith("all,"):
+            continue
+        parts = line.split(",")
+        if len(parts) < 6:
+            continue
+        tag = parts[0]
+        if tag.lower() == "all":
+            tag = "ALL"
+        metrics[tag] = {
+            "avg": float(parts[1]),
+            "p50": float(parts[2]),
+            "p95": float(parts[3]),
+            "p99": float(parts[4]),
+            "p999": float(parts[5]),
+        }
+    if "<1BDP" not in metrics or ">1BDP" not in metrics:
+        return None
+    return metrics
+
+
+def percentile_from_weighted(values: np.ndarray, weights: np.ndarray, percentile: float) -> float:
+    total = int(weights.sum())
+    if total <= 0:
+        return float("nan")
+    threshold = percentile / 100.0 * total
+    cumsum = np.cumsum(weights)
+    idx = int(np.searchsorted(cumsum, threshold, side="left"))
+    idx = min(max(idx, 0), len(values) - 1)
+    return float(values[idx])
+
+
+def parse_all_slowdown_cdf(cdf_path: Path) -> Optional[Dict[str, float]]:
+    if not cdf_path.exists():
+        return None
+
+    values: List[float] = []
+    weights: List[int] = []
+    for raw in cdf_path.read_text().splitlines():
+        parts = raw.strip().split()
+        if len(parts) < 2:
+            continue
+        try:
+            values.append(float(parts[0]))
+            weights.append(int(float(parts[1])))
+        except ValueError:
+            continue
+
+    if not values:
+        return None
+
+    arr_values = np.array(values, dtype=float)
+    arr_weights = np.array(weights, dtype=int)
+    total = int(arr_weights.sum())
+    if total <= 0:
+        return None
+
+    avg = float(np.average(arr_values, weights=arr_weights))
+    return {
+        "avg": avg,
+        "p50": percentile_from_weighted(arr_values, arr_weights, 50),
+        "p95": percentile_from_weighted(arr_values, arr_weights, 95),
+        "p99": percentile_from_weighted(arr_values, arr_weights, 99),
+        "p999": percentile_from_weighted(arr_values, arr_weights, 99.9),
+    }
+
+
+def parse_config(config_path: Path) -> Dict[str, str]:
+    result: Dict[str, str] = {}
+    if not config_path.exists():
+        return result
+    for line in config_path.read_text().splitlines():
+        parts = line.strip().split()
+        if len(parts) < 2:
+            continue
+        key = parts[0]
+        if key in {"LOAD", "FLOW_FILE", "BUFFER_SIZE"}:
+            result[key] = parts[1]
+    return result
+
+
+def load_sort_key(load_name: str) -> float:
+    # load30 -> 30.0
+    try:
+        return float(load_name.replace("load", ""))
+    except Exception:
+        return float("inf")
+
+
+def infer_algo(run_name: str) -> Optional[str]:
+    for a in ALG_ORDER:
+        if run_name.endswith("_" + a):
+            return a
+    return None
+
+
+def detect_cdf(exp_dir: Path) -> str:
+    # Prefer from folder name: medu_loop_<ts>_<CDF>
+    m = re.match(r"medu_loop_\d{8}_\d{6}_(.+)", exp_dir.name)
+    if m:
+        return m.group(1)
+
+    # Fallback from config FLOW_FILE
+    cfg_files = sorted(exp_dir.glob("load*/**/config.txt"))
+    for cfg in cfg_files:
+        data = parse_config(cfg)
+        flow = data.get("FLOW_FILE", "")
+        m2 = re.search(r"CDF_([^_]+)", flow)
+        if m2:
+            return m2.group(1)
+
+    return "unknownCDF"
+
+
+def collect_experiment(exp_dir: Path) -> Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]]:
+    """
+    Return nested dict:
+      data[load][algo][with_medu] = summary_metrics
+    """
+    data: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]] = defaultdict(lambda: defaultdict(dict))
+
+    load_dirs = sorted([p for p in exp_dir.iterdir() if p.is_dir() and p.name.startswith("load")], key=lambda p: load_sort_key(p.name))
+    for load_dir in load_dirs:
+        for run_dir in sorted([p for p in load_dir.iterdir() if p.is_dir()]):
+            run_name = run_dir.name
+            algo = infer_algo(run_name)
+            if algo is None:
+                continue
+            with_medu = run_name.startswith("with_medu")
+            summary_path = run_dir / f"{run_name}_out_fct_summary.txt"
+            summary = parse_summary(summary_path)
+            if summary is None:
+                continue
+
+            if "ALL" not in summary:
+                all_cdf_path = run_dir / f"{run_name}_out_fct_all_slowdown_cdf.txt"
+                all_metrics = parse_all_slowdown_cdf(all_cdf_path)
+                if all_metrics is not None:
+                    summary["ALL"] = all_metrics
+
+            data[load_dir.name][algo][with_medu] = summary
+    return data
+
+
+def common_loads(exp_a: Dict[str, Dict], exp_b: Dict[str, Dict], exp_c: Dict[str, Dict]) -> List[str]:
+    loads = sorted(set(exp_a.keys()).intersection(set(exp_b.keys())).intersection(set(exp_c.keys())), key=load_sort_key)
+    return loads
+
+
+def common_algos(exp_a: Dict[str, Dict], exp_b: Dict[str, Dict], exp_c: Dict[str, Dict]) -> List[str]:
+    alg_a = set()
+    alg_b = set()
+    alg_c = set()
+    for d in exp_a.values():
+        alg_a.update(d.keys())
+    for d in exp_b.values():
+        alg_b.update(d.keys())
+    for d in exp_c.values():
+        alg_c.update(d.keys())
+    common = alg_a.intersection(alg_b).intersection(alg_c)
+    return [a for a in ALG_ORDER if a in common]
+
+
+def get_metric(
+    exp: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    load: str,
+    algo: str,
+    with_medu: bool,
+    size_tag: str,
+    metric: str,
+) -> float:
+    s = exp.get(load, {}).get(algo, {}).get(with_medu)
+    if s is None:
+        return float("nan")
+    return float(s[size_tag][metric])
+
+
+def plot_metric_bars(
+    loads: List[str],
+    algos: List[str],
+    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    label_a: str,
+    label_b: str,
+    label_c: str,
+    title: str,
+    y_label: str,
+    size_tag: str,
+    metric: str,
+    out_png: Path,
+):
+    fig, ax = plt.subplots(figsize=(15, 6.2))
+
+    conditions = [
+        # (buffer_label, with_medu, alpha, hatch, edgecolor)
+        (label_a, False, 0.55, "", "black"),
+        (label_a, True, 1.0, "///", "black"),
+        (label_b, False, 0.55, "..", "#4d4d4d"),
+        (label_b, True, 1.0, "xx", "#4d4d4d"),
+        (label_c, False, 0.55, "\\\\", "#7a7a7a"),
+        (label_c, True, 1.0, "++", "#7a7a7a"),
+    ]
+
+    bar_w = 0.05
+    group_gap = 0.42
+    group_width = len(conditions) * len(algos) * bar_w
+
+    tick_pos: List[float] = []
+    tick_lbl: List[str] = []
+
+    for li, load in enumerate(loads):
+        group_start = li * (group_width + group_gap)
+        tick_pos.append(group_start + group_width / 2.0)
+        tick_lbl.append(load.replace("load", ""))
+
+        for ci, (buffer_label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
+            cond_start = group_start + ci * len(algos) * bar_w
+            for ai, algo in enumerate(algos):
+                x = cond_start + ai * bar_w
+                if buffer_label == label_a:
+                    val = get_metric(exp_a, load, algo, with_medu, size_tag, metric)
+                elif buffer_label == label_b:
+                    val = get_metric(exp_b, load, algo, with_medu, size_tag, metric)
+                else:
+                    val = get_metric(exp_c, load, algo, with_medu, size_tag, metric)
+
+                ax.bar(
+                    x,
+                    val,
+                    width=bar_w,
+                    color=ALG_COLOR.get(algo),
+                    alpha=alpha,
+                    hatch=hatch,
+                    edgecolor=edgecolor,
+                    linewidth=0.6,
+                )
+
+    ax.set_title(title)
+    ax.set_xlabel("Network Load")
+    ax.set_ylabel(y_label)
+    ax.set_xticks(tick_pos)
+    ax.set_xticklabels(tick_lbl)
+    ax.grid(axis="y", alpha=0.3)
+
+    algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
+    cond_handles = [
+        Patch(facecolor="gray", edgecolor="black", alpha=0.55, label=f"{label_a} (No MEDU)"),
+        Patch(facecolor="gray", edgecolor="black", alpha=1.0, hatch="///", label=f"{label_a} (With MEDU)"),
+        Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=0.55, hatch="..", label=f"{label_b} (No MEDU)"),
+        Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=1.0, hatch="xx", label=f"{label_b} (With MEDU)"),
+        Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=0.55, hatch="\\\\", label=f"{label_c} (No MEDU)"),
+        Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=1.0, hatch="++", label=f"{label_c} (With MEDU)"),
+    ]
+
+    legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
+    ax.add_artist(legend1)
+    ax.legend(handles=cond_handles, loc="upper right", fontsize=8, title="Condition")
+
+    plt.tight_layout()
+
+    fig.savefig(out_png, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _plot_metric_bars_on_axis(
+    ax,
+    load: str,
+    algos: List[str],
+    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    label_a: str,
+    label_b: str,
+    label_c: str,
+    title: str,
+    y_label: str,
+    size_tag: str,
+    metric: str,
+    show_legend: bool = False,
+):
+    conditions = [
+        (label_a, False, 0.55, "", "black"),
+        (label_a, True, 1.0, "///", "black"),
+        (label_b, False, 0.55, "..", "#4d4d4d"),
+        (label_b, True, 1.0, "xx", "#4d4d4d"),
+        (label_c, False, 0.55, "\\\\", "#7a7a7a"),
+        (label_c, True, 1.0, "++", "#7a7a7a"),
+    ]
+
+    bar_w = 0.12
+    x = np.arange(len(algos))
+
+    # offsets for 6 condition bars around each algorithm center
+    offsets = [(-2.5 + i) * bar_w for i in range(len(conditions))]
+
+    for ci, (buffer_label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
+        vals = []
+        for algo in algos:
+            if buffer_label == label_a:
+                val = get_metric(exp_a, load, algo, with_medu, size_tag, metric)
+            elif buffer_label == label_b:
+                val = get_metric(exp_b, load, algo, with_medu, size_tag, metric)
+            else:
+                val = get_metric(exp_c, load, algo, with_medu, size_tag, metric)
+            vals.append(val)
+
+        ax.bar(
+            x + offsets[ci],
+            vals,
+            width=bar_w,
+            color=[ALG_COLOR.get(a) for a in algos],
+            alpha=alpha,
+            hatch=hatch,
+            edgecolor=edgecolor,
+            linewidth=0.6,
+        )
+
+    ax.set_title(title)
+    ax.set_ylabel(y_label)
+    ax.set_xticks(x)
+    ax.set_xticklabels([ALG_LABEL.get(a, a) for a in algos], rotation=0)
+    ax.grid(axis="y", alpha=0.3)
+
+    if show_legend:
+        algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
+        cond_handles = [
+            Patch(facecolor="gray", edgecolor="black", alpha=0.55, label=f"{label_a} (No MEDU)"),
+            Patch(facecolor="gray", edgecolor="black", alpha=1.0, hatch="///", label=f"{label_a} (With MEDU)"),
+            Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=0.55, hatch="..", label=f"{label_b} (No MEDU)"),
+            Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=1.0, hatch="xx", label=f"{label_b} (With MEDU)"),
+            Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=0.55, hatch="\\\\", label=f"{label_c} (No MEDU)"),
+            Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=1.0, hatch="++", label=f"{label_c} (With MEDU)"),
+        ]
+        legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
+        ax.add_artist(legend1)
+        ax.legend(handles=cond_handles, loc="upper right", fontsize=8, title="Condition")
+
+
+def plot_per_load_collage(
+    loads: List[str],
+    algos: List[str],
+    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
+    label_a: str,
+    label_b: str,
+    label_c: str,
+    out_dir: Path,
+):
+    for load in loads:
+        fig, axes = plt.subplots(3, 2, figsize=(14, 13))
+
+        _plot_metric_bars_on_axis(
+            axes[0, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "Small Flow (<1BDP) - Average Slowdown", "Average FCT Slowdown", "<1BDP", "avg", show_legend=True
+        )
+        _plot_metric_bars_on_axis(
+            axes[0, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "Small Flow (<1BDP) - p99 Slowdown", "p99 FCT Slowdown", "<1BDP", "p99", show_legend=False
+        )
+        _plot_metric_bars_on_axis(
+            axes[1, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "Large Flow (>1BDP) - Average Slowdown", "Average FCT Slowdown", ">1BDP", "avg", show_legend=False
+        )
+        _plot_metric_bars_on_axis(
+            axes[1, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "Large Flow (>1BDP) - p99 Slowdown", "p99 FCT Slowdown", ">1BDP", "p99", show_legend=False
+        )
+        _plot_metric_bars_on_axis(
+            axes[2, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "All Flow - Average Slowdown", "Average FCT Slowdown", "ALL", "avg", show_legend=False
+        )
+        _plot_metric_bars_on_axis(
+            axes[2, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            "All Flow - p99 Slowdown", "p99 FCT Slowdown", "ALL", "p99", show_legend=False
+        )
+
+        load_num = load.replace("load", "")
+        fig.suptitle(f"Per-Load Comparison (Load={load_num}): {label_a} vs {label_b} vs {label_c}", fontsize=14)
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+        out_png = out_dir / f"load{load_num}_collage_cmp.png"
+        fig.savefig(out_png, dpi=180, bbox_inches="tight")
+        plt.close(fig)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Re-plot two or three experiments on same axes")
+    parser.add_argument("--exp-a", type=Path, required=True, help="Experiment A directory under mix/output")
+    parser.add_argument("--exp-b", type=Path, required=True, help="Experiment B directory under mix/output")
+    parser.add_argument("--exp-c", type=Path, required=True, help="Experiment C directory under mix/output")
+    parser.add_argument("--label-a", type=str, default="9MB")
+    parser.add_argument("--label-b", type=str, default="4MB")
+    parser.add_argument("--label-c", type=str, default="2MB")
+    parser.add_argument(
+        "--out-root",
+        type=Path,
+        default=Path(__file__).resolve().parent / "figures",
+        help="Output root directory",
+    )
+
+    args = parser.parse_args()
+
+    exp_a = args.exp_a
+    exp_b = args.exp_b
+    exp_c = args.exp_c
+    if not exp_a.exists() or not exp_a.is_dir():
+        raise SystemExit(f"exp-a not found: {exp_a}")
+    if not exp_b.exists() or not exp_b.is_dir():
+        raise SystemExit(f"exp-b not found: {exp_b}")
+    if not exp_c.exists() or not exp_c.is_dir():
+        raise SystemExit(f"exp-c not found: {exp_c}")
+
+    data_a = collect_experiment(exp_a)
+    data_b = collect_experiment(exp_b)
+    data_c = collect_experiment(exp_c)
+
+    loads = common_loads(data_a, data_b, data_c)
+    if not loads:
+        raise SystemExit("No common loads between experiments")
+
+    algos = common_algos(data_a, data_b, data_c)
+    if not algos:
+        raise SystemExit("No common algorithms between experiments")
+
+    cdf_a = detect_cdf(exp_a)
+    cdf_b = detect_cdf(exp_b)
+    cdf_c = detect_cdf(exp_c)
+    
+    if cdf_a == cdf_b == cdf_c:
+        cdf = cdf_a
+    else:
+        cdf = f"{cdf_a}_vs_{cdf_b}_vs_{cdf_c}"
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = args.out_root / f"{ts}_{cdf}_cmp"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1) Small avg slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "Small Flow (<1BDP) - Average Slowdown",
+        "Average FCT Slowdown",
+        "<1BDP",
+        "avg",
+        out_dir / "small_avg_slowdown_cmp.png",
+    )
+
+    # 2) Small p99 slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "Small Flow (<1BDP) - p99 Slowdown",
+        "p99 FCT Slowdown",
+        "<1BDP",
+        "p99",
+        out_dir / "small_p99_slowdown_cmp.png",
+    )
+
+    # 3) Large avg slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "Large Flow (>1BDP) - Average Slowdown",
+        "Average FCT Slowdown",
+        ">1BDP",
+        "avg",
+        out_dir / "large_avg_slowdown_cmp.png",
+    )
+
+    # 4) Large p99 slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "Large Flow (>1BDP) - p99 Slowdown",
+        "p99 FCT Slowdown",
+        ">1BDP",
+        "p99",
+        out_dir / "large_p99_slowdown_cmp.png",
+    )
+
+    # 5) Per-load collage images (3x2 each load)
+    plot_per_load_collage(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        out_dir,
+    )
+
+    # 6) All-flow avg slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "All Flow - Average Slowdown",
+        "Average FCT Slowdown",
+        "ALL",
+        "avg",
+        out_dir / "all_avg_slowdown_cmp.png",
+    )
+
+    # 7) All-flow p99 slowdown
+    plot_metric_bars(
+        loads,
+        algos,
+        data_a,
+        data_b,
+        data_c,
+        args.label_a,
+        args.label_b,
+        args.label_c,
+        "All Flow - p99 Slowdown",
+        "p99 FCT Slowdown",
+        "ALL",
+        "p99",
+        out_dir / "all_p99_slowdown_cmp.png",
+    )
+
+    # brief metadata
+    meta = [
+        f"exp_a={exp_a}",
+        f"exp_b={exp_b}",
+        f"exp_c={exp_c}",
+        f"label_a={args.label_a}",
+        f"label_b={args.label_b}",
+        f"label_c={args.label_c}",
+        f"cdf={cdf}",
+        f"loads={','.join(loads)}",
+        f"algos={','.join(algos)}",
+    ]
+    (out_dir / "compare_meta.txt").write_text("\n".join(meta))
+
+    print(f"Output directory: {out_dir}")
+    print(f"Generated 6 overview PNG files + {len(loads)} per-load collage PNG files")
+
+
+if __name__ == "__main__":
+    main()

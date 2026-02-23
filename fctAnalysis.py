@@ -33,6 +33,36 @@ def getCdfFromArray(data_arr):
     od.pop(0)
     return od
 
+def summarize_size_breakdown(lines, one_bdp):
+	total_flows = len(lines)
+	small_flow_count = 0
+	large_flow_count = 0
+	small_bytes = 0
+	large_bytes = 0
+
+	for x in lines:
+		size = int(x.split(" ")[1])
+		if size < one_bdp:
+			small_flow_count += 1
+			small_bytes += size
+		else:
+			large_flow_count += 1
+			large_bytes += size
+
+	total_bytes = small_bytes + large_bytes
+	return {
+		"total_flows": total_flows,
+		"small_flow_count": small_flow_count,
+		"large_flow_count": large_flow_count,
+		"small_flow_ratio": (float(small_flow_count) / total_flows) if total_flows > 0 else 0.0,
+		"large_flow_ratio": (float(large_flow_count) / total_flows) if total_flows > 0 else 0.0,
+		"total_bytes": total_bytes,
+		"small_bytes": small_bytes,
+		"large_bytes": large_bytes,
+		"small_traffic_ratio": (float(small_bytes) / total_bytes) if total_bytes > 0 else 0.0,
+		"large_traffic_ratio": (float(large_bytes) / total_bytes) if total_bytes > 0 else 0.0,
+	}
+
 if __name__=="__main__":
 	parser = argparse.ArgumentParser(description='')
 	parser.add_argument('-id', '--id', dest='id', required=True, action='store', help="traceId")
@@ -84,12 +114,15 @@ if __name__=="__main__":
 		outfile_fct_summary.write("SLOWDOWN")
 		aa = output_slowdown.decode("utf-8").split('\n')[:-2]
 		nn = len(aa)
+		size_breakdown = summarize_size_breakdown(aa, OneBDP)
 
 		fct_bdp = []
 		fct_over_bdp = []
+		fct_all = []
 		for x in aa:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
+			fct_all.append(val)
 			if (i < OneBDP):
 				fct_bdp.append(val)
 			else:
@@ -108,6 +141,24 @@ if __name__=="__main__":
 																						np.percentile(fct_over_bdp, 95),
 																						np.percentile(fct_over_bdp, 99),
 																						np.percentile(fct_over_bdp, 99.9)))
+		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format("ALL", np.average(fct_all),
+																	np.percentile(fct_all, 50),
+																	np.percentile(fct_all, 95),
+																	np.percentile(fct_all, 99),
+																	np.percentile(fct_all, 99.9)))
+
+		outfile_fct_summary.write("#\n")
+		outfile_fct_summary.write("#FLOW_SIZE_BREAKDOWN\n")
+		outfile_fct_summary.write("#TOTAL_FLOWS={}\n".format(size_breakdown["total_flows"]))
+		outfile_fct_summary.write("#SMALL_FLOW_COUNT={}\n".format(size_breakdown["small_flow_count"]))
+		outfile_fct_summary.write("#LARGE_FLOW_COUNT={}\n".format(size_breakdown["large_flow_count"]))
+		outfile_fct_summary.write("#SMALL_FLOW_RATIO={:.6f}\n".format(size_breakdown["small_flow_ratio"]))
+		outfile_fct_summary.write("#LARGE_FLOW_RATIO={:.6f}\n".format(size_breakdown["large_flow_ratio"]))
+		outfile_fct_summary.write("#TOTAL_BYTES={}\n".format(size_breakdown["total_bytes"]))
+		outfile_fct_summary.write("#SMALL_BYTES={}\n".format(size_breakdown["small_bytes"]))
+		outfile_fct_summary.write("#LARGE_BYTES={}\n".format(size_breakdown["large_bytes"]))
+		outfile_fct_summary.write("#SMALL_TRAFFIC_RATIO={:.6f}\n".format(size_breakdown["small_traffic_ratio"]))
+		outfile_fct_summary.write("#LARGE_TRAFFIC_RATIO={:.6f}\n".format(size_breakdown["large_traffic_ratio"]))
 		outfile_fct_summary.write("#\n#\n#\n#\n#\n")
 
 		# CDF of FCT

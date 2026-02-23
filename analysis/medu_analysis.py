@@ -11,6 +11,7 @@ loads such as 90 or different traffic CDFs) without code changes.
 from __future__ import annotations
 
 import argparse
+import bisect
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -40,7 +41,7 @@ def parse_log_for_id(log_path: Path) -> str:
 
 def parse_config(config_path: Path) -> Dict[str, Optional[str]]:
     """Parse key fields from a config.txt file."""
-    cfg: Dict[str, Optional[str]] = {"load": None, "flow_file": None}
+    cfg: Dict[str, Optional[str]] = {"load": None, "flow_file": None, "buffer": None}
     for raw in config_path.read_text().splitlines():
         parts = raw.strip().split()
         if len(parts) < 2:
@@ -50,18 +51,32 @@ def parse_config(config_path: Path) -> Dict[str, Optional[str]]:
             cfg["load"] = value
         elif key == "FLOW_FILE":
             cfg["flow_file"] = value
+        elif key == "BUFFER_SIZE":
+            cfg["buffer"] = value
     return cfg
 
 
 def parse_summary(summary_path: Path) -> Dict[str, Dict[str, float]]:
-    """Parse slowdown stats for <1BDP and >1BDP from summary file."""
+    """Parse slowdown stats from summary file (<1BDP, >1BDP, optional ALL)."""
     metrics: Dict[str, Dict[str, float]] = {}
-    pattern = re.compile(r"^(<1BDP|>1BDP),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+)")
-    for line in summary_path.read_text().splitlines():
-        match = pattern.match(line.strip())
+    pattern = re.compile(r"^(<1BDP|>1BDP|ALL|All|all),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+)")
+    in_slowdown = False
+    for raw_line in summary_path.read_text().splitlines():
+        line = raw_line.strip()
+        if line.startswith("SLOWDOWN"):
+            in_slowdown = True
+            continue
+        if line.startswith("ABSOLUTE"):
+            break
+        if not in_slowdown:
+            continue
+
+        match = pattern.match(line)
         if not match:
             continue
         tag, avg, p50, p95, p99, p999 = match.groups()
+        if tag.lower() == "all":
+            tag = "ALL"
         metrics[tag] = {
             "avg": float(avg),
             "p50": float(p50),
@@ -72,6 +87,95 @@ def parse_summary(summary_path: Path) -> Dict[str, Dict[str, float]]:
     if "<1BDP" not in metrics or ">1BDP" not in metrics:
         raise ValueError(f"Missing slowdown metrics in {summary_path}")
     return metrics
+
+
+def parse_all_slowdown_from_fct(fct_path: Path) -> Dict[str, float]:
+    """Compute all-flow slowdown stats from *_out_fct.txt as fallback."""
+    slowdown_values: List[float] = []
+    with fct_path.open() as handle:
+        for raw in handle:
+            parts = raw.strip().split()
+            if len(parts) < 8:
+                continue
+            try:
+                fct_ns = float(parts[6])
+                ideal_fct_ns = float(parts[7])
+            except ValueError:
+                continue
+            if ideal_fct_ns <= 0:
+                continue
+            slowdown_values.append(max(1.0, fct_ns / ideal_fct_ns))
+
+    if not slowdown_values:
+        raise ValueError(f"No valid flow records found in {fct_path}")
+
+    arr = np.array(slowdown_values, dtype=float)
+    return {
+        "avg": float(np.average(arr)),
+        "p50": float(np.percentile(arr, 50)),
+        "p95": float(np.percentile(arr, 95)),
+        "p99": float(np.percentile(arr, 99)),
+        "p999": float(np.percentile(arr, 99.9)),
+    }
+
+
+def parse_all_slowdown_from_cdf(cdf_path: Path) -> Dict[str, float]:
+    """Compute all-flow slowdown stats from *_out_fct_all_slowdown_cdf.txt."""
+    values: List[float] = []
+    counts: List[int] = []
+
+    with cdf_path.open() as handle:
+        for raw in handle:
+            parts = raw.strip().split()
+            if len(parts) < 2:
+                continue
+            try:
+                value = float(parts[0])
+                count = int(parts[1])
+            except ValueError:
+                continue
+            if count <= 0:
+                continue
+            values.append(value)
+            counts.append(count)
+
+    if not values:
+        raise ValueError(f"No valid CDF records found in {cdf_path}")
+
+    cumulative: List[int] = []
+    running = 0
+    weighted_sum = 0.0
+    for value, count in zip(values, counts):
+        running += count
+        cumulative.append(running)
+        weighted_sum += value * count
+
+    total = cumulative[-1]
+    if total <= 0:
+        raise ValueError(f"Invalid sample count in {cdf_path}")
+
+    def value_at_index(index: int) -> float:
+        idx = bisect.bisect_right(cumulative, index)
+        return values[min(idx, len(values) - 1)]
+
+    def percentile(q: float) -> float:
+        rank = (q / 100.0) * (total - 1)
+        lo = int(np.floor(rank))
+        hi = int(np.ceil(rank))
+        if lo == hi:
+            return value_at_index(lo)
+        lo_v = value_at_index(lo)
+        hi_v = value_at_index(hi)
+        frac = rank - lo
+        return (1.0 - frac) * lo_v + frac * hi_v
+
+    return {
+        "avg": weighted_sum / total,
+        "p50": percentile(50),
+        "p95": percentile(95),
+        "p99": percentile(99),
+        "p999": percentile(99.9),
+    }
 
 
 def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
@@ -104,6 +208,8 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
             run_name = log_file.stem  # e.g., 'no_medu_conga'
             run_root = comp_dir / run_name
             summary_path = run_root / f"{run_name}_out_fct_summary.txt"
+            all_slowdown_cdf_path = run_root / f"{run_name}_out_fct_all_slowdown_cdf.txt"
+            fct_path = run_root / f"{run_name}_out_fct.txt"
             config_path = run_root / "config.txt"
 
             # Fallback for old flat structure if needed
@@ -114,6 +220,8 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
                     if alt_root.exists():
                         run_root = alt_root
                         summary_path = run_root / f"{run_id}_out_fct_summary.txt"
+                        all_slowdown_cdf_path = run_root / f"{run_id}_out_fct_all_slowdown_cdf.txt"
+                        fct_path = run_root / f"{run_id}_out_fct.txt"
                         config_path = run_root / "config.txt"
                 except Exception:
                     pass
@@ -123,6 +231,14 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
                 continue
 
             summary = parse_summary(summary_path)
+            if "ALL" not in summary:
+                try:
+                    if all_slowdown_cdf_path.exists():
+                        summary["ALL"] = parse_all_slowdown_from_cdf(all_slowdown_cdf_path)
+                    elif fct_path.exists():
+                        summary["ALL"] = parse_all_slowdown_from_fct(fct_path)
+                except Exception as exc:
+                    print(f"Warning: failed to compute ALL-flow metrics for {run_name}: {exc}")
             cfg = parse_config(config_path)
             if cfg["load"] is None and load_hint is not None:
                 cfg["load"] = load_hint
@@ -140,6 +256,7 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
                 {
                     "load": cfg["load"],
                     "flow_file": cfg["flow_file"],
+                    "buffer": cfg["buffer"],
                     "algo": algo,
                     "with_medu": with_medu,
                     "summary": summary,
@@ -177,10 +294,13 @@ def pivot_data(runs: List[Dict[str, object]]) -> Tuple[List[str], Dict[str, Dict
 
 
 def build_metric_arrays(load_labels: List[str], series: Dict[str, Dict[str, Dict[bool, Dict[str, float]]]], algos: List[str]):
-    """Prepare arrays for plotting small-flow avg/p99 and large-flow avg."""
+    """Prepare arrays for plotting small/large/all-flow avg and p99 metrics."""
     small_avg_no, small_avg_yes = {}, {}
     small_p99_no, small_p99_yes = {}, {}
     large_avg_no, large_avg_yes = {}, {}
+    large_p99_no, large_p99_yes = {}, {}
+    all_avg_no, all_avg_yes = {}, {}
+    all_p99_no, all_p99_yes = {}, {}
 
     loads_float = [float(l) for l in load_labels]
 
@@ -188,6 +308,9 @@ def build_metric_arrays(load_labels: List[str], series: Dict[str, Dict[str, Dict
         small_avg_no[algo], small_avg_yes[algo] = [], []
         small_p99_no[algo], small_p99_yes[algo] = [], []
         large_avg_no[algo], large_avg_yes[algo] = [], []
+        large_p99_no[algo], large_p99_yes[algo] = [], []
+        all_avg_no[algo], all_avg_yes[algo] = [], []
+        all_p99_no[algo], all_p99_yes[algo] = [], []
         for load in loads_float:
             metrics_no = series.get(load, {}).get(algo, {}).get(False)
             metrics_yes = series.get(load, {}).get(algo, {}).get(True)
@@ -198,8 +321,28 @@ def build_metric_arrays(load_labels: List[str], series: Dict[str, Dict[str, Dict
             small_p99_yes[algo].append(metrics_yes["<1BDP"]["p99"] if metrics_yes else np.nan)
             large_avg_no[algo].append(metrics_no[">1BDP"]["avg"] if metrics_no else np.nan)
             large_avg_yes[algo].append(metrics_yes[">1BDP"]["avg"] if metrics_yes else np.nan)
+            large_p99_no[algo].append(metrics_no[">1BDP"]["p99"] if metrics_no else np.nan)
+            large_p99_yes[algo].append(metrics_yes[">1BDP"]["p99"] if metrics_yes else np.nan)
+            all_avg_no[algo].append(metrics_no["ALL"]["avg"] if metrics_no and "ALL" in metrics_no else np.nan)
+            all_avg_yes[algo].append(metrics_yes["ALL"]["avg"] if metrics_yes and "ALL" in metrics_yes else np.nan)
+            all_p99_no[algo].append(metrics_no["ALL"]["p99"] if metrics_no and "ALL" in metrics_no else np.nan)
+            all_p99_yes[algo].append(metrics_yes["ALL"]["p99"] if metrics_yes and "ALL" in metrics_yes else np.nan)
 
-    return loads_float, small_avg_no, small_avg_yes, small_p99_no, small_p99_yes, large_avg_no, large_avg_yes
+    return (
+        loads_float,
+        small_avg_no,
+        small_avg_yes,
+        small_p99_no,
+        small_p99_yes,
+        large_avg_no,
+        large_avg_yes,
+        large_p99_no,
+        large_p99_yes,
+        all_avg_no,
+        all_avg_yes,
+        all_p99_no,
+        all_p99_yes,
+    )
 
 
 def plot_comparison(
@@ -212,10 +355,16 @@ def plot_comparison(
     small_p99_yes: Dict[str, List[float]],
     large_avg_no: Dict[str, List[float]],
     large_avg_yes: Dict[str, List[float]],
+    large_p99_no: Dict[str, List[float]],
+    large_p99_yes: Dict[str, List[float]],
+    all_avg_no: Dict[str, List[float]],
+    all_avg_yes: Dict[str, List[float]],
+    all_p99_no: Dict[str, List[float]],
+    all_p99_yes: Dict[str, List[float]],
     output_dir: Path,
     prefix: str,
 ):
-    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+    fig, axes = plt.subplots(3, 2, figsize=(16, 16))
     colors_no = ['#ff7f7f', '#7fb3ff', '#7fff7f', '#ffbf7f']
     colors_yes = ['#cc0000', '#0050cc', '#00cc00', '#cc8000']
 
@@ -270,23 +419,53 @@ def plot_comparison(
     ax3.legend(loc='upper left', fontsize=9, ncol=2)
     ax3.grid(axis='y', alpha=0.3)
 
-    # Improvement in p99 small-flow
+    # Large flow p99
     ax4 = axes[1, 1]
     for i, algo in enumerate(algos):
-        improvements = []
-        for a_no, a_yes in zip(small_p99_no[algo], small_p99_yes[algo]):
-            if np.isnan(a_no) or np.isnan(a_yes) or a_no == 0:
-                improvements.append(np.nan)
-            else:
-                improvements.append((1 - a_yes / a_no) * 100)
-        ax4.plot(load_labels, improvements, marker='o', linewidth=2, markersize=7,
-                 label=algo, color=colors_yes[i % len(colors_yes)])
-    ax4.set_ylabel('Improvement Rate (%)')
+        ax4.bar(x - 1.5 * width + i * width * 0.8, large_p99_no[algo], width * 0.8,
+                label=f"{algo} (No MEDU)", color=colors_no[i % len(colors_no)], alpha=0.7)
+    for i, algo in enumerate(algos):
+        ax4.bar(x + 0.5 * width + i * width * 0.8, large_p99_yes[algo], width * 0.8,
+                label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
+    ax4.set_ylabel('p99 FCT Slowdown')
     ax4.set_xlabel('Network Load')
-    ax4.set_title('Small Flow p99 Improvement with MEDU')
-    ax4.set_ylim(0, 100)
-    ax4.legend(loc='lower right', fontsize=9)
-    ax4.grid(True, alpha=0.3)
+    ax4.set_title('Large Flow (>1BDP) - p99 Slowdown')
+    ax4.set_xticks(x)
+    ax4.set_xticklabels(load_labels)
+    ax4.legend(loc='upper left', fontsize=9, ncol=2)
+    ax4.grid(axis='y', alpha=0.3)
+
+    # All flow avg
+    ax5 = axes[2, 0]
+    for i, algo in enumerate(algos):
+        ax5.bar(x - 1.5 * width + i * width * 0.8, all_avg_no[algo], width * 0.8,
+                label=f"{algo} (No MEDU)", color=colors_no[i % len(colors_no)], alpha=0.7)
+    for i, algo in enumerate(algos):
+        ax5.bar(x + 0.5 * width + i * width * 0.8, all_avg_yes[algo], width * 0.8,
+                label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
+    ax5.set_ylabel('Average FCT Slowdown')
+    ax5.set_xlabel('Network Load')
+    ax5.set_title('All Flow - Average Slowdown')
+    ax5.set_xticks(x)
+    ax5.set_xticklabels(load_labels)
+    ax5.legend(loc='upper left', fontsize=9, ncol=2)
+    ax5.grid(axis='y', alpha=0.3)
+
+    # All flow p99
+    ax6 = axes[2, 1]
+    for i, algo in enumerate(algos):
+        ax6.bar(x - 1.5 * width + i * width * 0.8, all_p99_no[algo], width * 0.8,
+                label=f"{algo} (No MEDU)", color=colors_no[i % len(colors_no)], alpha=0.7)
+    for i, algo in enumerate(algos):
+        ax6.bar(x + 0.5 * width + i * width * 0.8, all_p99_yes[algo], width * 0.8,
+                label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
+    ax6.set_ylabel('p99 FCT Slowdown')
+    ax6.set_xlabel('Network Load')
+    ax6.set_title('All Flow - p99 Slowdown')
+    ax6.set_xticks(x)
+    ax6.set_xticklabels(load_labels)
+    ax6.legend(loc='upper left', fontsize=9, ncol=2)
+    ax6.grid(axis='y', alpha=0.3)
 
     plt.tight_layout()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -302,6 +481,10 @@ def write_stats(
     algos: List[str],
     small_p99_no: Dict[str, List[float]],
     small_p99_yes: Dict[str, List[float]],
+    all_avg_no: Dict[str, List[float]],
+    all_avg_yes: Dict[str, List[float]],
+    all_p99_no: Dict[str, List[float]],
+    all_p99_yes: Dict[str, List[float]],
     output_dir: Path,
     prefix: str,
 ):
@@ -318,6 +501,34 @@ def write_stats(
                 row.append("NA")
             else:
                 row.append(f"{(1 - medu / base) * 100:.1f}%")
+        lines.append("\t".join(row))
+
+    lines.append("")
+    lines.append("ALL-flow average slowdown")
+    header_avg = ["Load"] + [f"{algo}-NoMEDU" for algo in algos] + [f"{algo}-WithMEDU" for algo in algos]
+    lines.append("\t".join(header_avg))
+    for idx, label in enumerate(load_labels):
+        row = [label]
+        for algo in algos:
+            val = all_avg_no[algo][idx]
+            row.append(f"{val:.3f}" if not np.isnan(val) else "NA")
+        for algo in algos:
+            val = all_avg_yes[algo][idx]
+            row.append(f"{val:.3f}" if not np.isnan(val) else "NA")
+        lines.append("\t".join(row))
+
+    lines.append("")
+    lines.append("ALL-flow p99 slowdown")
+    header_p99 = ["Load"] + [f"{algo}-NoMEDU" for algo in algos] + [f"{algo}-WithMEDU" for algo in algos]
+    lines.append("\t".join(header_p99))
+    for idx, label in enumerate(load_labels):
+        row = [label]
+        for algo in algos:
+            val = all_p99_no[algo][idx]
+            row.append(f"{val:.3f}" if not np.isnan(val) else "NA")
+        for algo in algos:
+            val = all_p99_yes[algo][idx]
+            row.append(f"{val:.3f}" if not np.isnan(val) else "NA")
         lines.append("\t".join(row))
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -351,7 +562,20 @@ def main():
 
         match = re.match(r"medu_loop_(\d{8}_\d{6})_(.+)", exp_dir.name)
         if match:
-            subdir_name = f"{match.group(1)}_{match.group(2)}"
+            ts_part = match.group(1)
+            desc_part = match.group(2)
+            
+            # Detect buffer size from runs to ensure it's in the name
+            buf_val = None
+            for r in runs:
+                if r.get("buffer"):
+                    buf_val = r["buffer"]
+                    break
+            
+            if buf_val and not desc_part.endswith(f"_{buf_val}MB"):
+                subdir_name = f"{ts_part}_{desc_part}_{buf_val}MB"
+            else:
+                subdir_name = f"{ts_part}_{desc_part}"
         else:
             subdir_name = exp_dir.name
         output_dir = args.output_dir / subdir_name
@@ -367,6 +591,12 @@ def main():
             small_p99_yes,
             large_avg_no,
             large_avg_yes,
+            large_p99_no,
+            large_p99_yes,
+            all_avg_no,
+            all_avg_yes,
+            all_p99_no,
+            all_p99_yes,
         ) = build_metric_arrays(load_labels, series, algos)
 
         plot_comparison(
@@ -379,11 +609,28 @@ def main():
             small_p99_yes,
             large_avg_no,
             large_avg_yes,
+            large_p99_no,
+            large_p99_yes,
+            all_avg_no,
+            all_avg_yes,
+            all_p99_no,
+            all_p99_yes,
             output_dir,
             args.prefix,
         )
 
-        write_stats(load_labels, algos, small_p99_no, small_p99_yes, output_dir, args.prefix)
+        write_stats(
+            load_labels,
+            algos,
+            small_p99_no,
+            small_p99_yes,
+            all_avg_no,
+            all_avg_yes,
+            all_p99_no,
+            all_p99_yes,
+            output_dir,
+            args.prefix,
+        )
 
     if not any_runs:
         raise SystemExit("No runs found. Check --base-dir and --pattern.")

@@ -21,6 +21,7 @@ TOPOLOGY="leaf_spine_128_100G_OS2"
 NETLOAD="70"           # Network load (e.g., 40, 50, 70, 80)
 CDF="webserver"           # CDF file name in traffic_gen/ without .txt
 RUNTIME="0.1"          # 0.1 second (traffic generation)
+BUFFER_SIZE="9"        # Switch buffer size (MB)
 
 # Load Balancing algorithms to test
 LB_ALGORITHMS=("fecmp" "letflow" "conga" "conweave")
@@ -38,7 +39,7 @@ cecho "GREEN" "============================================================"
 echo ""
 
 # Create output directory for experiment results
-EXP_NAME="medu_comparison_$(date +%Y%m%d_%H%M%S)_load${NETLOAD}_${CDF}"
+EXP_NAME="medu_comparison_$(date +%Y%m%d_%H%M%S)_load${NETLOAD}_${CDF}_${BUFFER_SIZE}MB"
 EXPERIMENT_DIR="mix/output/${EXP_NAME}"
 mkdir -p ${EXPERIMENT_DIR}
 
@@ -73,6 +74,7 @@ for lb in "${LB_ALGORITHMS[@]}"; do
         --netload ${NETLOAD} \
         --topo ${TOPOLOGY} \
         --cdf ${CDF} \
+        --buffer ${BUFFER_SIZE} \
         --medu 0 \
         --id ${EXP_NAME}/no_medu_${lb} \
         2>&1 | tee -a ${EXPERIMENT_DIR}/no_medu_${lb}.log &
@@ -93,6 +95,7 @@ for lb in "${LB_ALGORITHMS[@]}"; do
         --netload ${NETLOAD} \
         --topo ${TOPOLOGY} \
         --cdf ${CDF} \
+        --buffer ${BUFFER_SIZE} \
         --medu 1 \
         --id ${EXP_NAME}/with_medu_${lb} \
         2>&1 | tee -a ${EXPERIMENT_DIR}/with_medu_${lb}.log &

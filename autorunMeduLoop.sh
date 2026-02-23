@@ -18,12 +18,12 @@ cecho(){
 
 # Experiment Parameters
 TOPOLOGY="leaf_spine_128_100G_OS2"
-LOADS=("30" "40" "50" "70" "80" "90")  # List of loads to test as requested
-CDF="AliStorage2019"           # CDF file name:AliStorage2019 webserver search Solar2022
+LOADS=("30" "50" "70" "80")  # List of loads to test as requested
+CDF="AliStorage2019"           # CDF file name:AliStorage2019 webserver search Solar2022 FbHdp2015
 RUNTIME="0.1"          # 0.1 second (traffic generation)
 
 # ===== 可调整的额外参数 =====
-BUFFER_SIZE="4"       # 交换机缓存大小 (MB)，默认: 9
+BUFFER_SIZE="2"       # 交换机缓存大小 (MB)，默认: 9
 # BANDWIDTH="100"      # NIC带宽 (Gbps)，默认: 100
 # CC_MODE="dcqcn"      # 拥塞控制算法，默认: dcqcn
 # CPEM_ENABLED=0       # 启用CPEM模块，默认: 0
@@ -34,7 +34,7 @@ LB_ALGORITHMS=("fecmp" "letflow" "conga" "conweave")
 
 # Global Output Setup
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-ROOT_EXP_NAME="medu_loop_${TIMESTAMP}_${CDF}"
+ROOT_EXP_NAME="medu_loop_${TIMESTAMP}_${CDF}_${BUFFER_SIZE}MB"
 ROOT_EXPERIMENT_DIR="mix/output/${ROOT_EXP_NAME}"
 
 cecho "GREEN" "============================================================"
