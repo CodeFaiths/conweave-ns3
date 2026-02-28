@@ -1399,6 +1399,76 @@ int main(int argc, char *argv[]) {
                 conf >> v;
                 Settings::pq_log_file = v;
                 std::cerr << "PQ_LOG_FILE\t\t\t" << v << "\n";
+            // ========== Differentiated CC Parameters ==========
+            } else if (key.compare("ENABLE_DIFF_CC") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::enable_diff_cc = (v != 0);
+                std::cerr << "ENABLE_DIFF_CC\t\t\t" << (Settings::enable_diff_cc ? "Yes" : "No") << "\n";
+            } else if (key.compare("SHORT_FLOW_RATE_AI") == 0) {
+                conf >> Settings::short_flow_rate_ai;
+                std::cerr << "SHORT_FLOW_RATE_AI\t\t" << Settings::short_flow_rate_ai << "\n";
+            } else if (key.compare("SHORT_FLOW_RATE_HAI") == 0) {
+                conf >> Settings::short_flow_rate_hai;
+                std::cerr << "SHORT_FLOW_RATE_HAI\t\t" << Settings::short_flow_rate_hai << "\n";
+            } else if (key.compare("SHORT_FLOW_EWMA_GAIN") == 0) {
+                conf >> Settings::short_flow_ewma_gain;
+                std::cerr << "SHORT_FLOW_EWMA_GAIN\t\t" << Settings::short_flow_ewma_gain << "\n";
+            } else if (key.compare("SHORT_FLOW_MIN_RATE") == 0) {
+                conf >> Settings::short_flow_min_rate;
+                std::cerr << "SHORT_FLOW_MIN_RATE\t\t" << Settings::short_flow_min_rate << "\n";
+            } else if (key.compare("SHORT_FLOW_ALPHA_RESUME_INTERVAL") == 0) {
+                conf >> Settings::short_flow_alpha_resume_interval;
+                std::cerr << "SHORT_FLOW_ALPHA_RESUME_INTERVAL\t" << Settings::short_flow_alpha_resume_interval << "\n";
+            } else if (key.compare("SHORT_FLOW_RATE_DECREASE_INTERVAL") == 0) {
+                conf >> Settings::short_flow_rate_decrease_interval;
+                std::cerr << "SHORT_FLOW_RATE_DECREASE_INTERVAL\t" << Settings::short_flow_rate_decrease_interval << "\n";
+            } else if (key.compare("SHORT_FLOW_RP_TIMER") == 0) {
+                conf >> Settings::short_flow_rp_timer;
+                std::cerr << "SHORT_FLOW_RP_TIMER\t\t" << Settings::short_flow_rp_timer << "\n";
+            } else if (key.compare("SHORT_FLOW_FAST_RECOVERY_TIMES") == 0) {
+                conf >> Settings::short_flow_fast_recovery_times;
+                std::cerr << "SHORT_FLOW_FAST_RECOVERY_TIMES\t" << Settings::short_flow_fast_recovery_times << "\n";
+            } else if (key.compare("SHORT_FLOW_RATE_ON_FIRST_CNP") == 0) {
+                conf >> Settings::short_flow_rate_on_first_cnp;
+                std::cerr << "SHORT_FLOW_RATE_ON_FIRST_CNP\t" << Settings::short_flow_rate_on_first_cnp << "\n";
+            } else if (key.compare("SHORT_FLOW_CLAMP_TARGET_RATE") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::short_flow_clamp_target_rate = (v != 0);
+                std::cerr << "SHORT_FLOW_CLAMP_TARGET_RATE\t" << v << "\n";
+            } else if (key.compare("LONG_FLOW_RATE_AI") == 0) {
+                conf >> Settings::long_flow_rate_ai;
+                std::cerr << "LONG_FLOW_RATE_AI\t\t" << Settings::long_flow_rate_ai << "\n";
+            } else if (key.compare("LONG_FLOW_RATE_HAI") == 0) {
+                conf >> Settings::long_flow_rate_hai;
+                std::cerr << "LONG_FLOW_RATE_HAI\t\t" << Settings::long_flow_rate_hai << "\n";
+            } else if (key.compare("LONG_FLOW_EWMA_GAIN") == 0) {
+                conf >> Settings::long_flow_ewma_gain;
+                std::cerr << "LONG_FLOW_EWMA_GAIN\t\t" << Settings::long_flow_ewma_gain << "\n";
+            } else if (key.compare("LONG_FLOW_MIN_RATE") == 0) {
+                conf >> Settings::long_flow_min_rate;
+                std::cerr << "LONG_FLOW_MIN_RATE\t\t" << Settings::long_flow_min_rate << "\n";
+            } else if (key.compare("LONG_FLOW_ALPHA_RESUME_INTERVAL") == 0) {
+                conf >> Settings::long_flow_alpha_resume_interval;
+                std::cerr << "LONG_FLOW_ALPHA_RESUME_INTERVAL\t" << Settings::long_flow_alpha_resume_interval << "\n";
+            } else if (key.compare("LONG_FLOW_RATE_DECREASE_INTERVAL") == 0) {
+                conf >> Settings::long_flow_rate_decrease_interval;
+                std::cerr << "LONG_FLOW_RATE_DECREASE_INTERVAL\t" << Settings::long_flow_rate_decrease_interval << "\n";
+            } else if (key.compare("LONG_FLOW_RP_TIMER") == 0) {
+                conf >> Settings::long_flow_rp_timer;
+                std::cerr << "LONG_FLOW_RP_TIMER\t\t" << Settings::long_flow_rp_timer << "\n";
+            } else if (key.compare("LONG_FLOW_FAST_RECOVERY_TIMES") == 0) {
+                conf >> Settings::long_flow_fast_recovery_times;
+                std::cerr << "LONG_FLOW_FAST_RECOVERY_TIMES\t" << Settings::long_flow_fast_recovery_times << "\n";
+            } else if (key.compare("LONG_FLOW_RATE_ON_FIRST_CNP") == 0) {
+                conf >> Settings::long_flow_rate_on_first_cnp;
+                std::cerr << "LONG_FLOW_RATE_ON_FIRST_CNP\t" << Settings::long_flow_rate_on_first_cnp << "\n";
+            } else if (key.compare("LONG_FLOW_CLAMP_TARGET_RATE") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::long_flow_clamp_target_rate = (v != 0);
+                std::cerr << "LONG_FLOW_CLAMP_TARGET_RATE\t" << v << "\n";
             }
 
             fflush(stdout);
@@ -1902,6 +1972,61 @@ int main(int argc, char *argv[]) {
             rdmaHw->SetAttribute("IrnRtoHigh", TimeValue(MicroSeconds(320)));  // 1930
             rdmaHw->SetAttribute("IrnRtoLow", TimeValue(MicroSeconds(100)));   // 454
             rdmaHw->SetAttribute("IrnBdp", UintegerValue(irn_bdp_lookup));
+
+            /**
+             * Differentiated CC: set per-PG DCQCN parameters
+             * When enabled, short flows and long flows use different CC params
+             */
+            if (Settings::enable_diff_cc && Settings::enable_flow_classification) {
+                rdmaHw->m_diff_cc = true;
+
+                // Short flow params: use per-flow override or fall back to global
+                rdmaHw->m_shortFlowParams.m_g = Settings::short_flow_ewma_gain;
+                rdmaHw->m_shortFlowParams.m_rai = DataRate(
+                    Settings::short_flow_rate_ai.empty() ? rate_ai : Settings::short_flow_rate_ai);
+                rdmaHw->m_shortFlowParams.m_rhai = DataRate(
+                    Settings::short_flow_rate_hai.empty() ? rate_hai : Settings::short_flow_rate_hai);
+                rdmaHw->m_shortFlowParams.m_minRate = DataRate(
+                    Settings::short_flow_min_rate.empty() ? min_rate : Settings::short_flow_min_rate);
+                rdmaHw->m_shortFlowParams.m_alpha_resume_interval =
+                    (Settings::short_flow_alpha_resume_interval < 0) ? alpha_resume_interval : Settings::short_flow_alpha_resume_interval;
+                rdmaHw->m_shortFlowParams.m_rateDecreaseInterval =
+                    (Settings::short_flow_rate_decrease_interval < 0) ? rate_decrease_interval : Settings::short_flow_rate_decrease_interval;
+                rdmaHw->m_shortFlowParams.m_rpgTimeReset =
+                    (Settings::short_flow_rp_timer < 0) ? rp_timer : Settings::short_flow_rp_timer;
+                rdmaHw->m_shortFlowParams.m_rpgThreshold =
+                    (Settings::short_flow_fast_recovery_times == 0) ? fast_recovery_times : Settings::short_flow_fast_recovery_times;
+                rdmaHw->m_shortFlowParams.m_rateOnFirstCNP =
+                    (Settings::short_flow_rate_on_first_cnp < 0) ? 1.0 : Settings::short_flow_rate_on_first_cnp;
+                rdmaHw->m_shortFlowParams.m_EcnClampTgtRate = Settings::short_flow_clamp_target_rate;
+
+                // Long flow params: use per-flow override or fall back to global
+                rdmaHw->m_longFlowParams.m_g = Settings::long_flow_ewma_gain;
+                rdmaHw->m_longFlowParams.m_rai = DataRate(
+                    Settings::long_flow_rate_ai.empty() ? rate_ai : Settings::long_flow_rate_ai);
+                rdmaHw->m_longFlowParams.m_rhai = DataRate(
+                    Settings::long_flow_rate_hai.empty() ? rate_hai : Settings::long_flow_rate_hai);
+                rdmaHw->m_longFlowParams.m_minRate = DataRate(
+                    Settings::long_flow_min_rate.empty() ? min_rate : Settings::long_flow_min_rate);
+                rdmaHw->m_longFlowParams.m_alpha_resume_interval =
+                    (Settings::long_flow_alpha_resume_interval < 0) ? alpha_resume_interval : Settings::long_flow_alpha_resume_interval;
+                rdmaHw->m_longFlowParams.m_rateDecreaseInterval =
+                    (Settings::long_flow_rate_decrease_interval < 0) ? rate_decrease_interval : Settings::long_flow_rate_decrease_interval;
+                rdmaHw->m_longFlowParams.m_rpgTimeReset =
+                    (Settings::long_flow_rp_timer < 0) ? rp_timer : Settings::long_flow_rp_timer;
+                rdmaHw->m_longFlowParams.m_rpgThreshold =
+                    (Settings::long_flow_fast_recovery_times == 0) ? fast_recovery_times : Settings::long_flow_fast_recovery_times;
+                rdmaHw->m_longFlowParams.m_rateOnFirstCNP =
+                    (Settings::long_flow_rate_on_first_cnp < 0) ? 1.0 : Settings::long_flow_rate_on_first_cnp;
+                rdmaHw->m_longFlowParams.m_EcnClampTgtRate = Settings::long_flow_clamp_target_rate;
+
+                std::cerr << "[DiffCC] Node " << i
+                          << " short_rai=" << rdmaHw->m_shortFlowParams.m_rai.GetBitRate() * 1e-6 << "Mb/s"
+                          << " short_rhai=" << rdmaHw->m_shortFlowParams.m_rhai.GetBitRate() * 1e-6 << "Mb/s"
+                          << " long_rai=" << rdmaHw->m_longFlowParams.m_rai.GetBitRate() * 1e-6 << "Mb/s"
+                          << " long_rhai=" << rdmaHw->m_longFlowParams.m_rhai.GetBitRate() * 1e-6 << "Mb/s"
+                          << "\n";
+            }
             // Monitoring CNP Marking frequency of DCQCN
             if (cc_mode == 1) {
                 Simulator::Schedule(NanoSeconds(cnp_mon_start), &cnp_freq_monitoring, cnp_output,

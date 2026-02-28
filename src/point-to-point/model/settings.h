@@ -226,6 +226,32 @@ class Settings {
     // Priority group for long flows (lower priority, higher queue number)
     static uint16_t long_flow_pg;
 
+    /*========== Differentiated CC Parameters (per flow type) ==========*/
+    // Enable differentiated CC parameters for long/short flows
+    static bool enable_diff_cc;
+    // Short flow DCQCN parameters (more aggressive for faster completion)
+    static double short_flow_ewma_gain;
+    static std::string short_flow_rate_ai;
+    static std::string short_flow_rate_hai;
+    static std::string short_flow_min_rate;
+    static double short_flow_alpha_resume_interval;
+    static double short_flow_rate_decrease_interval;
+    static double short_flow_rp_timer;
+    static uint32_t short_flow_fast_recovery_times;
+    static double short_flow_rate_on_first_cnp;
+    static bool short_flow_clamp_target_rate;
+    // Long flow DCQCN parameters (more conservative for stability)
+    static double long_flow_ewma_gain;
+    static std::string long_flow_rate_ai;
+    static std::string long_flow_rate_hai;
+    static std::string long_flow_min_rate;
+    static double long_flow_alpha_resume_interval;
+    static double long_flow_rate_decrease_interval;
+    static double long_flow_rp_timer;
+    static uint32_t long_flow_fast_recovery_times;
+    static double long_flow_rate_on_first_cnp;
+    static bool long_flow_clamp_target_rate;
+
     /*========== Priority Queue Logging ==========*/
     // Enable logging of which priority queue each flow's packets use
     static bool enable_pq_logging;

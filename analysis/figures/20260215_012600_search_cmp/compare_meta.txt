@@ -1,7 +1,0 @@
-exp_a=ns-3.19/mix/output/medu_loop_20260210_133332_search
-exp_b=ns-3.19/mix/output/medu_loop_20260214_084306_search
-label_a=9MB
-label_b=4MB
-cdf=search
-loads=load30,load40,load50,load70,load80,load90
-algos=conga,conweave,fecmp,letflow

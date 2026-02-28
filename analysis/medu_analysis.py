@@ -41,7 +41,7 @@ def parse_log_for_id(log_path: Path) -> str:
 
 def parse_config(config_path: Path) -> Dict[str, Optional[str]]:
     """Parse key fields from a config.txt file."""
-    cfg: Dict[str, Optional[str]] = {"load": None, "flow_file": None, "buffer": None}
+    cfg: Dict[str, Optional[str]] = {"load": None, "flow_file": None, "buffer": None, "flow_threshold": None}
     for raw in config_path.read_text().splitlines():
         parts = raw.strip().split()
         if len(parts) < 2:
@@ -53,13 +53,18 @@ def parse_config(config_path: Path) -> Dict[str, Optional[str]]:
             cfg["flow_file"] = value
         elif key == "BUFFER_SIZE":
             cfg["buffer"] = value
+        elif key == "FLOW_SIZE_THRESHOLD":
+            cfg["flow_threshold"] = value
     return cfg
 
 
 def parse_summary(summary_path: Path) -> Dict[str, Dict[str, float]]:
-    """Parse slowdown stats from summary file (<1BDP, >1BDP, optional ALL)."""
+    """Parse slowdown stats and normalize tags to SMALL/LARGE/ALL.
+
+    Supports both threshold-based tags (<THR, >=THR) and legacy tags
+    (<1BDP, >1BDP).
+    """
     metrics: Dict[str, Dict[str, float]] = {}
-    pattern = re.compile(r"^(<1BDP|>1BDP|ALL|All|all),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+),([\d.eE+-]+)")
     in_slowdown = False
     for raw_line in summary_path.read_text().splitlines():
         line = raw_line.strip()
@@ -71,21 +76,46 @@ def parse_summary(summary_path: Path) -> Dict[str, Dict[str, float]]:
         if not in_slowdown:
             continue
 
-        match = pattern.match(line)
-        if not match:
+        if line.startswith("#"):
             continue
-        tag, avg, p50, p95, p99, p999 = match.groups()
-        if tag.lower() == "all":
-            tag = "ALL"
-        metrics[tag] = {
+
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) < 6:
+            continue
+
+        tag = parts[0]
+        try:
+            avg, p50, p95, p99, p999 = parts[1], parts[2], parts[3], parts[4], parts[5]
+        except Exception:
+            continue
+
+        if tag in {"<THR", "<1BDP"}:
+            norm_tag = "SMALL"
+        elif tag in {">=THR", ">1BDP"}:
+            norm_tag = "LARGE"
+        elif tag.lower() == "all":
+            norm_tag = "ALL"
+        else:
+            continue
+
+        metrics[norm_tag] = {
             "avg": float(avg),
             "p50": float(p50),
             "p95": float(p95),
             "p99": float(p99),
             "p999": float(p999),
         }
-    if "<1BDP" not in metrics or ">1BDP" not in metrics:
-        raise ValueError(f"Missing slowdown metrics in {summary_path}")
+    if "SMALL" not in metrics or "LARGE" not in metrics:
+        print(f"Warning: missing SMALL/LARGE slowdown metrics in {summary_path}; filling with NaN")
+        nan_stats = {
+            "avg": float("nan"),
+            "p50": float("nan"),
+            "p95": float("nan"),
+            "p99": float("nan"),
+            "p999": float("nan"),
+        }
+        metrics.setdefault("SMALL", dict(nan_stats))
+        metrics.setdefault("LARGE", dict(nan_stats))
     return metrics
 
 
@@ -257,6 +287,7 @@ def collect_runs(base_dir: Path, pattern: str) -> List[Dict[str, object]]:
                     "load": cfg["load"],
                     "flow_file": cfg["flow_file"],
                     "buffer": cfg["buffer"],
+                    "flow_threshold": cfg["flow_threshold"],
                     "algo": algo,
                     "with_medu": with_medu,
                     "summary": summary,
@@ -315,14 +346,14 @@ def build_metric_arrays(load_labels: List[str], series: Dict[str, Dict[str, Dict
             metrics_no = series.get(load, {}).get(algo, {}).get(False)
             metrics_yes = series.get(load, {}).get(algo, {}).get(True)
             # Use NaN if data is missing so plots stay aligned.
-            small_avg_no[algo].append(metrics_no["<1BDP"]["avg"] if metrics_no else np.nan)
-            small_avg_yes[algo].append(metrics_yes["<1BDP"]["avg"] if metrics_yes else np.nan)
-            small_p99_no[algo].append(metrics_no["<1BDP"]["p99"] if metrics_no else np.nan)
-            small_p99_yes[algo].append(metrics_yes["<1BDP"]["p99"] if metrics_yes else np.nan)
-            large_avg_no[algo].append(metrics_no[">1BDP"]["avg"] if metrics_no else np.nan)
-            large_avg_yes[algo].append(metrics_yes[">1BDP"]["avg"] if metrics_yes else np.nan)
-            large_p99_no[algo].append(metrics_no[">1BDP"]["p99"] if metrics_no else np.nan)
-            large_p99_yes[algo].append(metrics_yes[">1BDP"]["p99"] if metrics_yes else np.nan)
+            small_avg_no[algo].append(metrics_no["SMALL"]["avg"] if metrics_no else np.nan)
+            small_avg_yes[algo].append(metrics_yes["SMALL"]["avg"] if metrics_yes else np.nan)
+            small_p99_no[algo].append(metrics_no["SMALL"]["p99"] if metrics_no else np.nan)
+            small_p99_yes[algo].append(metrics_yes["SMALL"]["p99"] if metrics_yes else np.nan)
+            large_avg_no[algo].append(metrics_no["LARGE"]["avg"] if metrics_no else np.nan)
+            large_avg_yes[algo].append(metrics_yes["LARGE"]["avg"] if metrics_yes else np.nan)
+            large_p99_no[algo].append(metrics_no["LARGE"]["p99"] if metrics_no else np.nan)
+            large_p99_yes[algo].append(metrics_yes["LARGE"]["p99"] if metrics_yes else np.nan)
             all_avg_no[algo].append(metrics_no["ALL"]["avg"] if metrics_no and "ALL" in metrics_no else np.nan)
             all_avg_yes[algo].append(metrics_yes["ALL"]["avg"] if metrics_yes and "ALL" in metrics_yes else np.nan)
             all_p99_no[algo].append(metrics_no["ALL"]["p99"] if metrics_no and "ALL" in metrics_no else np.nan)
@@ -361,6 +392,8 @@ def plot_comparison(
     all_avg_yes: Dict[str, List[float]],
     all_p99_no: Dict[str, List[float]],
     all_p99_yes: Dict[str, List[float]],
+    small_flow_label: str,
+    large_flow_label: str,
     output_dir: Path,
     prefix: str,
 ):
@@ -381,7 +414,7 @@ def plot_comparison(
                 label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
     ax1.set_ylabel('Average FCT Slowdown')
     ax1.set_xlabel('Network Load')
-    ax1.set_title('Small Flow (<1BDP) - Average Slowdown')
+    ax1.set_title(f'Small Flow ({small_flow_label}) - Average Slowdown')
     ax1.set_xticks(x)
     ax1.set_xticklabels(load_labels)
     ax1.legend(loc='upper left', fontsize=9, ncol=2)
@@ -397,7 +430,7 @@ def plot_comparison(
                 label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
     ax2.set_ylabel('p99 FCT Slowdown')
     ax2.set_xlabel('Network Load')
-    ax2.set_title('Small Flow (<1BDP) - p99 Slowdown')
+    ax2.set_title(f'Small Flow ({small_flow_label}) - p99 Slowdown')
     ax2.set_xticks(x)
     ax2.set_xticklabels(load_labels)
     ax2.legend(loc='upper left', fontsize=9, ncol=2)
@@ -413,7 +446,7 @@ def plot_comparison(
                 label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
     ax3.set_ylabel('Average FCT Slowdown')
     ax3.set_xlabel('Network Load')
-    ax3.set_title('Large Flow (>1BDP) - Average Slowdown')
+    ax3.set_title(f'Large Flow ({large_flow_label}) - Average Slowdown')
     ax3.set_xticks(x)
     ax3.set_xticklabels(load_labels)
     ax3.legend(loc='upper left', fontsize=9, ncol=2)
@@ -429,7 +462,7 @@ def plot_comparison(
                 label=f"{algo} (With MEDU)", color=colors_yes[i % len(colors_yes)], hatch='///')
     ax4.set_ylabel('p99 FCT Slowdown')
     ax4.set_xlabel('Network Load')
-    ax4.set_title('Large Flow (>1BDP) - p99 Slowdown')
+    ax4.set_title(f'Large Flow ({large_flow_label}) - p99 Slowdown')
     ax4.set_xticks(x)
     ax4.set_xticklabels(load_labels)
     ax4.legend(loc='upper left', fontsize=9, ncol=2)
@@ -470,10 +503,8 @@ def plot_comparison(
     plt.tight_layout()
     output_dir.mkdir(parents=True, exist_ok=True)
     png_path = output_dir / f"{prefix}_charts.png"
-    pdf_path = output_dir / f"{prefix}_charts.pdf"
     plt.savefig(png_path, dpi=150, bbox_inches='tight')
-    plt.savefig(pdf_path, bbox_inches='tight')
-    print(f"Charts saved to {png_path} and {pdf_path}")
+    print(f"Charts saved to {png_path}")
 
 
 def write_stats(
@@ -485,11 +516,12 @@ def write_stats(
     all_avg_yes: Dict[str, List[float]],
     all_p99_no: Dict[str, List[float]],
     all_p99_yes: Dict[str, List[float]],
+    small_flow_label: str,
     output_dir: Path,
     prefix: str,
 ):
     lines: List[str] = []
-    lines.append("MEDU tail-latency improvement (small flow p99)")
+    lines.append(f"MEDU tail-latency improvement (small flow {small_flow_label} p99)")
     header = ["Load"] + algos
     lines.append("\t".join(header))
     for idx, label in enumerate(load_labels):
@@ -545,7 +577,7 @@ def main():
     parser = argparse.ArgumentParser(description="MEDU experiment analyzer")
     parser.add_argument("--base-dir", type=Path, default=default_base, help="Directory containing experiment outputs")
     parser.add_argument("--pattern", type=str, default="medu_loop_*", help="Glob pattern for comparison folders")
-    parser.add_argument("--output-dir", type=Path, default=default_out, help="Directory to place charts and stats")
+    parser.add_argument("--output-dir", type=Path, default=default_out, help="Directory to place PNG charts")
     parser.add_argument("--prefix", type=str, default="medu_comparison", help="Filename prefix for outputs")
     args = parser.parse_args()
 
@@ -564,24 +596,24 @@ def main():
         if match:
             ts_part = match.group(1)
             desc_part = match.group(2)
-            
-            # Detect buffer size from runs to ensure it's in the name
-            buf_val = None
-            for r in runs:
-                if r.get("buffer"):
-                    buf_val = r["buffer"]
-                    break
-            
-            if buf_val and not desc_part.endswith(f"_{buf_val}MB"):
-                subdir_name = f"{ts_part}_{desc_part}_{buf_val}MB"
-            else:
-                subdir_name = f"{ts_part}_{desc_part}"
+
+            # Keep output folder naming consistent with experiment folder name.
+            # Do not append buffer suffix like "_9MB" automatically.
+            subdir_name = f"{ts_part}_{desc_part}"
         else:
             subdir_name = exp_dir.name
         output_dir = args.output_dir / subdir_name
 
         load_labels, series = pivot_data(runs)
         algos = sorted({r["algo"] for r in runs})
+        threshold_values = sorted({r.get("flow_threshold") for r in runs if r.get("flow_threshold")})
+        if len(threshold_values) == 1:
+            thr = threshold_values[0]
+            small_flow_label = f"<{thr}B"
+            large_flow_label = f">={thr}B"
+        else:
+            small_flow_label = "<THR"
+            large_flow_label = ">=THR"
 
         (
             loads_float,
@@ -615,19 +647,8 @@ def main():
             all_avg_yes,
             all_p99_no,
             all_p99_yes,
-            output_dir,
-            args.prefix,
-        )
-
-        write_stats(
-            load_labels,
-            algos,
-            small_p99_no,
-            small_p99_yes,
-            all_avg_no,
-            all_avg_yes,
-            all_p99_no,
-            all_p99_yes,
+            small_flow_label,
+            large_flow_label,
             output_dir,
             args.prefix,
         )

@@ -187,6 +187,15 @@ class RdmaHw : public Object {
     Time m_irn_rtoLow;
     Time m_irn_rtoHigh;
     uint32_t m_irn_bdp;
+
+    /**********************
+     * Differentiated CC
+     * Per-PG DCQCN parameter overrides
+     *********************/
+    bool m_diff_cc;  // enable differentiated CC params per PG
+    DcqcnParams m_shortFlowParams;  // CC params for short flows
+    DcqcnParams m_longFlowParams;   // CC params for long flows
+    void InitQpDcqcnParams(Ptr<RdmaQueuePair> qp);  // init QP's CC params based on PG
 };
 
 } /* namespace ns3 */

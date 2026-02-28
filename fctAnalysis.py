@@ -3,6 +3,23 @@ import argparse
 import numpy as np
 import os
 
+
+def get_flow_threshold_from_config(config_path, fallback_threshold=None):
+	if not os.path.exists(config_path):
+		return fallback_threshold
+	with open(config_path, 'r') as f:
+		for line in f:
+			line = line.strip()
+			if not line or line.startswith('#'):
+				continue
+			parts = line.split()
+			if len(parts) >= 2 and parts[0] == "FLOW_SIZE_THRESHOLD":
+				try:
+					return int(parts[1])
+				except ValueError:
+					return fallback_threshold
+	return fallback_threshold
+
 def get_pctl(a, p):
 	i = int(len(a) * p)
 	return a[i]
@@ -68,7 +85,10 @@ if __name__=="__main__":
 	parser.add_argument('-id', '--id', dest='id', required=True, action='store', help="traceId")
 	parser.add_argument('-dir', '--dir', dest='dir', default='.', action='store', help="directory of run.py file, default='.'")
 	parser.add_argument('-fdir', '--fdir', dest='fdir', default='mix', action='store', help="folder that the output files are located, default=mix")
-	parser.add_argument('-bdp', dest='bdp', action='store', required=True, help="1 BDP of this topology, default=104000 (100G with 2-tier)")
+	parser.add_argument('-bdp', dest='bdp', action='store', required=False, default=None,
+						help="[deprecated] fallback threshold when FLOW_SIZE_THRESHOLD is missing in config")
+	parser.add_argument('--flow-threshold', dest='flow_threshold', action='store', type=int, default=None,
+						help="override FLOW_SIZE_THRESHOLD (bytes) for analysis bucketing")
 	parser.add_argument('-sT', dest='time_limit_begin', action='store', type=int, default=2005000000, help="only consider flows that finish after T, default=2.005*10^9 ns")
 	parser.add_argument('-fT', dest='time_limit_end', action='store', type=int, default=100000000000, help="only consider flows that finish before T, default=100 * 10^9 ns")
 	
@@ -78,7 +98,13 @@ if __name__=="__main__":
 	config_ID = os.path.basename(args.id)
 	dirname = args.dir
 	fdirname = args.fdir
-	OneBDP = int(args.bdp)
+	fallback_threshold = int(args.bdp) if args.bdp is not None else None
+	config_path = dirname + "/" + fdirname + "/output/{id_full}/config.txt".format(id_full=config_ID_full)
+	flow_threshold = args.flow_threshold
+	if flow_threshold is None:
+		flow_threshold = get_flow_threshold_from_config(config_path, fallback_threshold)
+	if flow_threshold is None:
+		raise Exception("Cannot determine flow threshold: missing FLOW_SIZE_THRESHOLD in config and no fallback provided.")
 	step = 5
 	res = [[i/100.] for i in range(0, 100, step)]
 
@@ -90,6 +116,7 @@ if __name__=="__main__":
 	output_fct_large_slowdown_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_large_slowdown_cdf.txt".format(id_full=config_ID_full, id=config_ID)
 	output_fct_all_slowdown_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_all_slowdown_cdf.txt".format(id_full=config_ID_full, id=config_ID)
 	output_fct_all_absolute_cdf = dirname + "/" + fdirname + "/output/{id_full}/{id}_out_fct_all_absolute_cdf.txt".format(id_full=config_ID_full, id=config_ID)
+	output_fct_summary_tmp = output_fct_summary + ".tmp"
 
 	# time interval to consider
 	time_limit_start = args.time_limit_begin
@@ -105,7 +132,7 @@ if __name__=="__main__":
 	output_slowdown = subprocess.check_output(cmd_slowdown, shell=True)
 
 
-	with open(output_fct_summary, "w") as outfile_fct_summary:
+	with open(output_fct_summary_tmp, "w") as outfile_fct_summary:
 
 		################
 		### SLOWDOWN ###
@@ -114,7 +141,7 @@ if __name__=="__main__":
 		outfile_fct_summary.write("SLOWDOWN")
 		aa = output_slowdown.decode("utf-8").split('\n')[:-2]
 		nn = len(aa)
-		size_breakdown = summarize_size_breakdown(aa, OneBDP)
+		size_breakdown = summarize_size_breakdown(aa, flow_threshold)
 
 		fct_bdp = []
 		fct_over_bdp = []
@@ -123,20 +150,20 @@ if __name__=="__main__":
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
 			fct_all.append(val)
-			if (i < OneBDP):
+			if (i < flow_threshold):
 				fct_bdp.append(val)
 			else:
 				fct_over_bdp.append(val)
 		
-		# BRIEF INFORMATION (<1BDP, >1BDP)
-		outfile_fct_summary.write("#1BDP={}Bytes\n".format(OneBDP))
+		# BRIEF INFORMATION (<FLOW_SIZE_THRESHOLD, >=FLOW_SIZE_THRESHOLD)
+		outfile_fct_summary.write("#FLOW_SIZE_THRESHOLD={}Bytes\n".format(flow_threshold))
 		outfile_fct_summary.write("#{:5},{:5},{:5},{:6},{:6},{:6}\n".format("Category", "Avg", "50%", "95%", "99%", "99.9%"))
-		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format("<1BDP", np.average(fct_bdp), 
+		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format("<THR", np.average(fct_bdp), 
 																						np.percentile(fct_bdp, 50),
 																						np.percentile(fct_bdp, 95),
 																						np.percentile(fct_bdp, 99),
 																						np.percentile(fct_bdp, 99.9)))
-		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(">1BDP", np.average(fct_over_bdp), 
+		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(">=THR", np.average(fct_over_bdp), 
 																						np.percentile(fct_over_bdp, 50),
 																						np.percentile(fct_over_bdp, 95),
 																						np.percentile(fct_over_bdp, 99),
@@ -202,20 +229,20 @@ if __name__=="__main__":
 		for x in a:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
-			if (i < OneBDP):
+			if (i < flow_threshold):
 				fct_bdp.append(val)
 			else:
 				fct_over_bdp.append(val)
 		
-		# BRIEF INFORMATION (<1BDP, >1BDP)
-		outfile_fct_summary.write("#1BDP={}Bytes\n".format(OneBDP))
+		# BRIEF INFORMATION (<FLOW_SIZE_THRESHOLD, >=FLOW_SIZE_THRESHOLD)
+		outfile_fct_summary.write("#FLOW_SIZE_THRESHOLD={}Bytes\n".format(flow_threshold))
 		outfile_fct_summary.write("#{:5},{:5},{:5},{:6},{:6},{:6}\n".format("Category", "Avg", "50%", "95%", "99%", "99.9%"))
-		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format("<1BDP", np.average(fct_bdp), 
+		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format("<THR", np.average(fct_bdp), 
 																						np.percentile(fct_bdp, 50),
 																						np.percentile(fct_bdp, 95),
 																						np.percentile(fct_bdp, 99),
 																						np.percentile(fct_bdp, 99.9)))
-		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(">1BDP", np.average(fct_over_bdp), 
+		outfile_fct_summary.write("{:5},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(">=THR", np.average(fct_over_bdp), 
 																						np.percentile(fct_over_bdp, 50),
 																						np.percentile(fct_over_bdp, 95),
 																						np.percentile(fct_over_bdp, 99),
@@ -248,6 +275,8 @@ if __name__=="__main__":
 
 		outfile_fct_summary.write("#\n#EOF")
 
+	os.replace(output_fct_summary_tmp, output_fct_summary)
+
 
 
 	with open(output_fct_all_slowdown_cdf, "w") as outfile_fct_all_slowdown:
@@ -273,7 +302,7 @@ if __name__=="__main__":
 		for x in aa:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
-			if (i < OneBDP):
+			if (i < flow_threshold):
 				fct_arr.append(val)
 		fct_cdf = getCdfFromArray(fct_arr)
 		for bkt in fct_cdf:
@@ -290,7 +319,7 @@ if __name__=="__main__":
 		for x in aa:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
-			if (i >= OneBDP):
+			if (i >= flow_threshold):
 				fct_arr.append(val)
 		fct_cdf = getCdfFromArray(fct_arr)
 		for bkt in fct_cdf:
@@ -319,7 +348,7 @@ if __name__=="__main__":
 		for x in a:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
-			if (i < OneBDP):
+			if (i < flow_threshold):
 				fct_arr.append(val)
 		fct_cdf = getCdfFromArray(fct_arr)
 		for bkt in fct_cdf:
@@ -336,7 +365,7 @@ if __name__=="__main__":
 		for x in a:
 			i = int(x.split(" ")[1])
 			val = float(x.split(" ")[0])
-			if (i >= OneBDP):
+			if (i >= flow_threshold):
 				fct_arr.append(val)
 		fct_cdf = getCdfFromArray(fct_arr)
 		for bkt in fct_cdf:

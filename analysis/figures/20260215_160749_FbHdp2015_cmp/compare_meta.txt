@@ -1,7 +1,0 @@
-exp_a=ns-3.19/mix/output/medu_loop_20260211_173527_FbHdp2015
-exp_b=ns-3.19/mix/output/medu_loop_20260214_172526_FbHdp2015
-label_a=9MB
-label_b=4MB
-cdf=FbHdp2015
-loads=load30,load40,load50,load70,load80,load90
-algos=conga,conweave,fecmp,letflow

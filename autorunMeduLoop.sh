@@ -19,15 +19,34 @@ cecho(){
 # Experiment Parameters
 TOPOLOGY="leaf_spine_128_100G_OS2"
 LOADS=("30" "50" "70" "80")  # List of loads to test as requested
+#LOADS=("50")
 CDF="AliStorage2019"           # CDF file name:AliStorage2019 webserver search Solar2022 FbHdp2015
 RUNTIME="0.1"          # 0.1 second (traffic generation)
 
 # ===== 可调整的额外参数 =====
-BUFFER_SIZE="2"       # 交换机缓存大小 (MB)，默认: 9
+BUFFER_SIZE="9"       # 交换机缓存大小 (MB)，默认: 9
+FLOW_THRESHOLD_KB="100"   # MEDU长短流分界阈值 (KB)，默认: 100
 # BANDWIDTH="100"      # NIC带宽 (Gbps)，默认: 100
 # CC_MODE="dcqcn"      # 拥塞控制算法，默认: dcqcn
 # CPEM_ENABLED=0       # 启用CPEM模块，默认: 0
 # SW_MONITORING_INTERVAL=10000  # 采样间隔 (ns)，默认: 10000
+
+# ===== 差异化拥塞控制参数 (MEDU开启时生效) =====
+DIFF_CC=0                  # 是否启用长短流差异化CC参数，0=关闭, 1=开启
+SHORT_AI_FACTOR="2.0"      # 短流 RATE_AI 倍数 (相对全局值)，默认: 2.0
+SHORT_HAI_FACTOR="2.0"     # 短流 RATE_HAI 倍数 (相对全局值)，默认: 2.0
+SHORT_EWMA_GAIN="0.00390625"   # 短流 EWMA_GAIN，默认: 0.00390625 (-1表示使用全局值)
+SHORT_ALPHA_RESUME="1"     # 短流 ALPHA_RESUME_INTERVAL (us)，默认: 1
+SHORT_RATE_DECREASE="4"    # 短流 RATE_DECREASE_INTERVAL (us)，默认: 4
+SHORT_RP_TIMER="300"       # 短流 RP_TIMER (us)，默认: 300
+SHORT_FAST_RECOVERY="1"    # 短流 FAST_RECOVERY_TIMES，默认: 1
+LONG_AI_FACTOR="1.0"       # 长流 RATE_AI 倍数 (相对全局值)，默认: 1.0
+LONG_HAI_FACTOR="1.0"      # 长流 RATE_HAI 倍数 (相对全局值)，默认: 1.0
+LONG_EWMA_GAIN="0.00390625"    # 长流 EWMA_GAIN，默认: 0.00390625 (-1表示使用全局值)
+LONG_ALPHA_RESUME="1"      # 长流 ALPHA_RESUME_INTERVAL (us)，默认: 1
+LONG_RATE_DECREASE="4"     # 长流 RATE_DECREASE_INTERVAL (us)，默认: 4
+LONG_RP_TIMER="300"        # 长流 RP_TIMER (us)，默认: 300
+LONG_FAST_RECOVERY="1"     # 长流 FAST_RECOVERY_TIMES，默认: 1
 
 # Load Balancing algorithms to test
 LB_ALGORITHMS=("fecmp" "letflow" "conga" "conweave")
@@ -45,6 +64,10 @@ cecho "YELLOW" "TOPOLOGY: ${TOPOLOGY}"
 cecho "YELLOW" "LOADS TO TEST: ${LOADS[*]}" 
 cecho "YELLOW" "CDF: ${CDF}" 
 cecho "YELLOW" "SIMULATION TIME: ${RUNTIME}s" 
+cecho "YELLOW" "FLOW THRESHOLD: ${FLOW_THRESHOLD_KB}KB"
+cecho "YELLOW" "DIFF CC: ${DIFF_CC} (short AI×${SHORT_AI_FACTOR} HAI×${SHORT_HAI_FACTOR}, long AI×${LONG_AI_FACTOR} HAI×${LONG_HAI_FACTOR})"
+cecho "YELLOW" "  Short: EWMA=${SHORT_EWMA_GAIN} α_resume=${SHORT_ALPHA_RESUME} rate_dec=${SHORT_RATE_DECREASE} rp_timer=${SHORT_RP_TIMER} fast_rec=${SHORT_FAST_RECOVERY}"
+cecho "YELLOW" "  Long:  EWMA=${LONG_EWMA_GAIN} α_resume=${LONG_ALPHA_RESUME} rate_dec=${LONG_RATE_DECREASE} rp_timer=${LONG_RP_TIMER} fast_rec=${LONG_FAST_RECOVERY}"
 cecho "YELLOW" "Load Balancers: ${LB_ALGORITHMS[*]}"
 cecho "GREEN" "============================================================"
 echo ""
@@ -86,6 +109,7 @@ for NETLOAD in "${LOADS[@]}"; do
             --topo ${TOPOLOGY} \
             --cdf ${CDF} \
             --buffer ${BUFFER_SIZE} \
+            --flow-threshold-kb ${FLOW_THRESHOLD_KB} \
             --medu 0 \
             --id ${ROOT_EXP_NAME}/load${NETLOAD}/no_medu_${lb} \
             2>&1 | tee -a ${LOAD_LOG_DIR}/no_medu_${lb}.log &
@@ -101,7 +125,23 @@ for NETLOAD in "${LOADS[@]}"; do
             --topo ${TOPOLOGY} \
             --cdf ${CDF} \
             --buffer ${BUFFER_SIZE} \
+            --flow-threshold-kb ${FLOW_THRESHOLD_KB} \
             --medu 1 \
+            --diff-cc ${DIFF_CC} \
+            --short-ai-factor ${SHORT_AI_FACTOR} \
+            --short-hai-factor ${SHORT_HAI_FACTOR} \
+            --short-ewma-gain ${SHORT_EWMA_GAIN} \
+            --short-alpha-resume ${SHORT_ALPHA_RESUME} \
+            --short-rate-decrease ${SHORT_RATE_DECREASE} \
+            --short-rp-timer ${SHORT_RP_TIMER} \
+            --short-fast-recovery ${SHORT_FAST_RECOVERY} \
+            --long-ai-factor ${LONG_AI_FACTOR} \
+            --long-hai-factor ${LONG_HAI_FACTOR} \
+            --long-ewma-gain ${LONG_EWMA_GAIN} \
+            --long-alpha-resume ${LONG_ALPHA_RESUME} \
+            --long-rate-decrease ${LONG_RATE_DECREASE} \
+            --long-rp-timer ${LONG_RP_TIMER} \
+            --long-fast-recovery ${LONG_FAST_RECOVERY} \
             --id ${ROOT_EXP_NAME}/load${NETLOAD}/with_medu_${lb} \
             2>&1 | tee -a ${LOAD_LOG_DIR}/with_medu_${lb}.log &
         sleep 3

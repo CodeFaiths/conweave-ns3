@@ -51,6 +51,36 @@ class IrnSackManager {
     friend std::ostream &operator<<(std::ostream &os, const IrnSackManager &im);
 };
 
+/**
+ * @brief Per-QP DCQCN parameters for differentiated congestion control.
+ * When MEDU flow classification is enabled, short flows and long flows
+ * can use different DCQCN parameters to optimize performance.
+ */
+struct DcqcnParams {
+    double m_g;                       // EWMA gain (feedback weight)
+    double m_rateOnFirstCNP;          // fraction of rate on first CNP
+    bool m_EcnClampTgtRate;           // clamp target rate
+    double m_rpgTimeReset;            // rate increase timer (us)
+    double m_rateDecreaseInterval;    // rate decrease check interval (us)
+    uint32_t m_rpgThreshold;          // fast recovery times threshold
+    double m_alpha_resume_interval;   // alpha update interval (us)
+    DataRate m_rai;                   // rate of additive increase
+    DataRate m_rhai;                  // rate of hyper-additive increase
+    DataRate m_minRate;               // minimum sending rate
+
+    DcqcnParams()
+        : m_g(1.0 / 256),
+          m_rateOnFirstCNP(1.0),
+          m_EcnClampTgtRate(false),
+          m_rpgTimeReset(300.0),
+          m_rateDecreaseInterval(4.0),
+          m_rpgThreshold(1),
+          m_alpha_resume_interval(1.0),
+          m_rai(DataRate("40Mb/s")),
+          m_rhai(DataRate("100Mb/s")),
+          m_minRate(DataRate("100Mb/s")) {}
+};
+
 class RdmaQueuePair : public Object {
    public:
     Time startTime;
@@ -69,6 +99,12 @@ class RdmaQueuePair : public Object {
     uint32_t lastPktSize;
     int32_t m_flow_id;
     Time m_timeout;
+
+    /******************************
+     * Per-QP DCQCN CC parameters
+     * (populated from RdmaHw defaults or per-PG overrides)
+     *****************************/
+    DcqcnParams m_dcqcnParams;
 
     /******************************
      * runtime states

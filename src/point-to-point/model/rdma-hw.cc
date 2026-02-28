@@ -137,6 +137,7 @@ RdmaHw::RdmaHw() {
     cnp_total = 0;
     cnp_by_ecn = 0;
     cnp_by_ooo = 0;
+    m_diff_cc = false;
 }
 
 void RdmaHw::SetNode(Ptr<Node> node) { m_node = node; }
@@ -182,6 +183,41 @@ Ptr<RdmaQueuePair> RdmaHw::GetQp(uint64_t key) {
 
     return NULL;
 }
+void RdmaHw::InitQpDcqcnParams(Ptr<RdmaQueuePair> qp) {
+    if (m_diff_cc && Settings::enable_flow_classification) {
+        // Use per-PG parameters
+        if (qp->m_pg == Settings::short_flow_pg) {
+            qp->m_dcqcnParams = m_shortFlowParams;
+        } else if (qp->m_pg == Settings::long_flow_pg) {
+            qp->m_dcqcnParams = m_longFlowParams;
+        } else {
+            // For other PGs, use global defaults
+            qp->m_dcqcnParams.m_g = m_g;
+            qp->m_dcqcnParams.m_rateOnFirstCNP = m_rateOnFirstCNP;
+            qp->m_dcqcnParams.m_EcnClampTgtRate = m_EcnClampTgtRate;
+            qp->m_dcqcnParams.m_rpgTimeReset = m_rpgTimeReset;
+            qp->m_dcqcnParams.m_rateDecreaseInterval = m_rateDecreaseInterval;
+            qp->m_dcqcnParams.m_rpgThreshold = m_rpgThreshold;
+            qp->m_dcqcnParams.m_alpha_resume_interval = m_alpha_resume_interval;
+            qp->m_dcqcnParams.m_rai = m_rai;
+            qp->m_dcqcnParams.m_rhai = m_rhai;
+            qp->m_dcqcnParams.m_minRate = m_minRate;
+        }
+    } else {
+        // Differentiated CC disabled: all QPs use global params
+        qp->m_dcqcnParams.m_g = m_g;
+        qp->m_dcqcnParams.m_rateOnFirstCNP = m_rateOnFirstCNP;
+        qp->m_dcqcnParams.m_EcnClampTgtRate = m_EcnClampTgtRate;
+        qp->m_dcqcnParams.m_rpgTimeReset = m_rpgTimeReset;
+        qp->m_dcqcnParams.m_rateDecreaseInterval = m_rateDecreaseInterval;
+        qp->m_dcqcnParams.m_rpgThreshold = m_rpgThreshold;
+        qp->m_dcqcnParams.m_alpha_resume_interval = m_alpha_resume_interval;
+        qp->m_dcqcnParams.m_rai = m_rai;
+        qp->m_dcqcnParams.m_rhai = m_rhai;
+        qp->m_dcqcnParams.m_minRate = m_minRate;
+    }
+}
+
 void RdmaHw::AddQueuePair(uint64_t size, uint16_t pg, Ipv4Address sip, Ipv4Address dip,
                           uint16_t sport, uint16_t dport, uint32_t win, uint64_t baseRtt,
                           int32_t flow_id) {
@@ -193,6 +229,9 @@ void RdmaHw::AddQueuePair(uint64_t size, uint16_t pg, Ipv4Address sip, Ipv4Addre
     qp->SetVarWin(m_var_win);
     qp->SetFlowId(flow_id);
     qp->SetTimeout(m_waitAckTimeout);
+
+    // Initialize per-QP DCQCN parameters based on PG
+    InitQpDcqcnParams(qp);
 
     if (m_irn) {
         qp->irn.m_enabled = m_irn;
@@ -964,9 +1003,9 @@ void RdmaHw::UpdateAlphaMlx(Ptr<RdmaQueuePair> q) {
 // q->mlx.m_alpha);
 #endif
     if (q->mlx.m_alpha_cnp_arrived) {                       // cnp -> increase
-        q->mlx.m_alpha = (1 - m_g) * q->mlx.m_alpha + m_g;  // binary feedback
+        q->mlx.m_alpha = (1 - q->m_dcqcnParams.m_g) * q->mlx.m_alpha + q->m_dcqcnParams.m_g;  // binary feedback
     } else {                                                // no cnp -> decrease
-        q->mlx.m_alpha = (1 - m_g) * q->mlx.m_alpha;        // binary feedback
+        q->mlx.m_alpha = (1 - q->m_dcqcnParams.m_g) * q->mlx.m_alpha;        // binary feedback
     }
 #if PRINT_LOG
 // printf("%.6lf\n", q->mlx.m_alpha);
@@ -975,7 +1014,7 @@ void RdmaHw::UpdateAlphaMlx(Ptr<RdmaQueuePair> q) {
     ScheduleUpdateAlphaMlx(q);
 }
 void RdmaHw::ScheduleUpdateAlphaMlx(Ptr<RdmaQueuePair> q) {
-    q->mlx.m_eventUpdateAlpha = Simulator::Schedule(MicroSeconds(m_alpha_resume_interval),
+    q->mlx.m_eventUpdateAlpha = Simulator::Schedule(MicroSeconds(q->m_dcqcnParams.m_alpha_resume_interval),
                                                     &RdmaHw::UpdateAlphaMlx, this, q);
 }
 
@@ -991,7 +1030,7 @@ void RdmaHw::cnp_received_mlx(Ptr<RdmaQueuePair> q) {
         // schedule rate decrease
         ScheduleDecreaseRateMlx(q, 1);  // add 1 ns to make sure rate decrease is after alpha update
         // set rate on first CNP
-        q->mlx.m_targetRate = q->m_rate = m_rateOnFirstCNP * q->m_rate;
+        q->mlx.m_targetRate = q->m_rate = q->m_dcqcnParams.m_rateOnFirstCNP * q->m_rate;
         q->mlx.m_first_cnp = false;
     }
 }
@@ -1005,18 +1044,18 @@ void RdmaHw::CheckRateDecreaseMlx(Ptr<RdmaQueuePair> q) {
                q->mlx.m_targetRate.GetBitRate() * 1e-9, q->m_rate.GetBitRate() * 1e-9);
 #endif
         bool clamp = true;
-        if (!m_EcnClampTgtRate) {
+        if (!q->m_dcqcnParams.m_EcnClampTgtRate) {
             if (q->mlx.m_rpTimeStage == 0) clamp = false;
         }
         if (clamp) {
             q->mlx.m_targetRate = q->m_rate;
         }
-        q->m_rate = std::max(m_minRate, q->m_rate * (1 - q->mlx.m_alpha / 2));
+        q->m_rate = std::max(q->m_dcqcnParams.m_minRate, q->m_rate * (1 - q->mlx.m_alpha / 2));
         // reset rate increase related things
         q->mlx.m_rpTimeStage = 0;
         q->mlx.m_decrease_cnp_arrived = false;
         Simulator::Cancel(q->mlx.m_rpTimer);
-        q->mlx.m_rpTimer = Simulator::Schedule(MicroSeconds(m_rpgTimeReset),
+        q->mlx.m_rpTimer = Simulator::Schedule(MicroSeconds(q->m_dcqcnParams.m_rpgTimeReset),
                                                &RdmaHw::RateIncEventTimerMlx, this, q);
 #if PRINT_LOG
         printf("(%.3lf %.3lf)\n", q->mlx.m_targetRate.GetBitRate() * 1e-9,
@@ -1026,21 +1065,21 @@ void RdmaHw::CheckRateDecreaseMlx(Ptr<RdmaQueuePair> q) {
 }
 void RdmaHw::ScheduleDecreaseRateMlx(Ptr<RdmaQueuePair> q, uint32_t delta) {
     q->mlx.m_eventDecreaseRate =
-        Simulator::Schedule(MicroSeconds(m_rateDecreaseInterval) + NanoSeconds(delta),
+        Simulator::Schedule(MicroSeconds(q->m_dcqcnParams.m_rateDecreaseInterval) + NanoSeconds(delta),
                             &RdmaHw::CheckRateDecreaseMlx, this, q);
 }
 
 void RdmaHw::RateIncEventTimerMlx(Ptr<RdmaQueuePair> q) {
     q->mlx.m_rpTimer =
-        Simulator::Schedule(MicroSeconds(m_rpgTimeReset), &RdmaHw::RateIncEventTimerMlx, this, q);
+        Simulator::Schedule(MicroSeconds(q->m_dcqcnParams.m_rpgTimeReset), &RdmaHw::RateIncEventTimerMlx, this, q);
     RateIncEventMlx(q);
     q->mlx.m_rpTimeStage++;
 }
 void RdmaHw::RateIncEventMlx(Ptr<RdmaQueuePair> q) {
     // check which increase phase: fast recovery, active increase, hyper increase
-    if (q->mlx.m_rpTimeStage < m_rpgThreshold) {  // fast recovery
+    if (q->mlx.m_rpTimeStage < q->m_dcqcnParams.m_rpgThreshold) {  // fast recovery
         FastRecoveryMlx(q);
-    } else if (q->mlx.m_rpTimeStage == m_rpgThreshold) {  // active increase
+    } else if (q->mlx.m_rpTimeStage == q->m_dcqcnParams.m_rpgThreshold) {  // active increase
         ActiveIncreaseMlx(q);
     } else {  // hyper increase
         HyperIncreaseMlx(q);
@@ -1069,7 +1108,7 @@ void RdmaHw::ActiveIncreaseMlx(Ptr<RdmaQueuePair> q) {
     uint32_t nic_idx = GetNicIdxOfQp(q);
     Ptr<QbbNetDevice> dev = m_nic[nic_idx].dev;
     // increate rate
-    q->mlx.m_targetRate += m_rai;
+    q->mlx.m_targetRate += q->m_dcqcnParams.m_rai;
     if (q->mlx.m_targetRate > dev->GetDataRate()) q->mlx.m_targetRate = dev->GetDataRate();
     q->m_rate = (q->m_rate / 2) + (q->mlx.m_targetRate / 2);
 #if PRINT_LOG
@@ -1087,7 +1126,7 @@ void RdmaHw::HyperIncreaseMlx(Ptr<RdmaQueuePair> q) {
     uint32_t nic_idx = GetNicIdxOfQp(q);
     Ptr<QbbNetDevice> dev = m_nic[nic_idx].dev;
     // increate rate
-    q->mlx.m_targetRate += m_rhai;
+    q->mlx.m_targetRate += q->m_dcqcnParams.m_rhai;
     if (q->mlx.m_targetRate > dev->GetDataRate()) q->mlx.m_targetRate = dev->GetDataRate();
     q->m_rate = (q->m_rate / 2) + (q->mlx.m_targetRate / 2);
 #if PRINT_LOG
@@ -1195,13 +1234,13 @@ void RdmaHw::UpdateRateHp(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader &ch
                     max_c = qp->hp.u / m_targetUtil;
 
                     if (max_c >= 1 || qp->hp.m_incStage >= m_miThresh) {
-                        new_rate = qp->hp.m_curRate / max_c + m_rai;
+                        new_rate = qp->hp.m_curRate / max_c + qp->m_dcqcnParams.m_rai;
                         new_incStage = 0;
                     } else {
-                        new_rate = qp->hp.m_curRate + m_rai;
+                        new_rate = qp->hp.m_curRate + qp->m_dcqcnParams.m_rai;
                         new_incStage = qp->hp.m_incStage + 1;
                     }
-                    if (new_rate < m_minRate) new_rate = m_minRate;
+                    if (new_rate < qp->m_dcqcnParams.m_minRate) new_rate = qp->m_dcqcnParams.m_minRate;
                     if (new_rate > qp->m_max_rate) new_rate = qp->m_max_rate;
 #if PRINT_LOG
                     if (print) printf(" u=%.6lf U=%.3lf dt=%u max_c=%.3lf", qp->hp.u, U, dt, max_c);
@@ -1219,14 +1258,14 @@ void RdmaHw::UpdateRateHp(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader &ch
                     if (updated[i]) {
                         double c = qp->hp.hopState[i].u / m_targetUtil;
                         if (c >= 1 || qp->hp.hopState[i].incStage >= m_miThresh) {
-                            new_rate_per_hop[i] = qp->hp.hopState[i].Rc / c + m_rai;
+                            new_rate_per_hop[i] = qp->hp.hopState[i].Rc / c + qp->m_dcqcnParams.m_rai;
                             new_incStage_per_hop[i] = 0;
                         } else {
-                            new_rate_per_hop[i] = qp->hp.hopState[i].Rc + m_rai;
+                            new_rate_per_hop[i] = qp->hp.hopState[i].Rc + qp->m_dcqcnParams.m_rai;
                             new_incStage_per_hop[i] = qp->hp.hopState[i].incStage + 1;
                         }
                         // bound rate
-                        if (new_rate_per_hop[i] < m_minRate) new_rate_per_hop[i] = m_minRate;
+                        if (new_rate_per_hop[i] < qp->m_dcqcnParams.m_minRate) new_rate_per_hop[i] = qp->m_dcqcnParams.m_minRate;
                         if (new_rate_per_hop[i] > qp->m_max_rate)
                             new_rate_per_hop[i] = qp->m_max_rate;
                         // find min new_rate
@@ -1317,9 +1356,9 @@ void RdmaHw::UpdateRateTimely(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader
         }
         if (inc) {
             if (qp->tmly.m_incStage < 5) {
-                qp->m_rate = qp->tmly.m_curRate + m_rai;
+                qp->m_rate = qp->tmly.m_curRate + qp->m_dcqcnParams.m_rai;
             } else {
-                qp->m_rate = qp->tmly.m_curRate + m_rhai;
+                qp->m_rate = qp->tmly.m_curRate + qp->m_dcqcnParams.m_rhai;
             }
             if (qp->m_rate > qp->m_max_rate) qp->m_rate = qp->m_max_rate;
             if (!us) {
@@ -1328,7 +1367,7 @@ void RdmaHw::UpdateRateTimely(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader
                 qp->tmly.rttDiff = rtt_diff;
             }
         } else {
-            qp->m_rate = std::max(m_minRate, qp->tmly.m_curRate * c);
+            qp->m_rate = std::max(qp->m_dcqcnParams.m_minRate, qp->tmly.m_curRate * c);
             if (!us) {
                 qp->tmly.m_curRate = qp->m_rate;
                 qp->tmly.m_incStage = 0;
@@ -1371,7 +1410,7 @@ void RdmaHw::HandleAckDctcp(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader &
             qp->dctcp.m_batchSizeOfAlpha = qp->snd_nxt / m_mtu + 1;
         } else {
             double frac = std::min(1.0, double(qp->dctcp.m_ecnCnt) / qp->dctcp.m_batchSizeOfAlpha);
-            qp->dctcp.m_alpha = (1 - m_g) * qp->dctcp.m_alpha + m_g * frac;
+            qp->dctcp.m_alpha = (1 - qp->m_dcqcnParams.m_g) * qp->dctcp.m_alpha + qp->m_dcqcnParams.m_g * frac;
             qp->dctcp.m_lastUpdateSeq = qp->snd_nxt;
             qp->dctcp.m_ecnCnt = 0;
             qp->dctcp.m_batchSizeOfAlpha = (qp->snd_nxt - ack_seq) / m_mtu + 1;
@@ -1395,7 +1434,7 @@ void RdmaHw::HandleAckDctcp(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader &
         printf("%lu %s %08x %08x %u %u %.3lf->", Simulator::Now().GetTimeStep(), "rate",
                qp->sip.Get(), qp->dip.Get(), qp->sport, qp->dport, qp->m_rate.GetBitRate() * 1e-9);
 #endif
-        qp->m_rate = std::max(m_minRate, qp->m_rate * (1 - qp->dctcp.m_alpha / 2));
+        qp->m_rate = std::max(qp->m_dcqcnParams.m_minRate, qp->m_rate * (1 - qp->dctcp.m_alpha / 2));
 #if PRINT_LOG
         printf("%.3lf\n", qp->m_rate.GetBitRate() * 1e-9);
 #endif

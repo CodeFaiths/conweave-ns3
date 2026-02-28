@@ -1,7 +1,0 @@
-exp_a=ns-3.19/mix/output/medu_loop_20260203_221642_AliStorage2019
-exp_b=ns-3.19/mix/output/medu_loop_20260212_093305_AliStorage2019
-label_a=9MB
-label_b=4MB
-cdf=AliStorage2019
-loads=load30,load50,load70,load80,load90
-algos=conga,conweave,fecmp,letflow

@@ -104,6 +104,24 @@ CPEM_QUEUE_THRESHOLD_HIGH 100000
 
 # MEDU Flow Classification
 ENABLE_FLOW_CLASSIFICATION {enable_flow_classification}
+FLOW_SIZE_THRESHOLD {flow_size_threshold}
+
+# Differentiated CC Parameters (requires MEDU enabled)
+ENABLE_DIFF_CC {enable_diff_cc}
+SHORT_FLOW_RATE_AI {short_flow_rate_ai}Mb/s
+SHORT_FLOW_RATE_HAI {short_flow_rate_hai}Mb/s
+SHORT_FLOW_EWMA_GAIN {short_flow_ewma_gain}
+SHORT_FLOW_ALPHA_RESUME_INTERVAL {short_flow_alpha_resume_interval}
+SHORT_FLOW_RATE_DECREASE_INTERVAL {short_flow_rate_decrease_interval}
+SHORT_FLOW_RP_TIMER {short_flow_rp_timer}
+SHORT_FLOW_FAST_RECOVERY_TIMES {short_flow_fast_recovery_times}
+LONG_FLOW_RATE_AI {long_flow_rate_ai}Mb/s
+LONG_FLOW_RATE_HAI {long_flow_rate_hai}Mb/s
+LONG_FLOW_EWMA_GAIN {long_flow_ewma_gain}
+LONG_FLOW_ALPHA_RESUME_INTERVAL {long_flow_alpha_resume_interval}
+LONG_FLOW_RATE_DECREASE_INTERVAL {long_flow_rate_decrease_interval}
+LONG_FLOW_RP_TIMER {long_flow_rp_timer}
+LONG_FLOW_FAST_RECOVERY_TIMES {long_flow_fast_recovery_times}
 """
 
 
@@ -167,6 +185,38 @@ def main():
                         type=int, default=0, help="enable CPEM module (default: 0)")
     parser.add_argument('--medu', dest='medu', action='store',
                         type=int, default=0, help="enable MEDU flow classification (default: 0)")
+    parser.add_argument('--flow-threshold-kb', dest='flow_threshold_kb', action='store',
+                        type=int, default=100, help="flow size threshold for MEDU classification in KB (default: 100)")
+    parser.add_argument('--diff-cc', dest='diff_cc', action='store',
+                        type=int, default=0, help="enable differentiated CC params for long/short flows (default: 0)")
+    parser.add_argument('--short-ai-factor', dest='short_ai_factor', action='store',
+                        type=float, default=2.0, help="short flow RATE_AI multiplier relative to global (default: 2.0)")
+    parser.add_argument('--short-hai-factor', dest='short_hai_factor', action='store',
+                        type=float, default=2.0, help="short flow RATE_HAI multiplier relative to global (default: 2.0)")
+    parser.add_argument('--long-ai-factor', dest='long_ai_factor', action='store',
+                        type=float, default=1.0, help="long flow RATE_AI multiplier relative to global (default: 1.0)")
+    parser.add_argument('--long-hai-factor', dest='long_hai_factor', action='store',
+                        type=float, default=1.0, help="long flow RATE_HAI multiplier relative to global (default: 1.0)")
+    parser.add_argument('--short-ewma-gain', dest='short_ewma_gain', action='store',
+                        type=float, default=-1, help="short flow EWMA_GAIN (default: -1, use global)")
+    parser.add_argument('--short-alpha-resume', dest='short_alpha_resume', action='store',
+                        type=float, default=1, help="short flow ALPHA_RESUME_INTERVAL (default: 1)")
+    parser.add_argument('--short-rate-decrease', dest='short_rate_decrease', action='store',
+                        type=float, default=4, help="short flow RATE_DECREASE_INTERVAL (default: 4)")
+    parser.add_argument('--short-rp-timer', dest='short_rp_timer', action='store',
+                        type=float, default=300, help="short flow RP_TIMER (default: 300)")
+    parser.add_argument('--short-fast-recovery', dest='short_fast_recovery', action='store',
+                        type=int, default=1, help="short flow FAST_RECOVERY_TIMES (default: 1)")
+    parser.add_argument('--long-ewma-gain', dest='long_ewma_gain', action='store',
+                        type=float, default=-1, help="long flow EWMA_GAIN (default: -1, use global)")
+    parser.add_argument('--long-alpha-resume', dest='long_alpha_resume', action='store',
+                        type=float, default=1, help="long flow ALPHA_RESUME_INTERVAL (default: 1)")
+    parser.add_argument('--long-rate-decrease', dest='long_rate_decrease', action='store',
+                        type=float, default=4, help="long flow RATE_DECREASE_INTERVAL (default: 4)")
+    parser.add_argument('--long-rp-timer', dest='long_rp_timer', action='store',
+                        type=float, default=300, help="long flow RP_TIMER (default: 300)")
+    parser.add_argument('--long-fast-recovery', dest='long_fast_recovery', action='store',
+                        type=int, default=1, help="long flow FAST_RECOVERY_TIMES (default: 1)")
     parser.add_argument('--id', dest='id', action='store',
                         default=None, help="custom output ID (default: random)")
 
@@ -204,6 +254,8 @@ def main():
     enabled_irn = int(args.irn)
     cpem_enabled = int(args.cpem)
     enable_flow_classification = int(args.medu)
+    flow_size_threshold = int(args.flow_threshold_kb) * 1000
+    enable_diff_cc = int(args.diff_cc)
     bw = int(args.bw)
     buffer = args.buffer
     topo = args.topo
@@ -213,6 +265,9 @@ def main():
     flowgen_stop_time = flowgen_start_time + \
         float(args.simul_time)  # default: 2.0
     sw_monitoring_interval = int(args.sw_monitoring_interval)
+
+    if flow_size_threshold <= 0:
+        raise Exception("CONFIG ERROR : flow-threshold-kb must be positive.")
 
     # get over-subscription ratio from topoogy name
 
@@ -384,6 +439,16 @@ def main():
         int_multi = 1
         ewma_gain = 0.00390625
 
+        # Differentiated CC params: compute per-flow-type AI/HAI from factors
+        short_flow_ai = ai * args.short_ai_factor
+        short_flow_hai = hai * args.short_hai_factor
+        long_flow_ai = ai * args.long_ai_factor
+        long_flow_hai = hai * args.long_hai_factor
+
+        # Per-flow-type CC params (use global value if not explicitly set)
+        short_ewma = args.short_ewma_gain if args.short_ewma_gain >= 0 else ewma_gain
+        long_ewma = args.long_ewma_gain if args.long_ewma_gain >= 0 else ewma_gain
+
         config = config_template.format(id=config_ID, name=config_name_prefix, topo=topo, flow=flow,
                                         qlen_mon_start=qlen_mon_start, qlen_mon_end=qlen_mon_end, flowgen_start_time=flowgen_start_time,
                                         flowgen_stop_time=flowgen_stop_time, sw_monitoring_interval=sw_monitoring_interval,
@@ -397,7 +462,23 @@ def main():
                                         fast_react=fast_react, mi=mi, int_multi=int_multi, ewma_gain=ewma_gain,
                                         kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map,
                                         cpem_enabled=cpem_enabled,
-                                        enable_flow_classification=enable_flow_classification)
+                                        enable_flow_classification=enable_flow_classification,
+                                        flow_size_threshold=flow_size_threshold,
+                                        enable_diff_cc=enable_diff_cc,
+                                        short_flow_rate_ai=short_flow_ai,
+                                        short_flow_rate_hai=short_flow_hai,
+                                        short_flow_ewma_gain=short_ewma,
+                                        short_flow_alpha_resume_interval=args.short_alpha_resume,
+                                        short_flow_rate_decrease_interval=args.short_rate_decrease,
+                                        short_flow_rp_timer=args.short_rp_timer,
+                                        short_flow_fast_recovery_times=args.short_fast_recovery,
+                                        long_flow_rate_ai=long_flow_ai,
+                                        long_flow_rate_hai=long_flow_hai,
+                                        long_flow_ewma_gain=long_ewma,
+                                        long_flow_alpha_resume_interval=args.long_alpha_resume,
+                                        long_flow_rate_decrease_interval=args.long_rate_decrease,
+                                        long_flow_rp_timer=args.long_rp_timer,
+                                        long_flow_fast_recovery_times=args.long_fast_recovery)
     else:
         print("unknown cc:{}".format(args.cc))
 
@@ -447,10 +528,28 @@ def main():
         flowgen_stop_time * 1e9) + int(0.05 * 1e9)  # extra term
 
     print("Analyzing output FCT...")
-    print("python3 fctAnalysis.py -id {config_ID} -dir {dir} -bdp {bdp} -sT {fct_analysis_time_limit_begin} -fT {fct_analysistime_limit_end} > /dev/null 2>&1".format(
-        config_ID=config_ID, dir=os.getcwd(), bdp=bdp, fct_analysis_time_limit_begin=fct_analysis_time_limit_begin, fct_analysistime_limit_end=fct_analysistime_limit_end))
-    os.system("python3 fctAnalysis.py -id {config_ID} -dir {dir} -bdp {bdp} -sT {fct_analysis_time_limit_begin} -fT {fct_analysistime_limit_end} > /dev/null 2>&1".format(
-        config_ID=config_ID, dir=os.getcwd(), bdp=bdp, fct_analysis_time_limit_begin=fct_analysis_time_limit_begin, fct_analysistime_limit_end=fct_analysistime_limit_end))
+    fct_analysis_log = os.path.join(output_dir, "fct_analysis.log")
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    project_venv_python = os.path.join(os.path.dirname(repo_dir), ".venv", "bin", "python")
+    analysis_python = project_venv_python if os.path.exists(project_venv_python) else sys.executable
+    fct_cmd = [
+        analysis_python,
+        "fctAnalysis.py",
+        "-id", config_ID,
+        "-dir", os.getcwd(),
+        "-bdp", str(bdp),
+        "-sT", str(fct_analysis_time_limit_begin),
+        "-fT", str(fct_analysistime_limit_end),
+    ]
+    print("{} > {} 2>&1".format(" ".join(fct_cmd), fct_analysis_log))
+    with open(fct_analysis_log, "w") as fct_log:
+        fct_log.write("PYTHON_EXECUTABLE={}\n".format(analysis_python))
+        fct_log.write("CMD={}\n".format(" ".join(fct_cmd)))
+        result = subprocess.run(fct_cmd, stdout=fct_log, stderr=subprocess.STDOUT)
+    if result.returncode != 0:
+        raise RuntimeError(
+            "fctAnalysis failed (exit code {}). Check log: {}".format(result.returncode, fct_analysis_log)
+        )
 
     if lb_mode == 9: # ConWeave Logging
         ################################################################

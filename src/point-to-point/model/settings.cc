@@ -61,6 +61,31 @@ uint64_t Settings::flow_size_threshold = 100000;        // Default: 100KB thresh
 uint16_t Settings::short_flow_pg = 2;                   // Short flows use queue 2 (higher priority)
 uint16_t Settings::long_flow_pg = 3;                    // Long flows use queue 3 (lower priority)
 
+/* Differentiated CC Parameters */
+bool Settings::enable_diff_cc = false;                  // Disabled by default
+// Short flow parameters (more aggressive defaults)
+double Settings::short_flow_ewma_gain = 0.00390625;
+std::string Settings::short_flow_rate_ai = "";          // Empty means use global default
+std::string Settings::short_flow_rate_hai = "";
+std::string Settings::short_flow_min_rate = "";
+double Settings::short_flow_alpha_resume_interval = -1; // -1 means use global default
+double Settings::short_flow_rate_decrease_interval = -1;
+double Settings::short_flow_rp_timer = -1;
+uint32_t Settings::short_flow_fast_recovery_times = 0;  // 0 means use global default
+double Settings::short_flow_rate_on_first_cnp = -1;
+bool Settings::short_flow_clamp_target_rate = false;
+// Long flow parameters (more conservative defaults)
+double Settings::long_flow_ewma_gain = 0.00390625;
+std::string Settings::long_flow_rate_ai = "";
+std::string Settings::long_flow_rate_hai = "";
+std::string Settings::long_flow_min_rate = "";
+double Settings::long_flow_alpha_resume_interval = -1;
+double Settings::long_flow_rate_decrease_interval = -1;
+double Settings::long_flow_rp_timer = -1;
+uint32_t Settings::long_flow_fast_recovery_times = 0;
+double Settings::long_flow_rate_on_first_cnp = -1;
+bool Settings::long_flow_clamp_target_rate = false;
+
 /* Priority Queue Logging */
 bool Settings::enable_pq_logging = false;               // Disabled by default
 std::string Settings::pq_log_file = "";

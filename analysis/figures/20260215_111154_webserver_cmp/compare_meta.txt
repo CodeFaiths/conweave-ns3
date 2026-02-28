@@ -1,7 +1,0 @@
-exp_a=../mix/output/medu_loop_20260203_223239_webserver
-exp_b=../mix/output/medu_loop_20260214_083810_webserver
-label_a=9MB
-label_b=4MB
-cdf=webserver
-loads=load30,load40,load50,load70,load80
-algos=conga,conweave,fecmp,letflow

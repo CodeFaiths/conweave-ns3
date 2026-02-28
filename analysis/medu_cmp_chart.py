@@ -48,6 +48,16 @@ ALG_COLOR = {
     "letflow": "#ff7f00",
 }
 
+# (no_medu_hatch, with_medu_hatch, edgecolor)
+CONDITION_STYLES = [
+    ("", "///", "black"),
+    ("..", "xx", "#4d4d4d"),
+    ("\\\\", "++", "#7a7a7a"),
+]
+
+ExpData = Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]]
+ExpEntry = Tuple[str, ExpData]
+
 
 def parse_summary(summary_path: Path) -> Optional[Dict[str, Dict[str, float]]]:
     if not summary_path.exists():
@@ -63,22 +73,29 @@ def parse_summary(summary_path: Path) -> Optional[Dict[str, Dict[str, float]]]:
             break
         if not in_slowdown:
             continue
-        if not line.startswith("<1BDP,") and not line.startswith(">1BDP,") and not line.lower().startswith("all,"):
+        if line.startswith("#"):
             continue
-        parts = line.split(",")
+        parts = [p.strip() for p in line.split(",")]
         if len(parts) < 6:
             continue
         tag = parts[0]
-        if tag.lower() == "all":
-            tag = "ALL"
-        metrics[tag] = {
+        if tag in {"<THR", "<1BDP"}:
+            norm_tag = "SMALL"
+        elif tag in {">=THR", ">1BDP"}:
+            norm_tag = "LARGE"
+        elif tag.lower() == "all":
+            norm_tag = "ALL"
+        else:
+            continue
+
+        metrics[norm_tag] = {
             "avg": float(parts[1]),
             "p50": float(parts[2]),
             "p95": float(parts[3]),
             "p99": float(parts[4]),
             "p999": float(parts[5]),
         }
-    if "<1BDP" not in metrics or ">1BDP" not in metrics:
+    if "SMALL" not in metrics or "LARGE" not in metrics:
         return None
     return metrics
 
@@ -206,23 +223,39 @@ def collect_experiment(exp_dir: Path) -> Dict[str, Dict[str, Dict[bool, Dict[str
     return data
 
 
-def common_loads(exp_a: Dict[str, Dict], exp_b: Dict[str, Dict], exp_c: Dict[str, Dict]) -> List[str]:
-    loads = sorted(set(exp_a.keys()).intersection(set(exp_b.keys())).intersection(set(exp_c.keys())), key=load_sort_key)
-    return loads
+def common_loads(experiments: List[ExpData]) -> List[str]:
+    if not experiments:
+        return []
+    common = set(experiments[0].keys())
+    for exp in experiments[1:]:
+        common = common.intersection(set(exp.keys()))
+    return sorted(common, key=load_sort_key)
 
 
-def common_algos(exp_a: Dict[str, Dict], exp_b: Dict[str, Dict], exp_c: Dict[str, Dict]) -> List[str]:
-    alg_a = set()
-    alg_b = set()
-    alg_c = set()
-    for d in exp_a.values():
-        alg_a.update(d.keys())
-    for d in exp_b.values():
-        alg_b.update(d.keys())
-    for d in exp_c.values():
-        alg_c.update(d.keys())
-    common = alg_a.intersection(alg_b).intersection(alg_c)
+def common_algos(experiments: List[ExpData]) -> List[str]:
+    if not experiments:
+        return []
+    per_exp_algos = []
+    for exp in experiments:
+        algos = set()
+        for d in exp.values():
+            algos.update(d.keys())
+        per_exp_algos.append(algos)
+
+    common = per_exp_algos[0]
+    for algos in per_exp_algos[1:]:
+        common = common.intersection(algos)
     return [a for a in ALG_ORDER if a in common]
+
+
+def build_conditions(experiments: List[ExpEntry]):
+    conditions = []
+    for idx, (label, _) in enumerate(experiments):
+        style_idx = min(idx, len(CONDITION_STYLES) - 1)
+        no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
+        conditions.append((idx, label, False, 0.55, no_hatch, edgecolor))
+        conditions.append((idx, label, True, 1.0, yes_hatch, edgecolor))
+    return conditions
 
 
 def get_metric(
@@ -236,18 +269,15 @@ def get_metric(
     s = exp.get(load, {}).get(algo, {}).get(with_medu)
     if s is None:
         return float("nan")
+    if size_tag not in s:
+        return float("nan")
     return float(s[size_tag][metric])
 
 
 def plot_metric_bars(
     loads: List[str],
     algos: List[str],
-    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    label_a: str,
-    label_b: str,
-    label_c: str,
+    experiments: List[ExpEntry],
     title: str,
     y_label: str,
     size_tag: str,
@@ -256,15 +286,7 @@ def plot_metric_bars(
 ):
     fig, ax = plt.subplots(figsize=(15, 6.2))
 
-    conditions = [
-        # (buffer_label, with_medu, alpha, hatch, edgecolor)
-        (label_a, False, 0.55, "", "black"),
-        (label_a, True, 1.0, "///", "black"),
-        (label_b, False, 0.55, "..", "#4d4d4d"),
-        (label_b, True, 1.0, "xx", "#4d4d4d"),
-        (label_c, False, 0.55, "\\\\", "#7a7a7a"),
-        (label_c, True, 1.0, "++", "#7a7a7a"),
-    ]
+    conditions = build_conditions(experiments)
 
     bar_w = 0.05
     group_gap = 0.42
@@ -278,16 +300,12 @@ def plot_metric_bars(
         tick_pos.append(group_start + group_width / 2.0)
         tick_lbl.append(load.replace("load", ""))
 
-        for ci, (buffer_label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
+        for ci, (exp_idx, _label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
             cond_start = group_start + ci * len(algos) * bar_w
             for ai, algo in enumerate(algos):
                 x = cond_start + ai * bar_w
-                if buffer_label == label_a:
-                    val = get_metric(exp_a, load, algo, with_medu, size_tag, metric)
-                elif buffer_label == label_b:
-                    val = get_metric(exp_b, load, algo, with_medu, size_tag, metric)
-                else:
-                    val = get_metric(exp_c, load, algo, with_medu, size_tag, metric)
+                exp_data = experiments[exp_idx][1]
+                val = get_metric(exp_data, load, algo, with_medu, size_tag, metric)
 
                 ax.bar(
                     x,
@@ -308,14 +326,12 @@ def plot_metric_bars(
     ax.grid(axis="y", alpha=0.3)
 
     algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
-    cond_handles = [
-        Patch(facecolor="gray", edgecolor="black", alpha=0.55, label=f"{label_a} (No MEDU)"),
-        Patch(facecolor="gray", edgecolor="black", alpha=1.0, hatch="///", label=f"{label_a} (With MEDU)"),
-        Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=0.55, hatch="..", label=f"{label_b} (No MEDU)"),
-        Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=1.0, hatch="xx", label=f"{label_b} (With MEDU)"),
-        Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=0.55, hatch="\\\\", label=f"{label_c} (No MEDU)"),
-        Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=1.0, hatch="++", label=f"{label_c} (With MEDU)"),
-    ]
+    cond_handles = []
+    for idx, (label, _) in enumerate(experiments):
+        style_idx = min(idx, len(CONDITION_STYLES) - 1)
+        no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
+        cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=0.55, hatch=no_hatch, label=f"{label} (No MEDU)"))
+        cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=1.0, hatch=yes_hatch, label=f"{label} (With MEDU)"))
 
     legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
     ax.add_artist(legend1)
@@ -331,26 +347,14 @@ def _plot_metric_bars_on_axis(
     ax,
     load: str,
     algos: List[str],
-    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    label_a: str,
-    label_b: str,
-    label_c: str,
+    experiments: List[ExpEntry],
     title: str,
     y_label: str,
     size_tag: str,
     metric: str,
     show_legend: bool = False,
 ):
-    conditions = [
-        (label_a, False, 0.55, "", "black"),
-        (label_a, True, 1.0, "///", "black"),
-        (label_b, False, 0.55, "..", "#4d4d4d"),
-        (label_b, True, 1.0, "xx", "#4d4d4d"),
-        (label_c, False, 0.55, "\\\\", "#7a7a7a"),
-        (label_c, True, 1.0, "++", "#7a7a7a"),
-    ]
+    conditions = build_conditions(experiments)
 
     bar_w = 0.12
     x = np.arange(len(algos))
@@ -358,15 +362,11 @@ def _plot_metric_bars_on_axis(
     # offsets for 6 condition bars around each algorithm center
     offsets = [(-2.5 + i) * bar_w for i in range(len(conditions))]
 
-    for ci, (buffer_label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
+    for ci, (exp_idx, _label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
         vals = []
+        exp_data = experiments[exp_idx][1]
         for algo in algos:
-            if buffer_label == label_a:
-                val = get_metric(exp_a, load, algo, with_medu, size_tag, metric)
-            elif buffer_label == label_b:
-                val = get_metric(exp_b, load, algo, with_medu, size_tag, metric)
-            else:
-                val = get_metric(exp_c, load, algo, with_medu, size_tag, metric)
+            val = get_metric(exp_data, load, algo, with_medu, size_tag, metric)
             vals.append(val)
 
         ax.bar(
@@ -388,14 +388,12 @@ def _plot_metric_bars_on_axis(
 
     if show_legend:
         algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
-        cond_handles = [
-            Patch(facecolor="gray", edgecolor="black", alpha=0.55, label=f"{label_a} (No MEDU)"),
-            Patch(facecolor="gray", edgecolor="black", alpha=1.0, hatch="///", label=f"{label_a} (With MEDU)"),
-            Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=0.55, hatch="..", label=f"{label_b} (No MEDU)"),
-            Patch(facecolor="gray", edgecolor="#4d4d4d", alpha=1.0, hatch="xx", label=f"{label_b} (With MEDU)"),
-            Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=0.55, hatch="\\\\", label=f"{label_c} (No MEDU)"),
-            Patch(facecolor="gray", edgecolor="#7a7a7a", alpha=1.0, hatch="++", label=f"{label_c} (With MEDU)"),
-        ]
+        cond_handles = []
+        for idx, (label, _) in enumerate(experiments):
+            style_idx = min(idx, len(CONDITION_STYLES) - 1)
+            no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
+            cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=0.55, hatch=no_hatch, label=f"{label} (No MEDU)"))
+            cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=1.0, hatch=yes_hatch, label=f"{label} (With MEDU)"))
         legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
         ax.add_artist(legend1)
         ax.legend(handles=cond_handles, loc="upper right", fontsize=8, title="Condition")
@@ -404,44 +402,40 @@ def _plot_metric_bars_on_axis(
 def plot_per_load_collage(
     loads: List[str],
     algos: List[str],
-    exp_a: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_b: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    exp_c: Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]],
-    label_a: str,
-    label_b: str,
-    label_c: str,
+    experiments: List[ExpEntry],
     out_dir: Path,
 ):
     for load in loads:
         fig, axes = plt.subplots(3, 2, figsize=(14, 13))
 
         _plot_metric_bars_on_axis(
-            axes[0, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
-            "Small Flow (<1BDP) - Average Slowdown", "Average FCT Slowdown", "<1BDP", "avg", show_legend=True
+            axes[0, 0], load, algos, experiments,
+            "Small Flow (<THR) - Average Slowdown", "Average FCT Slowdown", "SMALL", "avg", show_legend=True
         )
         _plot_metric_bars_on_axis(
-            axes[0, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
-            "Small Flow (<1BDP) - p99 Slowdown", "p99 FCT Slowdown", "<1BDP", "p99", show_legend=False
+            axes[0, 1], load, algos, experiments,
+            "Small Flow (<THR) - p99 Slowdown", "p99 FCT Slowdown", "SMALL", "p99", show_legend=False
         )
         _plot_metric_bars_on_axis(
-            axes[1, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
-            "Large Flow (>1BDP) - Average Slowdown", "Average FCT Slowdown", ">1BDP", "avg", show_legend=False
+            axes[1, 0], load, algos, experiments,
+            "Large Flow (>=THR) - Average Slowdown", "Average FCT Slowdown", "LARGE", "avg", show_legend=False
         )
         _plot_metric_bars_on_axis(
-            axes[1, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
-            "Large Flow (>1BDP) - p99 Slowdown", "p99 FCT Slowdown", ">1BDP", "p99", show_legend=False
+            axes[1, 1], load, algos, experiments,
+            "Large Flow (>=THR) - p99 Slowdown", "p99 FCT Slowdown", "LARGE", "p99", show_legend=False
         )
         _plot_metric_bars_on_axis(
-            axes[2, 0], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            axes[2, 0], load, algos, experiments,
             "All Flow - Average Slowdown", "Average FCT Slowdown", "ALL", "avg", show_legend=False
         )
         _plot_metric_bars_on_axis(
-            axes[2, 1], load, algos, exp_a, exp_b, exp_c, label_a, label_b, label_c,
+            axes[2, 1], load, algos, experiments,
             "All Flow - p99 Slowdown", "p99 FCT Slowdown", "ALL", "p99", show_legend=False
         )
 
         load_num = load.replace("load", "")
-        fig.suptitle(f"Per-Load Comparison (Load={load_num}): {label_a} vs {label_b} vs {label_c}", fontsize=14)
+        labels = [label for label, _ in experiments]
+        fig.suptitle(f"Per-Load Comparison (Load={load_num}): {' vs '.join(labels)}", fontsize=14)
         plt.tight_layout(rect=[0, 0, 1, 0.96])
 
         out_png = out_dir / f"load{load_num}_collage_cmp.png"
@@ -453,10 +447,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Re-plot two or three experiments on same axes")
     parser.add_argument("--exp-a", type=Path, required=True, help="Experiment A directory under mix/output")
     parser.add_argument("--exp-b", type=Path, required=True, help="Experiment B directory under mix/output")
-    parser.add_argument("--exp-c", type=Path, required=True, help="Experiment C directory under mix/output")
+    parser.add_argument("--exp-c", type=Path, default=None, help="Optional Experiment C directory under mix/output")
     parser.add_argument("--label-a", type=str, default="9MB")
     parser.add_argument("--label-b", type=str, default="4MB")
-    parser.add_argument("--label-c", type=str, default="2MB")
+    parser.add_argument("--label-c", type=str, default="ExpC")
     parser.add_argument(
         "--out-root",
         type=Path,
@@ -466,36 +460,32 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    exp_a = args.exp_a
-    exp_b = args.exp_b
-    exp_c = args.exp_c
-    if not exp_a.exists() or not exp_a.is_dir():
-        raise SystemExit(f"exp-a not found: {exp_a}")
-    if not exp_b.exists() or not exp_b.is_dir():
-        raise SystemExit(f"exp-b not found: {exp_b}")
-    if not exp_c.exists() or not exp_c.is_dir():
-        raise SystemExit(f"exp-c not found: {exp_c}")
+    exp_inputs: List[Tuple[str, Path]] = [
+        (args.label_a, args.exp_a),
+        (args.label_b, args.exp_b),
+    ]
+    if args.exp_c is not None:
+        exp_inputs.append((args.label_c, args.exp_c))
 
-    data_a = collect_experiment(exp_a)
-    data_b = collect_experiment(exp_b)
-    data_c = collect_experiment(exp_c)
+    for label, exp_path in exp_inputs:
+        if not exp_path.exists() or not exp_path.is_dir():
+            raise SystemExit(f"{label} experiment not found: {exp_path}")
 
-    loads = common_loads(data_a, data_b, data_c)
+    experiments: List[ExpEntry] = [(label, collect_experiment(exp_path)) for label, exp_path in exp_inputs]
+
+    loads = common_loads([data for _, data in experiments])
     if not loads:
         raise SystemExit("No common loads between experiments")
 
-    algos = common_algos(data_a, data_b, data_c)
+    algos = common_algos([data for _, data in experiments])
     if not algos:
         raise SystemExit("No common algorithms between experiments")
 
-    cdf_a = detect_cdf(exp_a)
-    cdf_b = detect_cdf(exp_b)
-    cdf_c = detect_cdf(exp_c)
-    
-    if cdf_a == cdf_b == cdf_c:
-        cdf = cdf_a
+    cdf_list = [detect_cdf(exp_path) for _, exp_path in exp_inputs]
+    if len(set(cdf_list)) == 1:
+        cdf = cdf_list[0]
     else:
-        cdf = f"{cdf_a}_vs_{cdf_b}_vs_{cdf_c}"
+        cdf = "_vs_".join(cdf_list)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_dir = args.out_root / f"{ts}_{cdf}_cmp"
@@ -505,15 +495,10 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
-        "Small Flow (<1BDP) - Average Slowdown",
+        experiments,
+        "Small Flow (<THR) - Average Slowdown",
         "Average FCT Slowdown",
-        "<1BDP",
+        "SMALL",
         "avg",
         out_dir / "small_avg_slowdown_cmp.png",
     )
@@ -522,15 +507,10 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
-        "Small Flow (<1BDP) - p99 Slowdown",
+        experiments,
+        "Small Flow (<THR) - p99 Slowdown",
         "p99 FCT Slowdown",
-        "<1BDP",
+        "SMALL",
         "p99",
         out_dir / "small_p99_slowdown_cmp.png",
     )
@@ -539,15 +519,10 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
-        "Large Flow (>1BDP) - Average Slowdown",
+        experiments,
+        "Large Flow (>=THR) - Average Slowdown",
         "Average FCT Slowdown",
-        ">1BDP",
+        "LARGE",
         "avg",
         out_dir / "large_avg_slowdown_cmp.png",
     )
@@ -556,15 +531,10 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
-        "Large Flow (>1BDP) - p99 Slowdown",
+        experiments,
+        "Large Flow (>=THR) - p99 Slowdown",
         "p99 FCT Slowdown",
-        ">1BDP",
+        "LARGE",
         "p99",
         out_dir / "large_p99_slowdown_cmp.png",
     )
@@ -573,12 +543,7 @@ def main() -> None:
     plot_per_load_collage(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
+        experiments,
         out_dir,
     )
 
@@ -586,12 +551,7 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
+        experiments,
         "All Flow - Average Slowdown",
         "Average FCT Slowdown",
         "ALL",
@@ -603,12 +563,7 @@ def main() -> None:
     plot_metric_bars(
         loads,
         algos,
-        data_a,
-        data_b,
-        data_c,
-        args.label_a,
-        args.label_b,
-        args.label_c,
+        experiments,
         "All Flow - p99 Slowdown",
         "p99 FCT Slowdown",
         "ALL",
@@ -617,17 +572,15 @@ def main() -> None:
     )
 
     # brief metadata
-    meta = [
-        f"exp_a={exp_a}",
-        f"exp_b={exp_b}",
-        f"exp_c={exp_c}",
-        f"label_a={args.label_a}",
-        f"label_b={args.label_b}",
-        f"label_c={args.label_c}",
+    meta = []
+    for idx, (label, exp_path) in enumerate(exp_inputs, start=1):
+        meta.append(f"exp_{idx}={exp_path}")
+        meta.append(f"label_{idx}={label}")
+    meta.extend([
         f"cdf={cdf}",
         f"loads={','.join(loads)}",
         f"algos={','.join(algos)}",
-    ]
+    ])
     (out_dir / "compare_meta.txt").write_text("\n".join(meta))
 
     print(f"Output directory: {out_dir}")
