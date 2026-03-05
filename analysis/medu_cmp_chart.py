@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Re-plot two MEDU experiments on the same axes (not image stitching).
+Re-plot multiple MEDU experiments on the same axes (not image stitching).
 
 Key behavior:
 1) Output folder name: <timestamp>_<CDF>_cmp
@@ -53,6 +53,8 @@ CONDITION_STYLES = [
     ("", "///", "black"),
     ("..", "xx", "#4d4d4d"),
     ("\\\\", "++", "#7a7a7a"),
+    ("oo", "--", "#5a5a5a"),
+    ("**", "||", "#2f2f2f"),
 ]
 
 ExpData = Dict[str, Dict[str, Dict[bool, Dict[str, Dict[str, float]]]]]
@@ -176,10 +178,12 @@ def infer_algo(run_name: str) -> Optional[str]:
 
 
 def detect_cdf(exp_dir: Path) -> str:
-    # Prefer from folder name: medu_loop_<ts>_<CDF>
-    m = re.match(r"medu_loop_\d{8}_\d{6}_(.+)", exp_dir.name)
+    # Prefer from folder name: support both legacy medu_loop_<ts>_<CDF> and new <ts>_<CDF>
+    m = re.match(r"(?:medu_loop_)?\d{8}_\d{6}_(.+)", exp_dir.name)
     if m:
-        return m.group(1)
+        cdf_part = m.group(1)
+        # Extract just the CDF name (first segment before _)
+        return cdf_part.split("_")[0] if "_" in cdf_part else cdf_part
 
     # Fallback from config FLOW_FILE
     cfg_files = sorted(exp_dir.glob("load*/**/config.txt"))
@@ -248,12 +252,13 @@ def common_algos(experiments: List[ExpData]) -> List[str]:
     return [a for a in ALG_ORDER if a in common]
 
 
-def build_conditions(experiments: List[ExpEntry]):
+def build_conditions(experiments: List[ExpEntry], keep_only_exp_a_no_medu: bool = False):
     conditions = []
     for idx, (label, _) in enumerate(experiments):
-        style_idx = min(idx, len(CONDITION_STYLES) - 1)
+        style_idx = idx % len(CONDITION_STYLES)
         no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
-        conditions.append((idx, label, False, 0.55, no_hatch, edgecolor))
+        if not keep_only_exp_a_no_medu or idx == 0:
+            conditions.append((idx, label, False, 0.55, no_hatch, edgecolor))
         conditions.append((idx, label, True, 1.0, yes_hatch, edgecolor))
     return conditions
 
@@ -283,10 +288,11 @@ def plot_metric_bars(
     size_tag: str,
     metric: str,
     out_png: Path,
+    keep_only_exp_a_no_medu: bool = False,
 ):
     fig, ax = plt.subplots(figsize=(15, 6.2))
 
-    conditions = build_conditions(experiments)
+    conditions = build_conditions(experiments, keep_only_exp_a_no_medu=keep_only_exp_a_no_medu)
 
     bar_w = 0.05
     group_gap = 0.42
@@ -327,11 +333,9 @@ def plot_metric_bars(
 
     algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
     cond_handles = []
-    for idx, (label, _) in enumerate(experiments):
-        style_idx = min(idx, len(CONDITION_STYLES) - 1)
-        no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
-        cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=0.55, hatch=no_hatch, label=f"{label} (No MEDU)"))
-        cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=1.0, hatch=yes_hatch, label=f"{label} (With MEDU)"))
+    for _exp_idx, label, with_medu, alpha, hatch, edgecolor in conditions:
+        suffix = "With MEDU" if with_medu else "No MEDU"
+        cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=alpha, hatch=hatch, label=f"{label} ({suffix})"))
 
     legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
     ax.add_artist(legend1)
@@ -353,13 +357,14 @@ def _plot_metric_bars_on_axis(
     size_tag: str,
     metric: str,
     show_legend: bool = False,
+    keep_only_exp_a_no_medu: bool = False,
 ):
-    conditions = build_conditions(experiments)
+    conditions = build_conditions(experiments, keep_only_exp_a_no_medu=keep_only_exp_a_no_medu)
 
     bar_w = 0.12
     x = np.arange(len(algos))
 
-    # offsets for 6 condition bars around each algorithm center
+    # offsets for condition bars around each algorithm center
     offsets = [(-2.5 + i) * bar_w for i in range(len(conditions))]
 
     for ci, (exp_idx, _label, with_medu, alpha, hatch, edgecolor) in enumerate(conditions):
@@ -389,11 +394,9 @@ def _plot_metric_bars_on_axis(
     if show_legend:
         algo_handles = [Patch(facecolor=ALG_COLOR[a], edgecolor="black", label=ALG_LABEL.get(a, a)) for a in algos]
         cond_handles = []
-        for idx, (label, _) in enumerate(experiments):
-            style_idx = min(idx, len(CONDITION_STYLES) - 1)
-            no_hatch, yes_hatch, edgecolor = CONDITION_STYLES[style_idx]
-            cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=0.55, hatch=no_hatch, label=f"{label} (No MEDU)"))
-            cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=1.0, hatch=yes_hatch, label=f"{label} (With MEDU)"))
+        for _exp_idx, label, with_medu, alpha, hatch, edgecolor in conditions:
+            suffix = "With MEDU" if with_medu else "No MEDU"
+            cond_handles.append(Patch(facecolor="gray", edgecolor=edgecolor, alpha=alpha, hatch=hatch, label=f"{label} ({suffix})"))
         legend1 = ax.legend(handles=algo_handles, loc="upper left", fontsize=8, title="Algorithm")
         ax.add_artist(legend1)
         ax.legend(handles=cond_handles, loc="upper right", fontsize=8, title="Condition")
@@ -404,33 +407,40 @@ def plot_per_load_collage(
     algos: List[str],
     experiments: List[ExpEntry],
     out_dir: Path,
+    keep_only_exp_a_no_medu: bool = False,
 ):
     for load in loads:
         fig, axes = plt.subplots(3, 2, figsize=(14, 13))
 
         _plot_metric_bars_on_axis(
             axes[0, 0], load, algos, experiments,
-            "Small Flow (<THR) - Average Slowdown", "Average FCT Slowdown", "SMALL", "avg", show_legend=True
+            "Small Flow (<THR) - Average Slowdown", "Average FCT Slowdown", "SMALL", "avg", show_legend=True,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
         _plot_metric_bars_on_axis(
             axes[0, 1], load, algos, experiments,
-            "Small Flow (<THR) - p99 Slowdown", "p99 FCT Slowdown", "SMALL", "p99", show_legend=False
+            "Small Flow (<THR) - p99 Slowdown", "p99 FCT Slowdown", "SMALL", "p99", show_legend=False,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
         _plot_metric_bars_on_axis(
             axes[1, 0], load, algos, experiments,
-            "Large Flow (>=THR) - Average Slowdown", "Average FCT Slowdown", "LARGE", "avg", show_legend=False
+            "Large Flow (>=THR) - Average Slowdown", "Average FCT Slowdown", "LARGE", "avg", show_legend=False,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
         _plot_metric_bars_on_axis(
             axes[1, 1], load, algos, experiments,
-            "Large Flow (>=THR) - p99 Slowdown", "p99 FCT Slowdown", "LARGE", "p99", show_legend=False
+            "Large Flow (>=THR) - p99 Slowdown", "p99 FCT Slowdown", "LARGE", "p99", show_legend=False,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
         _plot_metric_bars_on_axis(
             axes[2, 0], load, algos, experiments,
-            "All Flow - Average Slowdown", "Average FCT Slowdown", "ALL", "avg", show_legend=False
+            "All Flow - Average Slowdown", "Average FCT Slowdown", "ALL", "avg", show_legend=False,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
         _plot_metric_bars_on_axis(
             axes[2, 1], load, algos, experiments,
-            "All Flow - p99 Slowdown", "p99 FCT Slowdown", "ALL", "p99", show_legend=False
+            "All Flow - p99 Slowdown", "p99 FCT Slowdown", "ALL", "p99", show_legend=False,
+            keep_only_exp_a_no_medu=keep_only_exp_a_no_medu
         )
 
         load_num = load.replace("load", "")
@@ -444,13 +454,22 @@ def plot_per_load_collage(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Re-plot two or three experiments on same axes")
+    parser = argparse.ArgumentParser(description="Re-plot two to five experiments on same axes")
     parser.add_argument("--exp-a", type=Path, required=True, help="Experiment A directory under mix/output")
     parser.add_argument("--exp-b", type=Path, required=True, help="Experiment B directory under mix/output")
     parser.add_argument("--exp-c", type=Path, default=None, help="Optional Experiment C directory under mix/output")
+    parser.add_argument("--exp-d", type=Path, default=None, help="Optional Experiment D directory under mix/output")
+    parser.add_argument("--exp-e", type=Path, default=None, help="Optional Experiment E directory under mix/output")
     parser.add_argument("--label-a", type=str, default="9MB")
     parser.add_argument("--label-b", type=str, default="4MB")
     parser.add_argument("--label-c", type=str, default="ExpC")
+    parser.add_argument("--label-d", type=str, default="ExpD")
+    parser.add_argument("--label-e", type=str, default="ExpE")
+    parser.add_argument(
+        "--keep-only-exp-a-no-medu",
+        action="store_true",
+        help="If set, keep only experiment A No MEDU bars/legend; still keep all experiments With MEDU",
+    )
     parser.add_argument(
         "--out-root",
         type=Path,
@@ -466,6 +485,10 @@ def main() -> None:
     ]
     if args.exp_c is not None:
         exp_inputs.append((args.label_c, args.exp_c))
+    if args.exp_d is not None:
+        exp_inputs.append((args.label_d, args.exp_d))
+    if args.exp_e is not None:
+        exp_inputs.append((args.label_e, args.exp_e))
 
     for label, exp_path in exp_inputs:
         if not exp_path.exists() or not exp_path.is_dir():
@@ -501,6 +524,7 @@ def main() -> None:
         "SMALL",
         "avg",
         out_dir / "small_avg_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 2) Small p99 slowdown
@@ -513,6 +537,7 @@ def main() -> None:
         "SMALL",
         "p99",
         out_dir / "small_p99_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 3) Large avg slowdown
@@ -525,6 +550,7 @@ def main() -> None:
         "LARGE",
         "avg",
         out_dir / "large_avg_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 4) Large p99 slowdown
@@ -537,6 +563,7 @@ def main() -> None:
         "LARGE",
         "p99",
         out_dir / "large_p99_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 5) Per-load collage images (3x2 each load)
@@ -545,6 +572,7 @@ def main() -> None:
         algos,
         experiments,
         out_dir,
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 6) All-flow avg slowdown
@@ -557,6 +585,7 @@ def main() -> None:
         "ALL",
         "avg",
         out_dir / "all_avg_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # 7) All-flow p99 slowdown
@@ -569,6 +598,7 @@ def main() -> None:
         "ALL",
         "p99",
         out_dir / "all_p99_slowdown_cmp.png",
+        keep_only_exp_a_no_medu=args.keep_only_exp_a_no_medu,
     )
 
     # brief metadata
@@ -580,6 +610,7 @@ def main() -> None:
         f"cdf={cdf}",
         f"loads={','.join(loads)}",
         f"algos={','.join(algos)}",
+        f"keep_only_exp_a_no_medu={args.keep_only_exp_a_no_medu}",
     ])
     (out_dir / "compare_meta.txt").write_text("\n".join(meta))
 

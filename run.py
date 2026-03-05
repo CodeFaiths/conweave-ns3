@@ -93,14 +93,23 @@ RANDOM_SEED 1
 
 # CPEM (Credit-based PFC Enhancement Module) Configuration
 CPEM_ENABLED {cpem_enabled}
-CPEM_FEEDBACK_INTERVAL 2000
-CPEM_CREDIT_DECAY_ALPHA 0.8
-CPEM_INFLIGHT_DISCOUNT 0.4
-CPEM_CREDIT_TO_RATE_GAIN 1.0
-CPEM_MIN_RATE_RATIO 0.05
-CPEM_MAX_CREDIT 1000
-CPEM_QUEUE_THRESHOLD_LOW 10000
-CPEM_QUEUE_THRESHOLD_HIGH 100000
+CPEM_FEEDBACK_INTERVAL {cpem_feedback_interval}
+CPEM_CREDIT_DECAY_ALPHA {cpem_credit_decay_alpha}
+CPEM_INFLIGHT_DISCOUNT {cpem_inflight_discount}
+CPEM_CREDIT_TO_RATE_GAIN {cpem_credit_to_rate_gain}
+CPEM_MIN_RATE_RATIO {cpem_min_rate_ratio}
+CPEM_MAX_CREDIT {cpem_max_credit}
+
+# CPEM Threshold Configuration
+# If CPEM_USE_DYNAMIC_THRESHOLD=1, thresholds follow PFC dynamic threshold
+# If CPEM_USE_DYNAMIC_THRESHOLD=0, use fixed thresholds below
+CPEM_USE_DYNAMIC_THRESHOLD {cpem_use_dynamic_threshold}
+CPEM_THRESHOLD_LOW_RATIO {cpem_threshold_low_ratio}
+CPEM_THRESHOLD_HIGH_RATIO {cpem_threshold_high_ratio}
+
+# Static thresholds (used when CPEM_USE_DYNAMIC_THRESHOLD=0)
+CPEM_QUEUE_THRESHOLD_LOW {cpem_queue_threshold_low}
+CPEM_QUEUE_THRESHOLD_HIGH {cpem_queue_threshold_high}
 
 # MEDU Flow Classification
 ENABLE_FLOW_CLASSIFICATION {enable_flow_classification}
@@ -127,6 +136,7 @@ LONG_FLOW_FAST_RECOVERY_TIMES {long_flow_fast_recovery_times}
 
 # LB/CC mode matching
 cc_modes = {
+    "none": 0,
     "dcqcn": 1,
     "hpcc": 3,
     "timely": 7,
@@ -143,6 +153,8 @@ lb_modes = {
 
 topo2bdp = {
     "leaf_spine_128_100G_OS2": 104000,  # 2-tier -> all 100Gbps
+    "leaf_spine_32_100G_OS2": 104000,  # 2-tier -> all 100Gbps
+    "leaf_spine_8_100G_OS2": 104000,  # 2-tier -> all 100Gbps
     "fat_k8_100G_OS2": 156000,  # 3-tier -> all 100Gbps
 }
 
@@ -158,7 +170,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='run simulation')
     parser.add_argument('--cc', dest='cc', action='store',
-                        default='dcqcn', help="hpcc/dcqcn/timely/dctcp (default: dcqcn)")
+                        default='dcqcn', help="none/hpcc/dcqcn/timely/dctcp (default: dcqcn)")
     parser.add_argument('--lb', dest='lb', action='store',
                         default='fecmp', help="fecmp/pecmp/drill/conga (default: fecmp)")
     parser.add_argument('--pfc', dest='pfc', action='store',
@@ -183,6 +195,28 @@ def main():
                         type=int, default=10000, help="interval of sampling statistics for queue status (default: 10000ns)")
     parser.add_argument('--cpem', dest='cpem', action='store',
                         type=int, default=0, help="enable CPEM module (default: 0)")
+    parser.add_argument('--cpem-feedback-interval', dest='cpem_feedback_interval', action='store',
+                        type=int, default=2000, help="CPEM feedback interval (default: 2000)")
+    parser.add_argument('--cpem-credit-decay-alpha', dest='cpem_credit_decay_alpha', action='store',
+                        type=float, default=0.8, help="CPEM credit decay alpha (default: 0.8)")
+    parser.add_argument('--cpem-inflight-discount', dest='cpem_inflight_discount', action='store',
+                        type=float, default=0.4, help="CPEM inflight discount factor (default: 0.4)")
+    parser.add_argument('--cpem-credit-to-rate-gain', dest='cpem_credit_to_rate_gain', action='store',
+                        type=float, default=1.0, help="CPEM credit-to-rate gain (default: 1.0)")
+    parser.add_argument('--cpem-min-rate-ratio', dest='cpem_min_rate_ratio', action='store',
+                        type=float, default=0.05, help="CPEM minimum rate ratio (default: 0.05)")
+    parser.add_argument('--cpem-max-credit', dest='cpem_max_credit', action='store',
+                        type=float, default=1000.0, help="CPEM maximum credit (default: 1000)")
+    parser.add_argument('--cpem-use-dynamic-threshold', dest='cpem_use_dynamic_threshold', action='store',
+                        type=int, default=1, help="CPEM threshold mode: 1=dynamic, 0=static (default: 1)")
+    parser.add_argument('--cpem-threshold-low-ratio', dest='cpem_threshold_low_ratio', action='store',
+                        type=float, default=0.5, help="CPEM dynamic low threshold ratio (default: 0.5)")
+    parser.add_argument('--cpem-threshold-high-ratio', dest='cpem_threshold_high_ratio', action='store',
+                        type=float, default=0.8, help="CPEM dynamic high threshold ratio (default: 0.8)")
+    parser.add_argument('--cpem-queue-threshold-low', dest='cpem_queue_threshold_low', action='store',
+                        type=int, default=10000, help="CPEM low queue threshold in bytes (default: 10000)")
+    parser.add_argument('--cpem-queue-threshold-high', dest='cpem_queue_threshold_high', action='store',
+                        type=int, default=100000, help="CPEM high queue threshold in bytes (default: 100000)")
     parser.add_argument('--medu', dest='medu', action='store',
                         type=int, default=0, help="enable MEDU flow classification (default: 0)")
     parser.add_argument('--flow-threshold-kb', dest='flow_threshold_kb', action='store',
@@ -253,6 +287,17 @@ def main():
     enabled_pfc = int(args.pfc)
     enabled_irn = int(args.irn)
     cpem_enabled = int(args.cpem)
+    cpem_feedback_interval = int(args.cpem_feedback_interval)
+    cpem_credit_decay_alpha = float(args.cpem_credit_decay_alpha)
+    cpem_inflight_discount = float(args.cpem_inflight_discount)
+    cpem_credit_to_rate_gain = float(args.cpem_credit_to_rate_gain)
+    cpem_min_rate_ratio = float(args.cpem_min_rate_ratio)
+    cpem_max_credit = float(args.cpem_max_credit)
+    cpem_use_dynamic_threshold = int(args.cpem_use_dynamic_threshold)
+    cpem_threshold_low_ratio = float(args.cpem_threshold_low_ratio)
+    cpem_threshold_high_ratio = float(args.cpem_threshold_high_ratio)
+    cpem_queue_threshold_low = int(args.cpem_queue_threshold_low)
+    cpem_queue_threshold_high = int(args.cpem_queue_threshold_high)
     enable_flow_classification = int(args.medu)
     flow_size_threshold = int(args.flow_threshold_kb) * 1000
     enable_diff_cc = int(args.diff_cc)
@@ -268,6 +313,13 @@ def main():
 
     if flow_size_threshold <= 0:
         raise Exception("CONFIG ERROR : flow-threshold-kb must be positive.")
+
+    if cpem_use_dynamic_threshold not in [0, 1]:
+        raise Exception("CONFIG ERROR : cpem-use-dynamic-threshold must be 0 or 1.")
+    if cpem_threshold_low_ratio < 0 or cpem_threshold_high_ratio < 0 or cpem_threshold_low_ratio > cpem_threshold_high_ratio:
+        raise Exception("CONFIG ERROR : cpem-threshold-low-ratio/high-ratio invalid (require 0<=low<=high).")
+    if cpem_queue_threshold_low < 0 or cpem_queue_threshold_high < cpem_queue_threshold_low:
+        raise Exception("CONFIG ERROR : static CPEM queue thresholds invalid (require 0<=low<=high).")
 
     # get over-subscription ratio from topoogy name
 
@@ -430,7 +482,7 @@ def main():
     qlen_mon_start = flowgen_start_time
     qlen_mon_end = flowgen_stop_time
 
-    if (cc_mode == 1):  # DCQCN
+    if (cc_mode == 1 or cc_mode == 0):  # DCQCN or no-CC
         ai = 10 * bw / 25
         hai = 25 * bw / 25
         dctcp_ai = 1000
@@ -462,6 +514,17 @@ def main():
                                         fast_react=fast_react, mi=mi, int_multi=int_multi, ewma_gain=ewma_gain,
                                         kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map,
                                         cpem_enabled=cpem_enabled,
+                                        cpem_feedback_interval=cpem_feedback_interval,
+                                        cpem_credit_decay_alpha=cpem_credit_decay_alpha,
+                                        cpem_inflight_discount=cpem_inflight_discount,
+                                        cpem_credit_to_rate_gain=cpem_credit_to_rate_gain,
+                                        cpem_min_rate_ratio=cpem_min_rate_ratio,
+                                        cpem_max_credit=cpem_max_credit,
+                                        cpem_use_dynamic_threshold=cpem_use_dynamic_threshold,
+                                        cpem_threshold_low_ratio=cpem_threshold_low_ratio,
+                                        cpem_threshold_high_ratio=cpem_threshold_high_ratio,
+                                        cpem_queue_threshold_low=cpem_queue_threshold_low,
+                                        cpem_queue_threshold_high=cpem_queue_threshold_high,
                                         enable_flow_classification=enable_flow_classification,
                                         flow_size_threshold=flow_size_threshold,
                                         enable_diff_cc=enable_diff_cc,
@@ -515,8 +578,13 @@ def main():
         history.write("\n")
 
     print(run_command)
-    os.system("./waf --run 'scratch/network-load-balance {config_name}' > {output_log} 2>&1".format(
-        config_name=config_name, output_log=output_log))
+    sim_cmd = ["./waf", "--run", "scratch/network-load-balance {}".format(config_name)]
+    with open(output_log, "w") as sim_log:
+        sim_result = subprocess.run(sim_cmd, stdout=sim_log, stderr=subprocess.STDOUT)
+    if sim_result.returncode != 0:
+        raise RuntimeError(
+            "Simulation failed (exit code {}). Check log: {}".format(sim_result.returncode, output_log)
+        )
 
     ####################################################
     #                 Analyze the output FCT           #

@@ -576,7 +576,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="MEDU experiment analyzer")
     parser.add_argument("--base-dir", type=Path, default=default_base, help="Directory containing experiment outputs")
-    parser.add_argument("--pattern", type=str, default="medu_loop_*", help="Glob pattern for comparison folders")
+    parser.add_argument("--pattern", type=str, default="[0-9]*", help="Glob pattern for comparison folders")
     parser.add_argument("--output-dir", type=Path, default=default_out, help="Directory to place PNG charts")
     parser.add_argument("--prefix", type=str, default="medu_comparison", help="Filename prefix for outputs")
     args = parser.parse_args()
@@ -592,14 +592,15 @@ def main():
             continue
         any_runs = True
 
+        # Support both legacy medu_loop_ prefix and new timestamp-based naming
         match = re.match(r"medu_loop_(\d{8}_\d{6})_(.+)", exp_dir.name)
+        match_new = re.match(r"(\d{8}_\d{6})_(.+)", exp_dir.name)
         if match:
             ts_part = match.group(1)
             desc_part = match.group(2)
-
-            # Keep output folder naming consistent with experiment folder name.
-            # Do not append buffer suffix like "_9MB" automatically.
             subdir_name = f"{ts_part}_{desc_part}"
+        elif match_new:
+            subdir_name = exp_dir.name
         else:
             subdir_name = exp_dir.name
         output_dir = args.output_dir / subdir_name

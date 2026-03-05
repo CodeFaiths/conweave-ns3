@@ -16,6 +16,7 @@ config/*_flow.txt
 simulation_output.txt
 conn.txt
 link_util.txt
+compare_meta.txt
 
 *.png
 *.pdf
