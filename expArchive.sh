@@ -22,12 +22,12 @@ Usage:
         ./expArchive.sh -f <target>         # overwrite existing archive folder
 
 config_name format examples:
-    20260203_221642_AliStorage2019_9MB
-    20260227_121716_AliStorage2019_9MB_CC0
-    20260223_170032_search_9MB_100KB
+    20260203_221642_AliStorage2019
+    20260203_221642_AliStorage2019_9MB_TH100KB
+    20260227_121716_search_9MB_TH100KB_RPT300
 
 Notes:
-  - Source output dir: mix/output/medu_loop_<config_name>
+  - Source output dir: mix/output/<config_name>
     - Source figure dir: auto matched by prefix:
             analysis/figures/<config_name>*
   - Archived files per algorithm dir:
@@ -54,6 +54,7 @@ cecho() {
 
 normalize_config_name() {
     local raw="$1"
+    # Support legacy medu_loop_ prefix for backward compatibility
     if [[ "$raw" == medu_loop_* ]]; then
         echo "${raw#medu_loop_}"
     else
@@ -98,9 +99,9 @@ collect_all_configs() {
     local d
     local -a configs=()
     shopt -s nullglob
-    for d in "${OUTPUT_ROOT}"/medu_loop_*; do
+    for d in "${OUTPUT_ROOT}"/[0-9]*; do
         [[ -d "$d" ]] || continue
-        configs+=("$(basename "$d" | sed 's/^medu_loop_//')")
+        configs+=("$(basename "$d")")
     done
     shopt -u nullglob
     printf "%s\n" "${configs[@]}"
@@ -130,7 +131,7 @@ collect_unarchived_configs() {
 archive_one_config() {
     local config_name="$1"
     local cdf="$2"
-    local src_output_dir="${OUTPUT_ROOT}/medu_loop_${config_name}"
+    local src_output_dir="${OUTPUT_ROOT}/${config_name}"
     local dst_base_dir="${ARCHIVE_ROOT}/${cdf}/${config_name}"
     local dst_analysis_dir="${dst_base_dir}/analysis/figures"
     local dst_output_dir="${dst_base_dir}/output"
@@ -270,7 +271,7 @@ elif [[ "$MODE" == "new" ]]; then
 else
     mapfile -t TARGET_CONFIGS < <(collect_all_configs | sort)
     if [[ ${#TARGET_CONFIGS[@]} -eq 0 ]]; then
-        cecho "RED" "No experiments found under ${OUTPUT_ROOT}/medu_loop_*"
+        cecho "RED" "No experiments found under ${OUTPUT_ROOT}/"
         exit 1
     fi
     TARGET_CONFIGS=("${TARGET_CONFIGS[-1]}")

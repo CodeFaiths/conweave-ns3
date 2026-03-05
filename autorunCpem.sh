@@ -18,7 +18,7 @@ cecho(){
 
 # Experiment Parameters
 TOPOLOGY="leaf_spine_128_100G_OS2"
-NETLOAD="40"           # Network load (e.g., 40, 50, 70, 80)
+NETLOAD="30"           # Network load (e.g., 40, 50, 70, 80)
 CDF="search"           # CDF file name in traffic_gen/ without .txt
 RUNTIME="0.1"          # 0.1 second (traffic generation)
 

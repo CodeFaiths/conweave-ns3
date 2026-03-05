@@ -28,6 +28,7 @@ lb_modes = {
 }
 topo2bdp = {
     "leaf_spine_128_100G_OS2": 104000,  # 2-tier
+    "leaf_spine_8_100G_OS2": 104000,  # 2-tier
     "fat_k4_100G_OS2": 153000, # 3-tier -> core 400G
 }
 
@@ -107,7 +108,7 @@ def getFilePath():
 
 def resolve_fct_path(output_dir, config_id):
     # New layout example:
-    # mix/output/medu_loop_xxx/load90/no_medu_fecmp/no_medu_fecmp_out_fct.txt
+    # mix/output/<timestamp>_<cdf>/load90/no_medu_fecmp/no_medu_fecmp_out_fct.txt
     run_dir = os.path.join(output_dir, config_id)
     run_name = os.path.basename(config_id)
 

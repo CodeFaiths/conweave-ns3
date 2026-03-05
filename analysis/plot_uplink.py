@@ -29,6 +29,7 @@ lb_modes = {
 }
 topo2bdp = {
     "leaf_spine_128_100G_OS2": 104000,  # 2-tier
+    "leaf_spine_8_100G_OS2": 104000,  # 2-tier
     "fat_k4_100G_OS2": 153000, # 3-tier -> core 400G
 }
 
