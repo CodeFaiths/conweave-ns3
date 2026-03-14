@@ -323,10 +323,13 @@ def main():
     if flow_size_threshold <= 0:
         raise Exception("CONFIG ERROR : flow-threshold-kb must be positive.")
 
+<<<<<<< HEAD
     if enable_diff_cc and not enable_flow_classification:
         print("INFO: ENABLE_DIFF_CC requires MEDU; forcing ENABLE_DIFF_CC to 0 because --medu=0.")
         enable_diff_cc = 0
 
+=======
+>>>>>>> 176a7bd65d806d2ebf5b393dbc3e4c05384ea354
     if cpem_use_dynamic_threshold not in [0, 1]:
         raise Exception("CONFIG ERROR : cpem-use-dynamic-threshold must be 0 or 1.")
     if cpem_threshold_low_ratio < 0 or cpem_threshold_high_ratio < 0 or cpem_threshold_low_ratio > cpem_threshold_high_ratio:
@@ -495,7 +498,11 @@ def main():
     qlen_mon_start = flowgen_start_time
     qlen_mon_end = flowgen_stop_time
 
+<<<<<<< HEAD
     if cc_mode in (0, 1):  # no-CC or DCQCN
+=======
+    if (cc_mode == 1 or cc_mode == 0):  # DCQCN or no-CC
+>>>>>>> 176a7bd65d806d2ebf5b393dbc3e4c05384ea354
         ai = 10 * bw / 25
         hai = 25 * bw / 25
         dctcp_ai = 1000
@@ -503,6 +510,7 @@ def main():
         mi = 0
         int_multi = 1
         ewma_gain = 0.00390625
+<<<<<<< HEAD
     elif cc_mode == 3:  # HPCC
         ai = 5 * bw / 25
         hai = 50 * bw / 25
@@ -527,6 +535,60 @@ def main():
         mi = 0
         int_multi = 1
         ewma_gain = 0.0625
+=======
+
+        # Differentiated CC params: compute per-flow-type AI/HAI from factors
+        short_flow_ai = ai * args.short_ai_factor
+        short_flow_hai = hai * args.short_hai_factor
+        long_flow_ai = ai * args.long_ai_factor
+        long_flow_hai = hai * args.long_hai_factor
+
+        # Per-flow-type CC params (use global value if not explicitly set)
+        short_ewma = args.short_ewma_gain if args.short_ewma_gain >= 0 else ewma_gain
+        long_ewma = args.long_ewma_gain if args.long_ewma_gain >= 0 else ewma_gain
+
+        config = config_template.format(id=config_ID, name=config_name_prefix, topo=topo, flow=flow,
+                                        qlen_mon_start=qlen_mon_start, qlen_mon_end=qlen_mon_end, flowgen_start_time=flowgen_start_time,
+                                        flowgen_stop_time=flowgen_stop_time, sw_monitoring_interval=sw_monitoring_interval,
+                                        load=netload, buffer_size=buffer, lb_mode=lb_mode, cwh_tx_expiry_time=cwh_tx_expiry_time,
+                                        cwh_extra_reply_deadline=cwh_extra_reply_deadline, cwh_default_voq_waiting_time=cwh_default_voq_waiting_time,
+                                        cwh_path_pause_time=cwh_path_pause_time, cwh_extra_voq_flush_time=cwh_extra_voq_flush_time,
+                                        enabled_pfc=enabled_pfc, enabled_irn=enabled_irn,
+                                        cc_mode=cc_mode,
+                                        ai=ai, hai=hai, dctcp_ai=dctcp_ai,
+                                        has_win=has_win, var_win=var_win,
+                                        fast_react=fast_react, mi=mi, int_multi=int_multi, ewma_gain=ewma_gain,
+                                        kmax_map=kmax_map, kmin_map=kmin_map, pmax_map=pmax_map,
+                                        cpem_enabled=cpem_enabled,
+                                        cpem_feedback_interval=cpem_feedback_interval,
+                                        cpem_credit_decay_alpha=cpem_credit_decay_alpha,
+                                        cpem_inflight_discount=cpem_inflight_discount,
+                                        cpem_credit_to_rate_gain=cpem_credit_to_rate_gain,
+                                        cpem_min_rate_ratio=cpem_min_rate_ratio,
+                                        cpem_max_credit=cpem_max_credit,
+                                        cpem_use_dynamic_threshold=cpem_use_dynamic_threshold,
+                                        cpem_threshold_low_ratio=cpem_threshold_low_ratio,
+                                        cpem_threshold_high_ratio=cpem_threshold_high_ratio,
+                                        cpem_queue_threshold_low=cpem_queue_threshold_low,
+                                        cpem_queue_threshold_high=cpem_queue_threshold_high,
+                                        enable_flow_classification=enable_flow_classification,
+                                        flow_size_threshold=flow_size_threshold,
+                                        enable_diff_cc=enable_diff_cc,
+                                        short_flow_rate_ai=short_flow_ai,
+                                        short_flow_rate_hai=short_flow_hai,
+                                        short_flow_ewma_gain=short_ewma,
+                                        short_flow_alpha_resume_interval=args.short_alpha_resume,
+                                        short_flow_rate_decrease_interval=args.short_rate_decrease,
+                                        short_flow_rp_timer=args.short_rp_timer,
+                                        short_flow_fast_recovery_times=args.short_fast_recovery,
+                                        long_flow_rate_ai=long_flow_ai,
+                                        long_flow_rate_hai=long_flow_hai,
+                                        long_flow_ewma_gain=long_ewma,
+                                        long_flow_alpha_resume_interval=args.long_alpha_resume,
+                                        long_flow_rate_decrease_interval=args.long_rate_decrease,
+                                        long_flow_rp_timer=args.long_rp_timer,
+                                        long_flow_fast_recovery_times=args.long_fast_recovery)
+>>>>>>> 176a7bd65d806d2ebf5b393dbc3e4c05384ea354
     else:
         raise Exception("CONFIG ERROR : unsupported cc '{}' (mode={})".format(args.cc, cc_mode))
 

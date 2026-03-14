@@ -3687,6 +3687,7 @@ date,id,ccmode,lbmode,cwh_tx_expiry_time,cwh_extra_reply_deadline,cwh_path_pause
 ./waf --run 'scratch/network-load-balance /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_064946_search_9MB_100KB_CC0_8H_RPT20/load80/with_medu_conweave/config.txt' > /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_064946_search_9MB_100KB_CC0_8H_RPT20/load80/with_medu_conweave/config.log 2>&1
 ./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_064946_search_9MB_100KB_CC0_8H_RPT20/load80/with_medu_conweave/config.txt'
 
+<<<<<<< HEAD
 03/05/26,20260305_114356_search_CC1_32H_DCQCN/load30/no_medu_fecmp,1,0,1000,4,16,64,400,1,0,0,0,leaf_spine_32_100G_OS2,100,search,30,0.1
 ./waf --run 'scratch/network-load-balance /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_114356_search_CC1_32H_DCQCN/load30/no_medu_fecmp/config.txt' > /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_114356_search_CC1_32H_DCQCN/load30/no_medu_fecmp/config.log 2>&1
 ./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260305_114356_search_CC1_32H_DCQCN/load30/no_medu_fecmp/config.txt'
@@ -7781,3 +7782,5 @@ date,id,ccmode,lbmode,cwh_tx_expiry_time,cwh_extra_reply_deadline,cwh_path_pause
 ./waf --run 'scratch/network-load-balance /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260312_134546_AliStorage2019_32H_CC0/load80/with_medu_conweave/config.txt' > /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260312_134546_AliStorage2019_32H_CC0/load80/with_medu_conweave/config.log 2>&1
 ./waf --run 'scratch/network-load-balance' --command-template='gdb --args %s /root/workspace/Umedu/ns-allinone-3.19/ns-3.19/mix/output/20260312_134546_AliStorage2019_32H_CC0/load80/with_medu_conweave/config.txt'
 
+=======
+>>>>>>> 176a7bd65d806d2ebf5b393dbc3e4c05384ea354
