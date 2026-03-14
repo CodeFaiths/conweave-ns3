@@ -55,7 +55,7 @@ public:
 	static TypeId GetTypeId (void);
 	RdmaEgressQueue();
 	Ptr<Packet> DequeueQindex(int qIndex);
-	int GetNextQindex(bool paused[]);
+  int GetNextQindex(bool paused[], bool allowLongFlow = true);
 	int GetLastQueue();
 	uint32_t GetNBytes(uint32_t qIndex);
 	uint32_t GetFlowCount(void);
@@ -205,6 +205,15 @@ public:
 protected:
 	DataRate m_cpemEffectiveRate;  // CPEM controlled effective rate
 	bool m_cpemRateLimited;        // Whether CPEM rate limiting is active
+  uint32_t m_txQueueContext;      // Queue/PG associated with the current packet being transmitted
+  EventId m_cpemRecoveryEvent;    // Auto-recovery timer for stale CPEM rate limits
+  Time m_cpemNextSendTime;        // Earliest eligible send time for long-flow pacing
+
+  void CpemRecoveryTimeout();
+  bool CpemShouldPaceQueue(uint32_t queueOrPg) const;
+  bool CpemLongQueueBlocked() const;
+  Time CpemGetNextEligibleTime() const;
+  void CpemUpdatePacingAfterSend(Ptr<Packet> p, uint32_t queueOrPg);
 
 public:
 	// callback for processing packet in RDMA

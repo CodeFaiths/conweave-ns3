@@ -18,18 +18,19 @@ cecho(){
 }
 
 # Experiment Parameters
-TOPOLOGY="leaf_spine_128_100G_OS2"
-#LOADS=("30" "50" "70" "80" "90")  # List of loads to test
-LOADS=("50" "80")
-CDF="search"           # CDF file name: AliStorage2019 webserver search Solar2022 FbHdp2015
+TOPOLOGY="leaf_spine_32_100G_OS2"
+LOADS=("30" "50" "70" "80" "90")  # List of loads to test
+#LOADS=("50" "80")
+CDF="AliStorage2019"           # CDF file name: AliStorage2019 webserver search Solar2022 FbHdp2015
 RUNTIME="0.1"                  # 0.1 second (traffic generation)
 BUFFER_SIZE="9"                # 交换机缓存大小 (MB)，默认: 9
 FLOW_THRESHOLD_KB="100"        # MEDU长短流分界阈值 (KB)，默认: 100
-CC_MODE=0                       # 1=dcqcn, 0=none(不采用拥塞控制)
+CC_MODE=0                      # 0=none, 1=dcqcn, 3=hpcc, 7=timely, 8=dctcp
 SW_MONITORING_INTERVAL="10000" # 采样间隔 (ns)，默认: 10000
 
 # ===== CPEM 参数 =====
-CPEM_FEEDBACK_INTERVAL="2000"
+CPEM_ENABLED=1                     # 是否启用CPEM，0=关闭, 1=开启
+CPEM_FEEDBACK_INTERVAL="5000"
 CPEM_CREDIT_DECAY_ALPHA="0.8"
 CPEM_INFLIGHT_DISCOUNT="0.4"
 CPEM_CREDIT_TO_RATE_GAIN="1.0"
@@ -40,8 +41,8 @@ CPEM_USE_DYNAMIC_THRESHOLD="1"
 CPEM_THRESHOLD_LOW_RATIO="0.6"
 CPEM_THRESHOLD_HIGH_RATIO="0.9"
 # Static thresholds (used only when CPEM_USE_DYNAMIC_THRESHOLD=0)
-CPEM_QUEUE_THRESHOLD_LOW="10000"
-CPEM_QUEUE_THRESHOLD_HIGH="100000"
+CPEM_QUEUE_THRESHOLD_LOW="200000"
+CPEM_QUEUE_THRESHOLD_HIGH="300000"
 
 # ===== 差异化拥塞控制参数 (MEDU开启时生效) =====
 DIFF_CC=0                       # 是否启用长短流差异化CC参数，0=关闭, 1=开启
@@ -66,13 +67,28 @@ LB_ALGORITHMS=("fecmp" "letflow" "conga" "conweave")
 # ==============================================================================
 # Parse command line arguments
 # Usage:
-#   ./autorunMeCp.sh --cc-mode 1 --para CPEM1
+#   ./autorunMeCp.sh --cc-mode 3 --para 8H HPCC
+#   ./autorunMeCp.sh --cc hpcc --para 8H HPCC
 # ==============================================================================
 PARA_SUFFIX=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --cc-mode)
             CC_MODE="$2"
+            shift 2
+            ;;
+        --cc)
+            case "${2}" in
+                none) CC_MODE="0" ;;
+                dcqcn) CC_MODE="1" ;;
+                hpcc) CC_MODE="3" ;;
+                timely) CC_MODE="7" ;;
+                dctcp) CC_MODE="8" ;;
+                *)
+                    cecho "RED" "Invalid --cc value: ${2}. Supported: none/dcqcn/hpcc/timely/dctcp"
+                    exit 1
+                    ;;
+            esac
             shift 2
             ;;
         --para)
@@ -88,23 +104,24 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "${CC_MODE}" != "0" && "${CC_MODE}" != "1" ]]; then
-    cecho "RED" "Invalid --cc-mode value: ${CC_MODE}. Supported: 0/1"
+if [[ "${CC_MODE}" != "0" && "${CC_MODE}" != "1" && "${CC_MODE}" != "3" && "${CC_MODE}" != "7" && "${CC_MODE}" != "8" ]]; then
+    cecho "RED" "Invalid --cc-mode value: ${CC_MODE}. Supported: 0/1/3/7/8"
     exit 1
 fi
 
-if [[ "${CC_MODE}" == "1" ]]; then
-    CC_ALGO="dcqcn"
-else
-    CC_ALGO="none"
-fi
+case "${CC_MODE}" in
+    0) CC_ALGO="none" ;;
+    1) CC_ALGO="dcqcn" ;;
+    3) CC_ALGO="hpcc" ;;
+    7) CC_ALGO="timely" ;;
+    8) CC_ALGO="dctcp" ;;
+esac
 
-# ConWeave currently requires DCQCN in simulator implementation.
-# When CC_MODE=0 (none), skip conweave to avoid guaranteed simulation failure.
+# ConWeave在当前实现下不支持RTT类协议（HPCC/Timely），none模式也跳过以避免不兼容问题。
 EFFECTIVE_LB_ALGORITHMS=()
 for lb in "${LB_ALGORITHMS[@]}"; do
-    if [[ "${lb}" == "conweave" && "${CC_MODE}" != "1" ]]; then
-        cecho "YELLOW" "Skip LB=conweave: only supported with --cc-mode 1 (dcqcn)."
+    if [[ "${lb}" == "conweave" && ( "${CC_ALGO}" == "hpcc" || "${CC_ALGO}" == "timely" || "${CC_ALGO}" == "none" ) ]]; then
+        cecho "YELLOW" "Skip LB=conweave: incompatible with CC=${CC_ALGO}."
         continue
     fi
     EFFECTIVE_LB_ALGORITHMS+=("${lb}")
@@ -130,7 +147,7 @@ cecho "YELLOW" "CDF: ${CDF}"
 cecho "YELLOW" "SIMULATION TIME: ${RUNTIME}s"
 cecho "YELLOW" "FLOW THRESHOLD: ${FLOW_THRESHOLD_KB}KB"
 cecho "YELLOW" "CC MODE: ${CC_MODE} (algo=${CC_ALGO})"
-cecho "YELLOW" "CPEM ENABLED: 1 (fixed)"
+cecho "YELLOW" "CPEM ENABLED: ${CPEM_ENABLED}"
 cecho "YELLOW" "SW_MONITORING_INTERVAL: ${SW_MONITORING_INTERVAL}ns"
 cecho "YELLOW" "DIFF CC: ${DIFF_CC} (short AI×${SHORT_AI_FACTOR} HAI×${SHORT_HAI_FACTOR}, long AI×${LONG_AI_FACTOR} HAI×${LONG_HAI_FACTOR})"
 cecho "YELLOW" "  Short: EWMA=${SHORT_EWMA_GAIN} α_resume=${SHORT_ALPHA_RESUME} rate_dec=${SHORT_RATE_DECREASE} rp_timer=${SHORT_RP_TIMER} fast_rec=${SHORT_FAST_RECOVERY}"
@@ -171,7 +188,7 @@ for NETLOAD in "${LOADS[@]}"; do
 
     # Group 1: WITHOUT MEDU (MEDU=0)
     for lb in "${EFFECTIVE_LB_ALGORITHMS[@]}"; do
-        cecho "YELLOW" "  Starting: LB=${lb}, MEDU=OFF, CPEM=1, CC_MODE=${CC_MODE}(${CC_ALGO}), LOAD=${NETLOAD}%"
+        cecho "YELLOW" "  Starting: LB=${lb}, MEDU=OFF, CPEM=${CPEM_ENABLED}, CC_MODE=${CC_MODE}(${CC_ALGO}), LOAD=${NETLOAD}%"
         python3 run.py --lb ${lb} --cc ${CC_ALGO} --pfc 1 --irn 0 \
             --simul_time ${RUNTIME} \
             --netload ${NETLOAD} \
@@ -181,7 +198,7 @@ for NETLOAD in "${LOADS[@]}"; do
             --sw_monitoring_interval ${SW_MONITORING_INTERVAL} \
             --flow-threshold-kb ${FLOW_THRESHOLD_KB} \
             --medu 0 \
-            --cpem 1 \
+            --cpem ${CPEM_ENABLED} \
             --cpem-feedback-interval ${CPEM_FEEDBACK_INTERVAL} \
             --cpem-credit-decay-alpha ${CPEM_CREDIT_DECAY_ALPHA} \
             --cpem-inflight-discount ${CPEM_INFLIGHT_DISCOUNT} \
@@ -200,7 +217,7 @@ for NETLOAD in "${LOADS[@]}"; do
 
     # Group 2: WITH MEDU (MEDU=1)
     for lb in "${EFFECTIVE_LB_ALGORITHMS[@]}"; do
-        cecho "YELLOW" "  Starting: LB=${lb}, MEDU=ON, CPEM=1, CC_MODE=${CC_MODE}(${CC_ALGO}), LOAD=${NETLOAD}%"
+        cecho "YELLOW" "  Starting: LB=${lb}, MEDU=ON, CPEM=${CPEM_ENABLED}, CC_MODE=${CC_MODE}(${CC_ALGO}), LOAD=${NETLOAD}%"
         python3 run.py --lb ${lb} --cc ${CC_ALGO} --pfc 1 --irn 0 \
             --simul_time ${RUNTIME} \
             --netload ${NETLOAD} \
@@ -225,7 +242,7 @@ for NETLOAD in "${LOADS[@]}"; do
             --long-rate-decrease ${LONG_RATE_DECREASE} \
             --long-rp-timer ${LONG_RP_TIMER} \
             --long-fast-recovery ${LONG_FAST_RECOVERY} \
-            --cpem 1 \
+            --cpem ${CPEM_ENABLED} \
             --cpem-feedback-interval ${CPEM_FEEDBACK_INTERVAL} \
             --cpem-credit-decay-alpha ${CPEM_CREDIT_DECAY_ALPHA} \
             --cpem-inflight-discount ${CPEM_INFLIGHT_DISCOUNT} \

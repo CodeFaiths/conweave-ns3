@@ -17,10 +17,10 @@ cecho(){
 }
 
 # Experiment Parameters
-TOPOLOGY="leaf_spine_8_100G_OS2" 
-LOADS=("30" "50" "70" "80")  # List of loads to test as requested
-#LOADS=("30")
-CDF="search"           # CDF file name:AliStorage2019 webserver search Solar2022 FbHdp2015
+TOPOLOGY="leaf_spine_32_100G_OS2" 
+#LOADS=("30" "50" "70" "80")  # List of loads to test as requested
+LOADS=("30" "80")
+CDF="AliStorage2019"           # CDF file name:AliStorage2019 webserver search Solar2022 FbHdp2015
 RUNTIME="0.1"          # 0.1 second (traffic generation)
 
 # ===== 可调整的额外参数 =====
@@ -29,10 +29,10 @@ FLOW_THRESHOLD_KB="100"   # MEDU长短流分界阈值 (KB)，默认: 100
 # BANDWIDTH="100"      # NIC带宽 (Gbps)，默认: 100
 # CC_MODE="dcqcn"      # 拥塞控制算法，默认: dcqcn
 # CPEM_ENABLED=0       # 启用CPEM模块，默认: 0
-# SW_MONITORING_INTERVAL=10000  # 采样间隔 (ns)，默认: 10000
+SW_MONITORING_INTERVAL="100000"  # 采样间隔 (ns)，默认: 10000
 
 # ===== 差异化拥塞控制参数 (MEDU开启时生效) =====
-DIFF_CC=1                  # 是否启用长短流差异化CC参数，0=关闭, 1=开启
+DIFF_CC=0                  # 是否启用长短流差异化CC参数，0=关闭, 1=开启
 SHORT_AI_FACTOR="2.0"      # 短流 RATE_AI 倍数 (相对全局值)，默认: 2.0
 SHORT_HAI_FACTOR="2.0"     # 短流 RATE_HAI 倍数 (相对全局值)，默认: 2.0
 SHORT_EWMA_GAIN="0.00390625"   # 短流 EWMA_GAIN，默认: 0.00390625 (-1表示使用全局值)
@@ -130,6 +130,7 @@ for NETLOAD in "${LOADS[@]}"; do
             --cdf ${CDF} \
             --buffer ${BUFFER_SIZE} \
             --flow-threshold-kb ${FLOW_THRESHOLD_KB} \
+            --sw_monitoring_interval ${SW_MONITORING_INTERVAL} \
             --medu 0 \
             --id ${ROOT_EXP_NAME}/load${NETLOAD}/no_medu_${lb} \
             2>&1 | tee -a ${LOAD_LOG_DIR}/no_medu_${lb}.log &
@@ -146,6 +147,7 @@ for NETLOAD in "${LOADS[@]}"; do
             --cdf ${CDF} \
             --buffer ${BUFFER_SIZE} \
             --flow-threshold-kb ${FLOW_THRESHOLD_KB} \
+            --sw_monitoring_interval ${SW_MONITORING_INTERVAL} \
             --medu 1 \
             --diff-cc ${DIFF_CC} \
             --short-ai-factor ${SHORT_AI_FACTOR} \

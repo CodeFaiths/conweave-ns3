@@ -102,7 +102,7 @@ Ptr<Packet> RdmaEgressQueue::DequeueQindex(int qIndex) {
     }
     return 0;
 }
-int RdmaEgressQueue::GetNextQindex(bool paused[]) {
+int RdmaEgressQueue::GetNextQindex(bool paused[], bool allowLongFlow) {
     bool found = false;
     uint32_t qIndex;
     if (!paused[ack_q_idx] && m_ackQ->GetNPackets() > 0) return -1;
@@ -112,6 +112,10 @@ int RdmaEgressQueue::GetNextQindex(bool paused[]) {
     for (qIndex = 1; qIndex <= fcount; qIndex++) {
         if (m_qpGrp->IsQpFinished((qIndex + m_rrlast) % fcount)) continue;
         Ptr<RdmaQueuePair> qp = m_qpGrp->Get((qIndex + m_rrlast) % fcount);
+        if (BEgressQueue::s_enableFlowClassification && !allowLongFlow &&
+            qp->m_pg == BEgressQueue::s_longFlowPg) {
+            continue;
+        }
         bool cond1 = !paused[qp->m_pg];
         bool cond_window_allowed =
             (!qp->IsWinBound() && (!qp->irn.m_enabled || qp->CanIrnTransmit(m_mtu)));
@@ -236,6 +240,8 @@ QbbNetDevice::QbbNetDevice() {
     // CPEM: Initialize rate limiting variables
     m_cpemRateLimited = false;
     m_cpemEffectiveRate = DataRate(0);
+    m_txQueueContext = 0;
+    m_cpemNextSendTime = Time(0);
 }
 
 QbbNetDevice::~QbbNetDevice() { NS_LOG_FUNCTION(this); }
@@ -262,11 +268,13 @@ void QbbNetDevice::DequeueAndTransmit(void) {
     if (m_txMachineState == BUSY) return;  // Quit if channel busy
     Ptr<Packet> p;
     if (m_node->GetNodeType() == 0) {  // server
-        int qIndex = m_rdmaEQ->GetNextQindex(m_paused);
+        bool allowLongFlow = !CpemLongQueueBlocked();
+        int qIndex = m_rdmaEQ->GetNextQindex(m_paused, allowLongFlow);
         if (qIndex != -1024) {
             if (qIndex == -1) {  // high prio
                 p = m_rdmaEQ->DequeueQindex(qIndex);
                 m_traceDequeue(p, 0);
+                m_txQueueContext = 0;
                 TransmitStart(p);
                 return;
             }
@@ -276,6 +284,7 @@ void QbbNetDevice::DequeueAndTransmit(void) {
 
             // transmit
             m_traceQpDequeue(p, lastQp);
+            m_txQueueContext = lastQp->m_pg;
             TransmitStart(p);
 
             // update for the next avail time
@@ -290,6 +299,10 @@ void QbbNetDevice::DequeueAndTransmit(void) {
                 t = Min(qp->m_nextAvail, t);
                 valid = true;
             }
+            if (CpemLongQueueBlocked()) {
+                t = Min(t, CpemGetNextEligibleTime());
+                valid = true;
+            }
             if (valid && m_nextSend.IsExpired() && t < Simulator::GetMaximumSimulationTime() &&
                 t > Simulator::Now()) {
                 m_nextSend = Simulator::Schedule(t - Simulator::Now(),
@@ -298,7 +311,8 @@ void QbbNetDevice::DequeueAndTransmit(void) {
         }
         return;
     } else {                               // switch, doesn't care about qcn, just send
-        p = m_queue->DequeueRR(m_paused);  // this is round-robin
+        bool allowLongFlow = !CpemLongQueueBlocked();
+        p = m_queue->DequeueRR(m_paused, allowLongFlow);  // this is round-robin
         if (p != 0) {
             m_snifferTrace(p);
             m_promiscSnifferTrace(p);
@@ -317,10 +331,16 @@ void QbbNetDevice::DequeueAndTransmit(void) {
                 p->RemovePacketTag(t);
             }
             m_traceDequeue(p, qIndex);
+            m_txQueueContext = qIndex;
             TransmitStart(p);
             return;
         } else {  // No queue can deliver any packet
             NS_LOG_INFO("PAUSE prohibits send at node " << m_node->GetId());
+            if (CpemLongQueueBlocked() && m_queue->GetNBytes(BEgressQueue::s_longFlowPg) > 0 &&
+                m_nextSend.IsExpired() && CpemGetNextEligibleTime() > Simulator::Now()) {
+                m_nextSend = Simulator::Schedule(CpemGetNextEligibleTime() - Simulator::Now(),
+                                                 &QbbNetDevice::DequeueAndTransmit, this);
+            }
             if (m_node->GetNodeType() == 0 &&
                 m_qcnEnabled) {  // nothing to send, possibly due to qcn flow control, if so
                                  // reschedule sending
@@ -454,16 +474,12 @@ bool QbbNetDevice::TransmitStart(Ptr<Packet> p) {
     m_currentPkt = p;
     m_phyTxBeginTrace(m_currentPkt);
     
-    // CPEM: Use effective rate if CPEM rate limiting is active
-    DataRate effectiveRate = m_bps;
-    if (Settings::cpem_enabled && m_cpemRateLimited && m_cpemEffectiveRate.GetBitRate() > 0) {
-        effectiveRate = m_cpemEffectiveRate;
-    }
-    
-    Time txTime = Seconds(effectiveRate.CalculateTxTime(p->GetSize()));
+    Time txTime = Seconds(m_bps.CalculateTxTime(p->GetSize()));
     Time txCompleteTime = txTime + m_tInterframeGap;
     NS_LOG_LOGIC("Schedule TransmitCompleteEvent in " << txCompleteTime.GetSeconds() << "sec");
     Simulator::Schedule(txCompleteTime, &QbbNetDevice::TransmitComplete, this);
+
+    CpemUpdatePacingAfterSend(p, m_txQueueContext);
 
     bool result = m_channel->TransmitStart(p, this, txTime);
     if (result == false) {
@@ -542,6 +558,18 @@ void QbbNetDevice::CpemSetEffectiveRate(DataRate rate) {
     }
     
     m_cpemRateLimited = (m_cpemEffectiveRate.GetBitRate() < m_bps.GetBitRate());
+
+    if (m_cpemRecoveryEvent.IsRunning()) {
+        Simulator::Cancel(m_cpemRecoveryEvent);
+    }
+
+    if (m_cpemRateLimited) {
+        uint64_t recoveryDelayNs = std::max<uint64_t>(1, (uint64_t)Settings::cpem_feedback_interval_ns * 4);
+        m_cpemRecoveryEvent = Simulator::Schedule(NanoSeconds(recoveryDelayNs),
+                                                  &QbbNetDevice::CpemRecoveryTimeout, this);
+    } else {
+        m_cpemNextSendTime = Simulator::Now();
+    }
 }
 
 DataRate QbbNetDevice::CpemGetEffectiveRate() const {
@@ -552,8 +580,46 @@ DataRate QbbNetDevice::CpemGetEffectiveRate() const {
 }
 
 void QbbNetDevice::CpemResetRate() {
+    if (m_cpemRecoveryEvent.IsRunning()) {
+        Simulator::Cancel(m_cpemRecoveryEvent);
+    }
     m_cpemEffectiveRate = m_bps;
     m_cpemRateLimited = false;
+    m_cpemNextSendTime = Simulator::Now();
+}
+
+void QbbNetDevice::CpemRecoveryTimeout() {
+    CpemResetRate();
+}
+
+bool QbbNetDevice::CpemShouldPaceQueue(uint32_t queueOrPg) const {
+    if (!Settings::cpem_enabled || !m_cpemRateLimited ||
+        m_cpemEffectiveRate.GetBitRate() == 0 || !BEgressQueue::s_enableFlowClassification) {
+        return false;
+    }
+    return queueOrPg == BEgressQueue::s_longFlowPg;
+}
+
+bool QbbNetDevice::CpemLongQueueBlocked() const {
+    return CpemShouldPaceQueue(BEgressQueue::s_longFlowPg) &&
+           Simulator::Now() < m_cpemNextSendTime;
+}
+
+Time QbbNetDevice::CpemGetNextEligibleTime() const {
+    return m_cpemNextSendTime;
+}
+
+void QbbNetDevice::CpemUpdatePacingAfterSend(Ptr<Packet> p, uint32_t queueOrPg) {
+    if (!CpemShouldPaceQueue(queueOrPg)) {
+        return;
+    }
+
+    Time now = Simulator::Now();
+    if (m_cpemNextSendTime < now) {
+        m_cpemNextSendTime = now;
+    }
+    Time pacingInterval = Seconds(m_cpemEffectiveRate.CalculateTxTime(p->GetSize()));
+    m_cpemNextSendTime = m_cpemNextSendTime + pacingInterval;
 }
 
 }  // namespace ns3

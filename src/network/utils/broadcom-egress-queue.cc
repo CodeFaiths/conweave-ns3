@@ -100,7 +100,7 @@ bool BEgressQueue::DoEnqueue(Ptr<Packet> p, uint32_t qIndex) {
 }
 
 Ptr<Packet>
-BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
+BEgressQueue::DoDequeueRR(bool paused[], bool allowLongFlow)  // this is for switch only
 {
     NS_LOG_FUNCTION(this);
 
@@ -130,7 +130,7 @@ BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
                 qIndex = shortFlowQ;
             }
             // Then check long flow queue
-            if (!found) {
+            if (!found && allowLongFlow) {
                 uint16_t longFlowQ = s_longFlowPg;
                 if (!paused[longFlowQ] && m_queues[longFlowQ]->GetNPackets() > 0) {
                     found = true;
@@ -142,13 +142,17 @@ BEgressQueue::DoDequeueRR(bool paused[])  // this is for switch only
         // Fall back to round-robin for other queues if not found
         if (!found) {
             for (qIndex = 1; qIndex <= qCnt; qIndex++) {
-                bool cond1 = !paused[(qIndex + m_rrlast) % qCnt];
-                bool cond2 = m_queues[(qIndex + m_rrlast) % qCnt]->GetNPackets() > 0;  // round robin
+                uint32_t candidate = (qIndex + m_rrlast) % qCnt;
+                if (s_enableFlowClassification && !allowLongFlow && candidate == s_longFlowPg) {
+                    continue;
+                }
+                bool cond1 = !paused[candidate];
+                bool cond2 = m_queues[candidate]->GetNPackets() > 0;  // round robin
 
                 if (!cond1 && cond2) {
                     // Packet could be scheduled by RR, but could not be scheduled because of PAUSE
                     FlowIDNUMTag fit;
-                    Ptr<Packet> p = ConstCast<Packet, const Packet>(m_queues[(qIndex + m_rrlast) % qCnt]->Peek());
+                    Ptr<Packet> p = ConstCast<Packet, const Packet>(m_queues[candidate]->Peek());
                     if (p->PeekPacketTag(fit)) {
                         unsigned flowid = static_cast<unsigned>(fit.GetId());
                         if (!MAP_KEY_EXISTS(current_pause_time, flowid))
@@ -238,9 +242,9 @@ bool BEgressQueue::Enqueue(Ptr<Packet> p, uint32_t qIndex) {
 }
 
 Ptr<Packet>
-BEgressQueue::DequeueRR(bool paused[]) {
+BEgressQueue::DequeueRR(bool paused[], bool allowLongFlow) {
     NS_LOG_FUNCTION(this);
-    Ptr<Packet> packet = DoDequeueRR(paused);
+    Ptr<Packet> packet = DoDequeueRR(paused, allowLongFlow);
     if (packet != 0) {
         NS_ASSERT(m_nBytes >= packet->GetSize());
         NS_ASSERT(m_nPackets > 0);

@@ -27,8 +27,11 @@
 #include <ns3/switch-node.h>
 #include <time.h>
 
+#include <cerrno>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sys/stat.h>
 #include <unordered_map>
 
 #include "ns3/applications-module.h"
@@ -53,6 +56,53 @@ using namespace ns3;
 using namespace std;
 
 NS_LOG_COMPONENT_DEFINE("GENERIC_SIMULATION");
+
+static bool EnsureDirectoryExists(const std::string &dir_path) {
+    if (dir_path.empty()) {
+        return true;
+    }
+
+    std::string current = (dir_path[0] == '/') ? "/" : "";
+    size_t pos = 0;
+    while (pos < dir_path.size()) {
+        size_t next = dir_path.find('/', pos);
+        std::string part = dir_path.substr(pos, next == std::string::npos ? std::string::npos : next - pos);
+        if (!part.empty()) {
+            if (!current.empty() && current.back() != '/') {
+                current += '/';
+            }
+            current += part;
+            if (mkdir(current.c_str(), 0755) != 0 && errno != EEXIST) {
+                return false;
+            }
+        }
+        if (next == std::string::npos) {
+            break;
+        }
+        pos = next + 1;
+    }
+
+    return true;
+}
+
+static FILE *OpenOutputFileOrWarn(const std::string &file_path, const char *label) {
+    size_t slash_pos = file_path.find_last_of('/');
+    if (slash_pos != std::string::npos) {
+        std::string dir_path = file_path.substr(0, slash_pos);
+        if (!EnsureDirectoryExists(dir_path)) {
+            std::cerr << "Failed to create output directory for " << label << ": " << file_path
+                      << " (" << std::strerror(errno) << ")\n";
+            return nullptr;
+        }
+    }
+
+    FILE *file = fopen(file_path.c_str(), "w");
+    if (file == nullptr) {
+        std::cerr << "Failed to open " << label << ": " << file_path << " ("
+                  << std::strerror(errno) << ")\n";
+    }
+    return file;
+}
 
 /*------Load balancing parameters-----*/
 // mode for load balancer, 0: flow ECMP, 2: DRILL, 3: Conga, 6: Letflow, 9: ConWeave
@@ -104,6 +154,7 @@ FILE *voq_detail_output = NULL;
 FILE *uplink_output = NULL;
 FILE *conn_output = NULL;
 FILE *qlen_output = NULL;
+FILE *qlen_flow_output = NULL;
 FILE *throughput_output = NULL;      // Throughput monitoring output
 FILE *link_util_output = NULL;       // Link utilization monitoring output
 
@@ -113,6 +164,7 @@ std::string fct_output_file = "fct.txt";
 std::string pfc_output_file = "pfc.txt";
 std::string cnp_output_file = "cnp.txt";
 std::string qlen_mon_file = "qlen.txt";
+std::string qlen_flow_mon_file = "flow_qlen.txt";
 std::string voq_mon_file = "voq.txt";
 std::string voq_mon_detail_file = "voq_detail.txt";
 std::string uplink_mon_file = "uplink.txt";
@@ -416,7 +468,9 @@ void periodic_monitoring(FILE *fout_voq, FILE *fout_voq_detail, FILE *fout_uplin
             // monitor VOQ number per switch <time, ToRId, #VOQ, #Pkts>
             uint32_t nVOQ = swNode->m_mmu->m_conweaveRouting.GetNumVOQ();
             uint32_t nVolumeVOQ = swNode->m_mmu->m_conweaveRouting.GetVolumeVOQ();
-            fprintf(fout_voq, "%lu,%u,%u,%u\n", now, tor2If.first, nVOQ, nVolumeVOQ);
+            if (fout_voq) {
+                fprintf(fout_voq, "%lu,%u,%u,%u\n", now, tor2If.first, nVOQ, nVolumeVOQ);
+            }
 
             // monitor VOQ per destination IP <time, dstip, #VOQ, #Pkts>
             std::unordered_map<uint32_t, std::pair<uint32_t, uint32_t>> dip_to_nvoq_npkt;
@@ -426,8 +480,10 @@ void periodic_monitoring(FILE *fout_voq, FILE *fout_voq_detail, FILE *fout_uplin
                 nvoq_npkt.second += voq.second.getQueueSize();
             }
             for (auto x : dip_to_nvoq_npkt) {
-                fprintf(fout_voq_detail, "%lu,%u,%u,%u\n", now, x.first, x.second.first,
-                        x.second.second);
+                if (fout_voq_detail) {
+                    fprintf(fout_voq_detail, "%lu,%u,%u,%u\n", now, x.first, x.second.first,
+                            x.second.second);
+                }
             }
         }
 
@@ -435,7 +491,9 @@ void periodic_monitoring(FILE *fout_voq, FILE *fout_voq_detail, FILE *fout_uplin
         for (const auto &iface : tor2If.second) {
             // monitor uplink txBytes <time, ToRId, OutDev, Bytes>
             uint64_t uplink_txbyte = swNode->GetTxBytesOutDev(iface);
-            fprintf(fout_uplink, "%lu,%u,%u,%lu\n", now, tor2If.first, iface, uplink_txbyte);
+            if (fout_uplink) {
+                fprintf(fout_uplink, "%lu,%u,%u,%lu\n", now, tor2If.first, iface, uplink_txbyte);
+            }
         }
     }
 
@@ -453,7 +511,9 @@ void periodic_monitoring(FILE *fout_voq, FILE *fout_voq_detail, FILE *fout_uplin
                     nActiveQP++;
                 }
             }
-            fprintf(fout_conn, "%lu,%u,%lu,%lu\n", now, i, nQP, nActiveQP);
+            if (fout_conn) {
+                fprintf(fout_conn, "%lu,%u,%lu,%lu\n", now, i, nQP, nActiveQP);
+            }
         }
     }
 
@@ -538,7 +598,7 @@ void conweave_history_print() {
 
         std::cout << "\n--------------------------" << std::endl;
         std::cout << "Extracting ConWeave Estimation Error Data..." << std::endl;
-        est_error_output = fopen(est_error_output_file.c_str(), "w");
+        est_error_output = OpenOutputFileOrWarn(est_error_output_file, "EST_ERROR_MON_FILE");
         for (auto x : ConWeaveVOQ::m_flushEstErrorhistory) {
             fprintf(est_error_output, "%d\n", x);
         }
@@ -591,8 +651,23 @@ void get_pfc(FILE *fout, Ptr<QbbNetDevice> dev, uint32_t type) {
  * @brief Qlen monitoring at switches (output: qlen.txt)
  * format: timestamp, switchId, portId, ingressBytes, egressBytes
  */
-void qlen_monitoring(FILE *fout) {
-    if (!fout) return;
+static std::string DeriveFlowSplitQlenFile(const std::string &qlenFile) {
+    const std::string suffix = "qlen.txt";
+    const std::string replacement = "flow_qlen.txt";
+    if (qlenFile.size() >= suffix.size() &&
+        qlenFile.compare(qlenFile.size() - suffix.size(), suffix.size(), suffix) == 0) {
+        return qlenFile.substr(0, qlenFile.size() - suffix.size()) + replacement;
+    }
+
+    size_t dot = qlenFile.rfind('.');
+    if (dot == std::string::npos) {
+        return qlenFile + "_flow";
+    }
+    return qlenFile.substr(0, dot) + "_flow" + qlenFile.substr(dot);
+}
+
+void qlen_monitoring(FILE *fout, FILE *flow_fout) {
+    if (!fout && !flow_fout) return;
     uint64_t now = Simulator::Now().GetNanoSeconds();
     for (uint32_t i = 0; i < n.GetN(); i++) {
         if (n.Get(i)->GetNodeType() == 1) {  // is switch
@@ -600,16 +675,36 @@ void qlen_monitoring(FILE *fout) {
             for (uint32_t j = 1; j < sw->GetNDevices(); j++) {
                 uint32_t ingress = sw->m_mmu->GetIngressPortBytes(j);
                 uint32_t egress = sw->m_mmu->GetEgressPortBytes(j);
-                if (ingress > 0 || egress > 0) {
+                if (fout && (ingress > 0 || egress > 0)) {
                     fprintf(fout, "%lu,%u,%u,%u,%u\n", now, i, j, ingress, egress);
+                }
+
+                if (flow_fout) {
+                    Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(sw->GetDevice(j));
+                    Ptr<BEgressQueue> queue = dev ? dev->GetQueue() : nullptr;
+                    uint32_t shortEgress = 0;
+                    uint32_t longEgress = 0;
+
+                    if (queue) {
+                        shortEgress = queue->GetNBytes(BEgressQueue::s_shortFlowPg);
+                        longEgress = queue->GetNBytes(BEgressQueue::s_longFlowPg);
+                    }
+
+                    if (ingress > 0 || egress > 0 || shortEgress > 0 || longEgress > 0) {
+                        fprintf(flow_fout, "%lu,%u,%u,%u,%u,%u,%u,%u,%u\n", now, i, j,
+                                ingress, egress, BEgressQueue::s_shortFlowPg, shortEgress,
+                                BEgressQueue::s_longFlowPg, longEgress);
+                    }
                 }
             }
         }
     }
-    fflush(fout);
+    if (fout) fflush(fout);
+    if (flow_fout) fflush(flow_fout);
 
     if (Simulator::Now() < Seconds(flowgen_stop_time + 0.05)) {
-        Simulator::Schedule(NanoSeconds(switch_mon_interval), &qlen_monitoring, fout);
+        Simulator::Schedule(NanoSeconds(switch_mon_interval), &qlen_monitoring, fout,
+                            flow_fout);
     }
 }
 
@@ -1369,11 +1464,16 @@ int main(int argc, char *argv[]) {
             } else if (key.compare("PATH_RECORD_FILE") == 0) {
                 conf >> Settings::path_record_file;
                 std::cerr << "PATH_RECORD_FILE\t\t" << Settings::path_record_file << "\n";
+            } else if (key.compare("MEDU_ENABLED") == 0) {
+                uint32_t v;
+                conf >> v;
+                Settings::enable_flow_classification = (v != 0);
+                std::cerr << "MEDU_ENABLED\t\t\t" << (Settings::enable_flow_classification ? "Yes" : "No") << "\n";
             } else if (key.compare("ENABLE_FLOW_CLASSIFICATION") == 0) {
                 uint32_t v;
                 conf >> v;
                 Settings::enable_flow_classification = (v != 0);
-                std::cerr << "ENABLE_FLOW_CLASSIFICATION\t" << (Settings::enable_flow_classification ? "Yes" : "No") << "\n";
+                std::cerr << "ENABLE_FLOW_CLASSIFICATION\t" << (Settings::enable_flow_classification ? "Yes" : "No") << " (legacy MEDU switch)\n";
             } else if (key.compare("FLOW_SIZE_THRESHOLD") == 0) {
                 uint64_t v;
                 conf >> v;
@@ -1488,6 +1588,11 @@ int main(int argc, char *argv[]) {
      * This is needed because BEgressQueue is in network module which compiles
      * before point-to-point module where Settings class is defined.
      */
+
+        if (!Settings::enable_flow_classification && Settings::enable_diff_cc) {
+            Settings::enable_diff_cc = false;
+            std::cerr << "ENABLE_DIFF_CC\t\t\tNo (forced off because MEDU_ENABLED is disabled)\n";
+        }
     BEgressQueue::s_enableFlowClassification = Settings::enable_flow_classification;
     BEgressQueue::s_shortFlowPg = Settings::short_flow_pg;
     BEgressQueue::s_longFlowPg = Settings::long_flow_pg;
@@ -1624,7 +1729,7 @@ int main(int argc, char *argv[]) {
     rem->SetAttribute("ErrorRate", DoubleValue(error_rate_per_link));
     rem->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
 
-    pfc_file = fopen(pfc_output_file.c_str(), "w");
+    pfc_file = OpenOutputFileOrWarn(pfc_output_file, "PFC_OUTPUT_FILE");
 
     QbbHelper qbb;
     Ipv4AddressHelper ipv4;
@@ -1881,10 +1986,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    fct_output = fopen(fct_output_file.c_str(), "w");
-    flow_input_stream = fopen(flow_input_file.c_str(), "w");
+    fct_output = OpenOutputFileOrWarn(fct_output_file, "FCT_OUTPUT_FILE");
+    flow_input_stream = OpenOutputFileOrWarn(flow_input_file, "FLOW_INPUT_FILE");
     if (cc_mode == 1) {
-        cnp_output = fopen(cnp_output_file.c_str(), "w");
+        cnp_output = OpenOutputFileOrWarn(cnp_output_file, "CNP_OUTPUT_FILE");
     }
 
     /**
@@ -2386,17 +2491,25 @@ int main(int argc, char *argv[]) {
     }
 
     if (lb_mode == 9) {
-        voq_output = fopen(voq_mon_file.c_str(), "w");                // specific to ConWeave
-        voq_detail_output = fopen(voq_mon_detail_file.c_str(), "w");  // specific to ConWeave
+        voq_output = OpenOutputFileOrWarn(voq_mon_file, "VOQ_MON_FILE");
+        voq_detail_output = OpenOutputFileOrWarn(voq_mon_detail_file, "VOQ_MON_DETAIL_FILE");
     }
 
-    uplink_output = fopen(uplink_mon_file.c_str(), "w");  // common
-    conn_output = fopen(conn_mon_file.c_str(), "w");      // common
-    qlen_output = fopen(qlen_mon_file.c_str(), "w");      // common
+    uplink_output = OpenOutputFileOrWarn(uplink_mon_file, "UPLINK_MON_FILE");
+    conn_output = OpenOutputFileOrWarn(conn_mon_file, "CONN_MON_FILE");
+    qlen_output = OpenOutputFileOrWarn(qlen_mon_file, "QLEN_MON_FILE");
+    qlen_flow_mon_file = DeriveFlowSplitQlenFile(qlen_mon_file);
+    qlen_flow_output = OpenOutputFileOrWarn(qlen_flow_mon_file, "QLEN_FLOW_MON_FILE");
+    if (qlen_flow_output) {
+        fprintf(qlen_flow_output, "# Flow-split Queue Monitoring Output\n");
+        fprintf(qlen_flow_output,
+                "# Format: timestamp(ns),switchId,portId,ingressBytes,egressBytes,shortFlowPg,shortFlowEgressBytes,longFlowPg,longFlowEgressBytes\n");
+        fflush(qlen_flow_output);
+    }
 
     // Open throughput and link utilization monitoring files if enabled
     if (enable_throughput_monitoring) {
-        throughput_output = fopen(throughput_mon_file.c_str(), "w");
+        throughput_output = OpenOutputFileOrWarn(throughput_mon_file, "THROUGHPUT_MON_FILE");
         if (throughput_output) {
             // Write header
             fprintf(throughput_output, "# Throughput Monitoring Output\n");
@@ -2405,7 +2518,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (enable_link_util_monitoring) {
-        link_util_output = fopen(link_util_mon_file.c_str(), "w");
+        link_util_output = OpenOutputFileOrWarn(link_util_mon_file, "LINK_UTIL_MON_FILE");
         if (link_util_output) {
             // Write header
             fprintf(link_util_output, "# Link Utilization Monitoring Output\n");
@@ -2441,7 +2554,8 @@ int main(int argc, char *argv[]) {
     }
     Simulator::Schedule(Seconds(flowgen_start_time), &periodic_monitoring, voq_output,
                         voq_detail_output, uplink_output, conn_output, &lb_mode);
-    Simulator::Schedule(Seconds(flowgen_start_time), &qlen_monitoring, qlen_output);
+    Simulator::Schedule(Seconds(flowgen_start_time), &qlen_monitoring, qlen_output,
+                        qlen_flow_output);
 
     // Schedule throughput and link utilization monitoring if enabled
     if (enable_throughput_monitoring || enable_link_util_monitoring) {
@@ -2470,6 +2584,14 @@ int main(int argc, char *argv[]) {
     if (Settings::enable_pq_logging && Settings::pq_log_stream.is_open()) {
         Settings::pq_log_stream.close();
         std::cerr << "Priority Queue Logging closed." << std::endl;
+    }
+    if (qlen_flow_output) {
+        fclose(qlen_flow_output);
+        qlen_flow_output = NULL;
+    }
+    if (qlen_output) {
+        fclose(qlen_output);
+        qlen_output = NULL;
     }
     
     Simulator::Destroy();

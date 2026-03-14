@@ -1,0 +1,409 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+}
+
+\begin{document}
+
+\title{MEDU: Flow-Size-Aware Differentiation for Reducing Cross-Class Interference in RDMA Networks}
+
+\author{
+\IEEEauthorblockN{JiangTao}
+\IEEEauthorblockA{
+School of Computer Engineering\\
+Your University\\
+Email: your.email@university.edu
+}
+}
+
+\maketitle
+
+\begin{abstract}
+Remote Direct Memory Access (RDMA) has become a key communication substrate for modern datacenter systems, but mixed workloads consisting of short latency-sensitive flows and large throughput-oriented flows remain challenging to handle efficiently. Existing RDMA congestion-control mechanisms primarily regulate aggregate congestion and do not explicitly account for flow-size heterogeneity in the queueing path. As a result, short flows can suffer substantial completion-time inflation due to cross-class interference from large flows, especially under medium and high load. This paper presents MEDU, a lightweight flow-size-aware differentiation mechanism for RDMA networks. MEDU classifies flows using a size threshold and maps short and large flows to different priority groups, thereby reducing harmful queueing interactions between the two classes. MEDU is designed as an incremental enhancement that remains compatible with existing RDMA congestion control and load-balancing mechanisms. Our evaluation on ns-3-based RDMA simulations shows that MEDU consistently improves flow completion slowdown across a range of network loads and load-balancing schemes, with especially strong gains in short-flow average and tail metrics. We further show that differentiated congestion-control tuning on top of MEDU can provide additional benefits, indicating that flow-size-aware queue differentiation also serves as a useful foundation for further flow-class-aware optimizations.
+\end{abstract}
+
+\begin{IEEEkeywords}
+RDMA, congestion control, flow-size-aware differentiation, priority groups, datacenter networks, flow completion time
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Data center applications increasingly rely on RDMA to achieve low latency, high throughput, and low CPU overhead. At the same time, modern workloads are highly heterogeneous: latency-sensitive short flows coexist with throughput-oriented large flows and compete for the same network resources. This heterogeneity is particularly challenging in lossless RDMA fabrics, where queue buildup and congestion reactions can directly translate into inflated flow completion time (FCT) for delay-sensitive traffic. As a result, improving short-flow performance under mixed workloads has become an important problem for RDMA-based data center networks.
+
+However, most existing RDMA network designs still treat flows in a largely homogeneous manner. Short and large flows often share the same queueing structure, experience the same congestion feedback path, and are handled by the same control logic. This uniform treatment creates a mismatch between traffic heterogeneity and network control granularity. Large flows tend to occupy queues persistently, while short flows are disproportionately penalized by even modest queueing and recovery delays. Under medium to high load, this cross-class interference significantly amplifies short-flow completion time and tail latency, even when the overall network remains functional.
+
+A natural question is whether the network can explicitly exploit flow-size heterogeneity instead of ignoring it. Prior work has explored short-flow-friendly scheduling and transport designs in other contexts, but these approaches do not directly address the constraints of RDMA lossless fabrics. In particular, RDMA networks are tightly coupled with queue priorities, PFC behavior, and existing congestion control mechanisms, making it difficult to directly transplant designs developed for conventional TCP/IP or RPC-based environments. Consequently, there is still a lack of lightweight mechanisms that can reduce short-large flow interference in RDMA networks without redesigning the underlying transport stack.
+
+This paper presents MEDU, a flow-size-aware differentiation mechanism for RDMA networks. The key idea of MEDU is simple: instead of allowing short and large flows to compete in the same undifferentiated path, MEDU explicitly classifies flows by size and separates them into different priority groups. By exposing flow-size heterogeneity to the network, MEDU reduces cross-class queueing interference and improves the completion behavior of short flows. Moreover, MEDU is lightweight and compatible with existing RDMA congestion control and load balancing mechanisms, making it practical as an incremental enhancement rather than a clean-slate redesign.
+
+Our current evaluation shows that MEDU consistently reduces flow completion slowdown across multiple network loads and load-balancing schemes. The benefit is especially pronounced for short flows and tail metrics, which are most sensitive to queueing interference. In addition, when combined with differentiated congestion-control tuning for different flow classes, the performance can be further improved, suggesting that flow-size-aware queue differentiation provides a strong foundation for additional optimizations. These results indicate that explicitly accounting for flow-size heterogeneity is a promising direction for improving RDMA performance under mixed workloads.
+
+In summary, this paper makes the following contributions:
+
+\begin{enumerate}
+  \item It identifies and characterizes cross-class interference between short and large flows as a key cause of short-flow slowdown in RDMA networks.
+  \item It proposes MEDU, a flow-size-aware differentiation mechanism that separates flow classes through priority-group-level treatment.
+  \item It demonstrates through simulation-based evaluation that MEDU significantly improves both average and tail flow completion performance across a range of loads and load-balancing algorithms, while providing a flexible foundation for further flow-class-aware enhancements.
+\end{enumerate}
+
+\section{Background and Motivation}
+
+\subsection{RDMA in Lossless Datacenter Networks}
+
+Remote Direct Memory Access (RDMA) has become an important building block for modern datacenter systems because it enables low-latency communication, high throughput, and low CPU overhead. In practice, large-scale RDMA deployments over Ethernet commonly rely on RoCE-style lossless fabrics together with explicit congestion control. Representative examples include DCQCN, which combines ECN-based feedback with rate control for large-scale RDMA deployments~\cite{dcqcn}, TIMELY, which uses RTT as a congestion signal to reduce queueing delay~\cite{timely}, and HPCC, which further improves congestion precision by leveraging in-band telemetry~\cite{hpcc}. These designs have substantially improved RDMA performance and made high-speed datacenter transport more practical.
+
+At the same time, prior work has also shown that RDMA networking is tightly coupled with link-layer behavior and queue management. In particular, RoCE deployments have often depended on Priority Flow Control (PFC) to provide a lossless packet delivery environment, while congestion control protocols are responsible for keeping queue buildup under control~\cite{dcqcn,timely}. However, this design space is subtle: although PFC can prevent packet drops, it may also amplify head-of-line blocking, pause propagation, and queueing interactions under contention. Motivated by these issues, Mittal et al. revisited the necessity of lossless network support for RDMA and demonstrated that some long-held assumptions around PFC-based RDMA can be relaxed~\cite{revisiting-rdma}. Their findings suggest that the interaction between transport behavior and queue management remains a central issue in RDMA networks.
+
+\subsection{Flow Heterogeneity and Prior Short-Flow-Oriented Designs}
+
+Datacenter traffic is highly heterogeneous. A large number of short, latency-sensitive flows coexist with a smaller set of large, throughput-oriented flows. This heterogeneity has long motivated the design of short-flow-friendly transports and scheduling mechanisms. For example, pFabric showed that near-optimal FCT can be approached by aggressively prioritizing the most urgent traffic in the network~\cite{pfabric}. PIAS later demonstrated that even without prior knowledge of flow size, commodity switches can approximate shortest-job-first behavior by using multiple priority queues~\cite{pias}. More recently, Homa proposed a receiver-driven transport that exploits network priorities to minimize tail latency for RPC-style workloads~\cite{homa}.
+
+These works clearly established that explicitly accounting for flow size or urgency can significantly improve short-flow performance. However, they were developed under different transport assumptions and are not directly tailored to RDMA over lossless Ethernet. In particular, existing short-flow-oriented designs generally do not address the specific constraints of RDMA fabrics, where queue priorities, PFC behavior, and transport-level congestion control are tightly intertwined. As a result, there remains a gap between the general idea of flow prioritization and the practical design of a lightweight, deployable mechanism for RDMA networks.
+
+\subsection{Why Existing RDMA Congestion Control Is Not Sufficient}
+
+Existing RDMA congestion control mechanisms primarily focus on regulating aggregate congestion and maintaining high link utilization. DCQCN relies on ECN marks to adjust transmission rates under sustained queue buildup~\cite{dcqcn}. TIMELY reacts to RTT variation and attempts to keep delay low without requiring switch-side congestion signals~\cite{timely}. HPCC uses precise in-band telemetry to achieve faster and more accurate congestion response~\cite{hpcc}. Although these protocols differ in signals and control dynamics, they share a common design philosophy: each flow is largely treated as an instance of the same congestion-control problem.
+
+This homogeneous treatment is effective for controlling overall congestion, but it does not directly resolve the interference between flows of very different sizes. A large flow can persistently occupy queues and continuously participate in congestion adaptation, whereas a short flow is much more sensitive to even small queueing delays and transient contention. Consequently, when short and large flows are mixed in the same queueing and feedback path, the resulting performance penalty is highly asymmetric: the large flow can usually tolerate modest additional delay, but the short flow experiences a disproportionate increase in completion time, especially in tail metrics. This limitation is important because many datacenter applications are sensitive not only to average latency but also to tail flow completion behavior.
+
+\subsection{Motivation: Cross-Class Interference in RDMA Networks}
+
+Our work is motivated by the observation that short-flow slowdown in RDMA networks is not merely a generic congestion problem; rather, it is often a cross-class interference problem caused by the uniform treatment of heterogeneous flows. In a mixed workload, short and large flows share the same forwarding structure, queueing resources, and control path. Once contention occurs, short flows are exposed to queue occupancy and recovery dynamics largely dominated by large flows. Under medium to high load, this coupling inflates both average and tail flow completion time for short flows.
+
+This observation is consistent with the broader lesson from prior work on short-flow scheduling~\cite{pfabric,pias,homa}: flow-size heterogeneity should be explicitly exploited rather than ignored. However, directly transplanting these ideas into RDMA is non-trivial. RDMA fabrics must remain compatible with existing congestion control, link-layer priorities, and operational constraints of lossless Ethernet~\cite{dcqcn,timely,hpcc,revisiting-rdma}. Therefore, what is needed is not a clean-slate transport redesign, but a lightweight mechanism that can expose flow-size heterogeneity to the network while preserving compatibility with the RDMA stack.
+
+This need motivates MEDU. The central idea behind MEDU is to explicitly differentiate flows by size and reduce interference between short and large flows at the queue-priority level. Instead of allowing both classes to compete in the same undifferentiated path, MEDU separates them into different priority groups, thereby reducing cross-class queueing interference and giving latency-sensitive short flows a cleaner service path. Our preliminary results under mixed workloads show that this direction is promising: enabling MEDU consistently improves flow completion slowdown across multiple loads and load-balancing schemes, with the largest gains appearing in short-flow and tail metrics. Moreover, differentiated congestion tuning on top of MEDU can provide additional gains, suggesting that flow-size-aware differentiation offers a useful structural foundation for further optimization. These observations make a strong case for studying MEDU as a practical RDMA-oriented mechanism for mitigating short-large flow interference.
+
+\section{Problem Statement and Design Overview}
+
+\subsection{Problem Statement}
+
+We consider an RDMA datacenter network that carries mixed workloads composed of short latency-sensitive flows and large throughput-oriented flows. Existing RDMA transports and network control mechanisms primarily aim to regulate overall congestion and maintain high throughput, but they do not explicitly differentiate flows by size during queueing and service. As a consequence, heterogeneous flows are multiplexed over the same queueing and feedback path.
+
+This homogeneous treatment creates a structural mismatch. Large flows typically persist for a longer time and occupy queueing resources more continuously. By contrast, short flows are highly sensitive to transient queue buildup and recovery delays, because even a small amount of additional waiting can account for a significant fraction of their total completion time. Therefore, when short and large flows share the same service path, the performance impact is asymmetric: large flows can often absorb modest additional delay, whereas short flows suffer a disproportionate increase in both average and tail flow completion time.
+
+We refer to this phenomenon as cross-class interference. Cross-class interference arises when the queue occupancy and congestion response behavior induced primarily by large flows degrades the service experienced by short flows. In RDMA networks, this problem is especially important because queueing behavior is closely tied to priority groups, lossless operation, and congestion feedback. Thus, even when the network remains stable at the aggregate level, short-flow latency may still deteriorate substantially under mixed traffic.
+
+The problem addressed in this paper is therefore the following: how can an RDMA network reduce cross-class interference between short and large flows, so as to improve short-flow completion performance, while preserving compatibility with existing RDMA transport and network control mechanisms?
+
+\subsection{Design Goals}
+
+To address this problem, MEDU is designed with four goals in mind.
+
+\begin{enumerate}
+  \item MEDU should improve short-flow completion performance under mixed workloads, especially in medium-to-high load regimes where queueing interference becomes significant. Since short flows are the most delay-sensitive traffic class, the primary objective is to reduce their average and tail flow completion slowdown.
+  \item MEDU should keep the cost to large flows and overall network efficiency under control. A practical mechanism cannot simply improve short-flow latency by causing severe degradation to large-flow throughput or by destabilizing the network.
+  \item MEDU should be lightweight and incrementally deployable. Rather than redesigning the RDMA transport stack from scratch, the mechanism should reuse existing abstractions already available in RDMA-capable datacenter networks, such as queue priorities or priority groups.
+  \item MEDU should remain compatible with existing congestion control and load-balancing schemes. Since modern RDMA environments may employ different congestion-control protocols and path-selection mechanisms, a useful design should complement these mechanisms rather than replace them.
+\end{enumerate}
+
+\subsection{Key Insight}
+
+The key insight behind MEDU is that not all flows should be treated identically in the queueing path. In mixed RDMA workloads, the most harmful interaction is not simply congestion in the aggregate sense, but the fact that short and large flows contend within the same undifferentiated service structure. If the network can expose flow-size heterogeneity to the queueing layer, it can reduce harmful interference without requiring a complete transport redesign.
+
+Concretely, MEDU is based on the observation that flow size provides a simple but highly useful signal for differentiation. Short flows are typically more sensitive to delay and benefit more from reduced queueing interference, whereas large flows are less sensitive to small delay variations and are more tolerant of sustained service. Thus, a size-aware separation policy can improve short-flow completion behavior by giving short flows a cleaner queueing path.
+
+This insight is consistent with a broad line of prior work showing the value of prioritizing short or urgent flows. However, unlike prior clean-slate or non-RDMA transport designs, MEDU adapts this idea to the specific setting of RDMA datacenter networks by operating through lightweight queue-priority differentiation.
+
+\subsection{MEDU Overview}
+
+MEDU is a flow-size-aware differentiation mechanism for RDMA networks. At a high level, MEDU performs two functions.
+
+First, MEDU classifies flows according to their size using a configurable threshold. Flows smaller than the threshold are treated as short flows, while flows at or above the threshold are treated as large flows. This classification exposes flow-size heterogeneity explicitly to the network.
+
+Second, MEDU maps the two flow classes to different priority groups. Instead of allowing short and large flows to compete in the same undifferentiated queueing path, MEDU separates them into different service classes. This separation reduces the extent to which large-flow queue occupancy interferes with short-flow completion behavior.
+
+The resulting effect is straightforward. When short flows no longer fully share the same queueing path with large flows, they are less likely to incur the extra waiting induced by persistent large-flow contention. This improves short-flow completion slowdown, especially for tail metrics under heavier load. At the same time, MEDU does not require a clean-slate transport redesign; it can operate as a lightweight differentiation layer compatible with existing RDMA congestion control and load-balancing mechanisms.
+
+Figure~\ref{fig:medu-overview} illustrates the basic idea of MEDU. In a conventional design, short and large flows enter the same queueing and service structure, so large-flow-induced queue buildup directly affects short-flow completion time. In contrast, MEDU first classifies flows by size and then assigns them to different priority groups, thereby reducing cross-class interference and providing a more favorable service path for short flows.
+
+\begin{figure}[t]
+  \centering
+  \fbox{\parbox{0.9\linewidth}{\centering Placeholder for MEDU overview figure.\\[0.5em]
+  Conventional design: short and large flows share the same queueing path.\\
+  MEDU: flows are classified by size and mapped to different priority groups.}}
+  \caption{Conceptual overview of MEDU. Replace this placeholder with the final figure before submission.}
+  \label{fig:medu-overview}
+\end{figure}
+
+\subsection{Scope of This Work}
+
+This paper focuses on the core MEDU mechanism, namely flow-size-aware queue-priority differentiation in RDMA networks. The purpose of this work is to isolate and evaluate whether explicit size-aware separation alone can effectively mitigate cross-class interference.
+
+In addition, our experiments also show that once such separation is in place, further gains may be obtained by combining MEDU with differentiated congestion-control tuning for different flow classes. However, that enhancement is not the main focus of this paper. We treat it as an extension built on top of MEDU rather than as the core mechanism itself. This separation is important because it allows us to clearly answer the central question of this work: whether flow-size-aware differentiation at the queue-priority level is sufficient to deliver meaningful improvements in RDMA flow completion performance.
+
+\section{Design}
+
+\subsection{Design Rationale}
+
+The design of MEDU is driven by a simple observation: in mixed RDMA workloads, the performance bottleneck for short flows is often not the lack of an advanced end-to-end congestion signal, but the fact that short and large flows compete within the same queueing structure. Once heterogeneous flows are forced into a single undifferentiated service path, large-flow-induced queue occupancy can directly inflate the waiting time of short flows, especially under medium and high load.
+
+A straightforward way to address this issue is to expose flow-size heterogeneity to the network and let the queueing path differentiate between flow classes. However, a practical design must avoid excessive complexity. It should not require a new transport architecture, online flow prediction, or specialized switch logic beyond what is already available in RDMA-capable datacenter networks. MEDU therefore adopts a lightweight approach based on two design principles: first, classify flows using a simple size threshold; second, map different flow classes to different priority groups so that short and large flows no longer fully share the same queueing path.
+
+\subsection{Flow-Size-Based Classification}
+
+MEDU begins by classifying each flow according to its size. Let $T$ denote a configurable flow-size threshold. A flow with size smaller than $T$ is classified as a short flow, while a flow with size greater than or equal to $T$ is classified as a large flow.
+
+This threshold-based design is intentionally simple. First, flow size is an intuitive and operationally meaningful signal in datacenter workloads, where the distinction between short latency-sensitive traffic and large throughput-oriented traffic is widely observed. Second, threshold-based classification avoids the need for complex online estimation or history-based inference. Third, it allows MEDU to be implemented with minimal changes to the existing RDMA simulation and control pipeline.
+
+The role of the threshold is not to perfectly partition all flows into ideal categories, but rather to provide a practical approximation of traffic heterogeneity. Even if some flows near the boundary are imperfectly classified, the overall benefit of reducing short-large flow interference can still be substantial as long as the threshold captures the dominant distinction between delay-sensitive and throughput-oriented traffic.
+
+\subsection{Priority-Group Separation}
+
+After classification, MEDU assigns short and large flows to different priority groups. This is the core mechanism of the design. Instead of allowing both classes to share a single undifferentiated queueing path, MEDU uses priority-group-level separation to reduce cross-class interference.
+
+The rationale is as follows. When short and large flows share the same queueing structure, a large flow can occupy queue resources for an extended period, causing short flows to wait behind traffic that has very different service sensitivity. By assigning short flows to a higher-priority group and large flows to a lower-priority group, MEDU reduces the extent to which large-flow queue buildup directly affects short-flow completion behavior. In other words, MEDU does not attempt to eliminate congestion entirely; rather, it reshapes how heterogeneous flows interact under congestion.
+
+An important advantage of this design is that it leverages an abstraction already available in RDMA-capable networks: queue priorities or priority groups. This makes MEDU compatible with the general operational model of lossless RDMA fabrics. Instead of introducing a new scheduling plane, MEDU relies on class-aware mapping within the existing queueing hierarchy.
+
+\subsection{Why Priority Separation Helps Short Flows}
+
+The benefit of MEDU comes from reducing harmful coupling between flow classes. Consider a mixed workload in which short and large flows arrive concurrently. In a conventional design, all flows contribute to the same queue buildup, so even brief short flows may inherit the service delay created by the sustained presence of large flows. This shared queueing path is especially harmful to short flows because their total completion time is dominated by a small number of RTTs and queueing events.
+
+With MEDU, short flows are no longer fully exposed to the same queueing path as large flows. As a result, they face less head-of-line waiting caused by persistent large-flow occupancy. This improves both average completion time and tail completion behavior. The effect becomes more pronounced at higher load, where the gap between the service needs of short and large flows becomes increasingly important.
+
+The key point is that MEDU improves short-flow performance not by making every flow faster, but by reducing the degree to which short flows are penalized by interactions with a fundamentally different traffic class. This is why MEDU is best understood as a cross-class interference mitigation mechanism rather than a generic congestion-control replacement.
+
+\subsection{Compatibility with Existing RDMA Mechanisms}
+
+MEDU is designed to complement rather than replace existing RDMA control mechanisms. In particular, MEDU does not change the core end-to-end semantics of RDMA transport, nor does it require new congestion signals from the network. Existing congestion-control protocols can continue to operate as before, and existing load-balancing algorithms can still determine path selection independently of MEDU's flow classification.
+
+This compatibility is important for two reasons. First, it keeps the deployment model practical. A mechanism that requires replacing the transport stack or redesigning the switch pipeline would significantly raise the barrier to adoption. Second, it isolates MEDU's role in the system: MEDU is responsible for exposing flow-size heterogeneity to the queueing layer, while congestion control continues to regulate the overall sending dynamics of flows.
+
+This separation of concerns is also methodologically useful. It allows us to evaluate whether queue-priority differentiation alone can improve performance, and then study whether additional mechanisms, such as class-aware congestion tuning, can provide further gains on top of MEDU. In this sense, MEDU serves as a structural foundation for further flow-class-aware optimization.
+
+\subsection{Design Trade-Offs}
+
+Like any differentiation mechanism, MEDU involves trade-offs. Giving short flows a cleaner service path may reduce interference for latency-sensitive traffic, but it can also affect how service opportunities are distributed across flow classes. If configured too aggressively, such differentiation could excessively penalize large flows or create unfairness under some workloads.
+
+For this reason, MEDU is designed around a small number of explicit and interpretable parameters, most notably the flow-size threshold and the mapping between flow classes and priority groups. These choices allow the design to remain transparent and tunable. More importantly, they make it possible to evaluate MEDU systematically in terms of both benefit and cost, including short-flow improvement, large-flow impact, and overall network behavior.
+
+The goal of MEDU is therefore not to maximize short-flow priority at any cost, but to provide a practical and lightweight mechanism that improves short-flow completion behavior while keeping the overall trade-off acceptable.
+
+\subsection{Summary}
+
+In summary, MEDU is built around a simple but effective principle: heterogeneous flows should not be forced to share the same undifferentiated queueing path in RDMA networks. By classifying flows according to size and assigning short and large flows to different priority groups, MEDU reduces cross-class interference and improves short-flow completion performance. At the same time, MEDU remains lightweight, compatible with existing RDMA mechanisms, and flexible enough to support further flow-class-aware enhancements.
+
+\section{Implementation}
+
+\subsection{Overview}
+
+We implement MEDU in an ns-3-based RDMA datacenter simulation framework. The implementation goal is to keep the design lightweight and minimally intrusive while preserving compatibility with the existing transport, queueing, and load-balancing pipeline. MEDU is integrated into the system at the flow setup stage, where flow size is already known from the input workload. This allows the simulator to classify flows and assign them to different priority groups before transmission begins, without requiring online flow-size inference or transport-level redesign.
+
+At a high level, the implementation consists of three components: configuration support for flow-size-aware differentiation, flow classification and priority-group assignment at flow creation time, and optional support for differentiated congestion-control tuning on top of the basic MEDU mechanism.
+
+\subsection{Configuration Support}
+
+We extend the simulation configuration interface to expose MEDU as a first-class mechanism. Specifically, the framework supports a switch to enable or disable flow classification, a flow-size threshold that separates short and large flows, and per-class control parameters for optional differentiated congestion tuning. These parameters are propagated through the simulation configuration pipeline and made available to the transport and queueing components.
+
+This design has two benefits. First, it makes MEDU easy to enable, disable, and compare under different experimental conditions. Second, it keeps the implementation modular: the basic MEDU mechanism only depends on whether flow classification is enabled and what threshold is used, while additional enhancements can be layered on top through separate configuration knobs.
+
+\subsection{Flow Classification and Priority-Group Assignment}
+
+The core implementation of MEDU occurs when flows are instantiated in the simulation. For each flow, the simulator reads the target flow size from the workload trace. If flow classification is enabled, the flow is compared against the configured threshold. Flows smaller than the threshold are classified as short flows, while the remaining flows are classified as large flows. Based on this classification, the flow is assigned to a corresponding priority group before the RDMA client is created.
+
+This implementation choice directly reflects the design principle of MEDU: expose flow-size heterogeneity to the queueing layer as early as possible. By assigning short and large flows to different priority groups at flow setup time, the simulator ensures that the two classes experience different queueing paths throughout execution. Importantly, this mechanism operates independently of the path-selection logic of load balancing and the end-to-end rate adaptation logic of congestion control.
+
+\subsection{Interaction with Existing Load Balancing and Congestion Control}
+
+MEDU is implemented as an orthogonal mechanism to existing load-balancing and congestion-control schemes. Load balancing remains responsible for path selection, while congestion control continues to regulate sending behavior based on its original feedback signals. MEDU only changes how flows are mapped into queue-priority classes.
+
+This separation of concerns is deliberate. It allows MEDU to remain compatible with multiple load-balancing schemes and multiple congestion-control algorithms without requiring special-case protocol logic. It also enables clean ablation studies: we can evaluate whether queue-priority differentiation alone is beneficial, and then separately examine whether additional class-aware congestion tuning provides further gains.
+
+\subsection{Optional Differentiated Congestion Tuning}
+
+Although MEDU itself focuses on queue-priority differentiation, the implementation also supports an extension in which different congestion-control parameters can be applied to short and large flows. This extension is disabled or enabled independently from the core flow classification mechanism, allowing us to isolate the contribution of MEDU itself from the additional gain brought by class-aware tuning.
+
+In the current system, differentiated tuning is applied by maintaining separate parameter sets for short and large flows. When enabled, these parameter sets adjust the effective aggressiveness and recovery behavior of congestion control for each flow class. This extension does not change the core design of MEDU, but rather demonstrates that once flow classes are explicitly exposed, the same structural separation can support further optimization.
+
+\subsection{Implementation Complexity}
+
+MEDU requires only modest changes to the simulation framework. It does not alter the fundamental RDMA protocol semantics, does not require new network telemetry, and does not introduce a new scheduling architecture. The implementation mainly adds a small amount of classification logic at flow setup time and reuses the existing notion of priority groups for service differentiation. This makes MEDU significantly lighter than clean-slate transport redesigns and helps preserve compatibility with the broader RDMA networking stack.
+
+\section{Evaluation}
+
+\subsection{Evaluation Questions}
+
+Our evaluation is organized around four questions.
+
+\begin{enumerate}
+  \item Does MEDU improve overall flow completion behavior under mixed RDMA workloads?
+  \item Are the gains particularly strong for short flows, which are the primary target of MEDU?
+  \item What is the impact of MEDU on large flows?
+  \item Does differentiated congestion tuning provide additional benefits beyond MEDU, and if so, should it be viewed as an enhancement rather than the core mechanism?
+\end{enumerate}
+
+\subsection{Experimental Setup}
+
+We evaluate MEDU using an ns-3-based RDMA simulation environment on a leaf-spine topology with 100~Gbps links. Unless otherwise stated, the experiments use the search workload distribution, a 100~KB threshold for separating short and large flows, a 9~MB switch buffer configuration, and PFC-enabled lossless transport. We sweep the offered network load from 30\% to 80\%. To evaluate robustness across path-selection policies, we test four representative load-balancing schemes: CONGA, ConWeave, FECMP, and LetFlow.
+
+To isolate the role of MEDU and its optional extension, we compare three conditions: a baseline without MEDU, MEDU with flow-size-aware priority-group separation only, and MEDU with additional differentiated congestion-control tuning. This setup allows us to separately quantify the effect of queue-priority differentiation and the extra gain brought by class-aware tuning.
+
+We use flow completion slowdown as the primary metric because it normalizes completion time by an ideal baseline and makes comparisons across flow sizes more meaningful. We report both average slowdown and p99 slowdown for all flows, short flows, and large flows.
+
+\subsection{Overall Flow Completion Performance}
+
+We first examine whether MEDU improves overall flow completion behavior. Across all tested loads and load-balancing schemes, enabling MEDU consistently reduces all-flow average slowdown relative to the baseline. The same overall trend also appears in the all-flow p99 slowdown curves, indicating that MEDU improves not only average behavior but also tail performance in mixed workloads.
+
+These gains become more visible as load increases. At lower load, queueing interference is limited and the baseline remains relatively well behaved, so the room for improvement is smaller. At medium and high load, however, the shared queueing path between short and large flows becomes increasingly harmful, and MEDU provides clearer benefits. This matches the design intuition behind MEDU: its value lies in mitigating interference when contention becomes significant.
+
+The overall-flow results are important for two reasons. First, they show that MEDU does not merely shift delay from one flow class to another in a way that leaves aggregate behavior unchanged. Second, they indicate that flow-size-aware differentiation can improve the system more broadly than just on a narrow short-flow metric.
+
+\subsection{Short-Flow Performance}
+
+We next focus on short flows, which are the primary target of MEDU. The short-flow results provide the strongest evidence for the effectiveness of the design. Across all tested algorithms and loads, MEDU consistently reduces short-flow average slowdown. The improvement is even more pronounced for short-flow p99 slowdown, where MEDU substantially reduces tail completion inflation under medium and high load.
+
+This result directly supports our central motivation. Short flows are highly sensitive to queueing and service delay, so they suffer most when forced to compete in the same queueing path as large flows. By separating the two classes at the priority-group level, MEDU significantly reduces the extent to which short flows inherit delay caused by persistent large-flow occupancy. The reduction in short-flow tail slowdown is especially important because many interactive datacenter services are constrained not by average latency but by tail completion behavior.
+
+Another notable observation is that the short-flow gains remain consistent across multiple load-balancing algorithms. This suggests that MEDU is not tightly coupled to a particular path-selection strategy. Instead, it addresses a more fundamental queueing interaction problem that persists across different load-balancing choices.
+
+\subsection{Large-Flow Impact}
+
+A practical short-flow-oriented mechanism must also be evaluated in terms of its cost to large flows. Interestingly, under our current workload, MEDU does not simply improve short-flow performance at the expense of large flows. Instead, large-flow average slowdown and large-flow p99 slowdown also improve in many cases, especially at higher load.
+
+This observation suggests that MEDU reduces harmful queueing interactions more broadly than a pure priority boost would. By separating short and large flows into different priority groups, MEDU appears to reduce inefficient contention patterns that would otherwise hurt both classes. In other words, the benefit of MEDU is not solely that short flows receive better service, but also that the system experiences less cross-class interference overall.
+
+This is an encouraging result because it strengthens the practical case for MEDU. If short-flow gains had come with severe large-flow penalties, the design would be much harder to justify operationally. Instead, the current results indicate that MEDU can improve short-flow completion performance while keeping the impact on large flows acceptable, and in many cases even beneficial.
+
+\subsection{Additional Gains from Differentiated Congestion Tuning}
+
+Although the main focus of this paper is MEDU itself, we also evaluate an extension in which different congestion-control parameters are applied to different flow classes. The results show that once MEDU is enabled, differentiated congestion tuning can further reduce flow completion slowdown in both average and tail metrics.
+
+This result is useful in two ways. First, it confirms that MEDU provides a strong structural basis for further flow-class-aware optimization. Once flow classes are explicitly separated, the system can exploit that structure to tailor congestion behavior more precisely. Second, it validates our decision to treat differentiated tuning as an enhancement rather than the core mechanism. The main gains already appear when MEDU is enabled, while class-aware tuning provides additional improvement on top of that foundation.
+
+From a paper-positioning perspective, this distinction matters. MEDU addresses the structural problem of cross-class interference by exposing flow-size heterogeneity to the queueing layer. Differentiated congestion tuning is a follow-on optimization that further exploits this separation. Treating the latter as an extension helps preserve a clean main story for the paper.
+
+\subsection{Discussion of Current Results}
+
+Taken together, the results support three conclusions. First, cross-class interference between short and large flows is a real performance issue in RDMA mixed workloads. Second, MEDU mitigates this problem effectively through lightweight queue-priority differentiation. Third, explicit flow-size separation can serve as a useful structural foundation for further optimization.
+
+The most convincing evidence comes from the short-flow and tail metrics. These are precisely the metrics that should improve if MEDU is addressing the intended problem, and they do. At the same time, the large-flow results indicate that the design does not rely on an excessively destructive trade-off. This combination of strong short-flow gains and controlled large-flow impact makes MEDU a practical rather than purely idealized mechanism.
+
+\subsection{Remaining Evaluation to Be Added}
+
+To further strengthen the paper for submission, we plan to add three additional groups of experiments.
+
+\begin{enumerate}
+  \item Threshold sensitivity experiments will vary the flow-size threshold to show that MEDU does not depend on a single magic parameter and to characterize the trade-off between short-flow gain and large-flow impact.
+  \item Workload generalization experiments will test additional workload distributions beyond search, such as webserver and AliStorage2019, to show that the benefit of MEDU is not tied to one traffic trace.
+  \item Topology and congestion-control generalization experiments will evaluate whether the same conclusions hold across different topology sizes and, where appropriate, under different RDMA congestion-control settings.
+\end{enumerate}
+
+These additional results are intended to strengthen generality rather than establish the core claim, which is already supported by the current evidence.
+
+\section{Related Work}
+
+\subsection{RDMA Congestion Control}
+
+A large body of work has studied congestion control for RDMA datacenter networks. DCQCN~\cite{dcqcn} uses ECN-based feedback to regulate sending rates in large-scale RoCE deployments and has become one of the most representative congestion-control designs for lossless RDMA fabrics. TIMELY~\cite{timely} shows that RTT can serve as an effective congestion signal and achieves low latency without requiring switch-side ECN as the only signal source. HPCC~\cite{hpcc} further improves control precision by leveraging in-band telemetry to provide highly accurate congestion feedback.
+
+These works are primarily concerned with how flows should react to congestion signals, rather than how heterogeneous flows should be differentiated in the queueing path. MEDU is therefore complementary to this line of work. It does not replace the congestion-control logic of RDMA transports, but instead introduces flow-size-aware differentiation at the queue-priority level to reduce cross-class interference before congestion-control dynamics fully manifest.
+
+\subsection{Short-Flow-Friendly Scheduling and Transport}
+
+Prior work has long recognized that datacenter workloads contain a mix of short and large flows, and that short-flow completion time is a critical performance metric. pFabric~\cite{pfabric} showed that near-optimal flow completion time can be achieved by aggressively prioritizing urgent traffic. PIAS~\cite{pias} demonstrated that shortest-job-first behavior can be approximated without a priori flow-size knowledge by using multiple priority queues in commodity switches. Homa~\cite{homa} proposed a receiver-driven transport that uses network priorities to achieve low latency for RPC-style workloads.
+
+MEDU is inspired by the same general insight that not all flows should be treated identically. However, it differs from these designs in two important ways. First, MEDU is developed specifically for RDMA networks rather than for general datacenter TCP or RPC transports. Second, MEDU focuses on lightweight compatibility with existing RDMA queueing and transport mechanisms instead of introducing a clean-slate transport architecture. In this sense, MEDU adapts the broader philosophy of short-flow-aware service to the specific constraints of lossless RDMA fabrics.
+
+\subsection{RDMA Network Support and Lossless Fabrics}
+
+Several studies have examined the interaction between RDMA transport and the underlying lossless network support. Revisiting Network Support for RDMA~\cite{revisiting-rdma} questioned whether conventional assumptions about lossless Ethernet support are always necessary for RDMA and highlighted the complexity of transport-network interaction in such environments. This line of work emphasizes that RDMA performance depends not only on end-to-end transport logic but also on how the network handles queueing, losslessness, and contention.
+
+MEDU is closely aligned with this perspective. Rather than viewing RDMA performance purely as a transport-side control problem, MEDU focuses on the queueing-layer consequences of traffic heterogeneity and seeks to reduce harmful short-large flow interaction in the service path.
+
+\subsection{Load Balancing in Datacenter Networks}
+
+Load-balancing mechanisms such as CONGA and LetFlow improve path utilization and reduce congestion by steering traffic more intelligently across the network~\cite{conga,letflow}. These schemes are important for overall datacenter efficiency and are widely used as baselines or complementary mechanisms in evaluation studies.
+
+MEDU addresses a different problem. Load balancing determines where traffic goes, while MEDU determines how heterogeneous traffic classes are treated once they enter the queueing path. As shown by our experiments across multiple load-balancing schemes, the benefit of MEDU persists across different path-selection policies, indicating that cross-class interference remains important even when load balancing is already present.
+
+\section{Discussion and Limitations}
+
+MEDU is intentionally lightweight, and this simplicity brings both strengths and limitations. Its main strength is that it exposes flow-size heterogeneity to the queueing layer without requiring a clean-slate redesign of RDMA transport. This makes the design easy to reason about and relatively practical to integrate with existing mechanisms. However, the same simplicity means that MEDU does not attempt to solve every performance issue in RDMA networks.
+
+One limitation is that MEDU relies on a threshold to classify flows. Although threshold-based differentiation is practical and interpretable, no single threshold is ideal for every workload. The sensitivity of MEDU to threshold choice therefore needs to be characterized carefully. Our current design treats this as a tunable parameter rather than a fixed universal constant.
+
+Another limitation is that our current implementation and evaluation are simulation-based. While the ns-3 environment allows controlled experimentation and detailed comparison across workloads and algorithms, further validation in a real testbed would strengthen the practical case for deployment. In addition, although our current results are consistent across multiple loads and load-balancing schemes, further evaluation across more workload distributions and topology scales will improve the generality of the conclusions.
+
+Finally, this paper focuses on MEDU as the core mechanism and treats differentiated congestion tuning as an extension. This choice keeps the story clear, but it also means that a fuller exploration of class-aware congestion-control design is left to future work. That direction is promising, but it should build on a clean understanding of MEDU rather than replace it.
+
+\section{Conclusion}
+
+This paper presents MEDU, a lightweight flow-size-aware differentiation mechanism for RDMA networks. MEDU is motivated by the observation that short-flow slowdown in mixed RDMA workloads is often driven by cross-class interference between short and large flows sharing the same queueing path. To address this issue, MEDU classifies flows by size and maps them to different priority groups, thereby reducing harmful queueing interaction between heterogeneous traffic classes.
+
+Our evaluation shows that MEDU consistently improves flow completion slowdown across multiple network loads and load-balancing schemes, with especially strong gains for short-flow and tail metrics. Moreover, MEDU often improves large-flow behavior as well, suggesting that it reduces inefficient contention rather than simply shifting cost from one class to another. We further show that differentiated congestion-control tuning can provide additional benefits once MEDU is in place, reinforcing the value of explicit flow-size-aware separation as a structural foundation.
+
+Overall, MEDU demonstrates that exposing traffic heterogeneity to the queueing layer is a practical and effective way to improve RDMA performance under mixed workloads. This result suggests a broader lesson: beyond better congestion signals and better path selection, class-aware treatment of heterogeneous traffic remains an important and underexplored direction for RDMA datacenter networks.
+
+\bibliographystyle{elsarticle-num}
+\begin{thebibliography}{10}
+
+\bibitem{dcqcn}
+Yibo Zhu, Haggai Eran, Daniel Firestone, Chuanxiong Guo, Marina Lipshteyn,
+  Mario Liron, Jonathan Padhye, Shachar Raindel, Mohamad H. Yahia, and Ming Zhang.
+\newblock Congestion control for large-scale {RDMA} deployments.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2015.
+
+\bibitem{timely}
+Radhika Mittal, Vinh The Lam, Nandita Dukkipati, Emily Blem, Hassan Wassel,
+  Monia Ghobadi, Amin Vahdat, Yasushi Koyama, David Culler, and Amin Vahdat.
+\newblock {TIMELY}: {RTT}-based congestion control for the datacenter.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2015.
+
+\bibitem{hpcc}
+Yuliang Li, Rui Miao, Hongqiang Harry Liu, Yan Zhuang, Feifei Feng,
+  Lixin Tang, Danyang Zhu, Ruiqi Zhang, Minxin Yu, and others.
+\newblock {HPCC}: High precision congestion control.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2019.
+
+\bibitem{revisiting-rdma}
+Radhika Mittal, Vinh The Lam, Nandita Dukkipati, Hassan Wassel, Monia Ghobadi,
+  and Amin Vahdat.
+\newblock Revisiting network support for {RDMA}.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2018.
+
+\bibitem{pfabric}
+Mohammad Alizadeh, Albert G. Greenberg, David A. Maltz, Jitu Padhye,
+  Parveen Patel, Balaji Prabhakar, Sudipta Sengupta, and Murari Sridharan.
+\newblock pFabric: Minimal near-optimal datacenter transport.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2013.
+
+\bibitem{pias}
+Wei Bai, Li Chen, Kai Chen, and Mohammad Alizadeh.
+\newblock Information-agnostic flow scheduling for commodity data centers.
+\newblock In \emph{Proceedings of the 12th USENIX Symposium on Networked Systems Design and Implementation (NSDI)}, 2015.
+
+\bibitem{homa}
+Behnam Montazeri, Yilong Li, Mohammad Alizadeh, and John Ousterhout.
+\newblock Homa: A receiver-driven low-latency transport protocol using network priorities.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2019.
+
+\bibitem{conga}
+Mohammad Alizadeh, Tom Edsall, Sarang Dharmapurikar, Ramanan Vaidyanathan,
+  Kenneth Chu, Andy Fingerhut, Vinh T. Lam, Francis Matus, Rong Pan,
+  Navindra Yadav, and George Varghese.
+\newblock {CONGA}: Distributed congestion-aware load balancing for datacenters.
+\newblock In \emph{Proceedings of the ACM SIGCOMM Conference}, 2014.
+
+\bibitem{letflow}
+Antoine Vanini, Balakrishnan Chandrasekaran, Nikhil Ghobadi, Priyaranjan Jha,
+  Chen Lumezanu, Yashar Ganjali, and David Maltz.
+\newblock Let it flow: Resilient asymmetric load balancing with flowlet switching.
+\newblock In \emph{Proceedings of the 14th USENIX Symposium on Networked Systems Design and Implementation (NSDI)}, 2017.
+
+\end{thebibliography}
+
+\end{document}

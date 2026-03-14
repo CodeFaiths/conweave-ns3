@@ -618,8 +618,10 @@ void SwitchNode::CpemPeriodicFeedbackCheck(uint32_t port) {
     
     // Check if we should generate feedback for this ingress port
     uint32_t ingressQueueLen = m_mmu->GetIngressPortBytes(port);
+    uint32_t threshold_low = 0, threshold_high = 0;
+    m_mmu->CpemGetDynamicThresholds(port, threshold_low, threshold_high);
     
-    if (ingressQueueLen >= Settings::cpem_queue_threshold_low) {
+    if (ingressQueueLen >= threshold_low) {
         // Find the upstream port (source of traffic) and send feedback
         // For simplicity, we send feedback back through the same port
         CpemSendFeedback(port, port);

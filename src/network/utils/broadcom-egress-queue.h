@@ -40,7 +40,7 @@ namespace ns3 {
 		BEgressQueue();
 		virtual ~BEgressQueue();
 		bool Enqueue(Ptr<Packet> p, uint32_t qIndex);
-		Ptr<Packet> DequeueRR(bool paused[]);
+		Ptr<Packet> DequeueRR(bool paused[], bool allowLongFlow = true);
 		uint32_t GetNBytes(uint32_t qIndex) const;
 		uint32_t GetNBytesTotal() const;
 		uint32_t GetLastQueue();
@@ -68,7 +68,7 @@ namespace ns3 {
 
 	private:
 		bool DoEnqueue(Ptr<Packet> p, uint32_t qIndex);
-		Ptr<Packet> DoDequeueRR(bool paused[]);
+		Ptr<Packet> DoDequeueRR(bool paused[], bool allowLongFlow);
 		//for compatibility
 		virtual bool DoEnqueue(Ptr<Packet> p);
 		virtual Ptr<Packet> DoDequeue(void);
